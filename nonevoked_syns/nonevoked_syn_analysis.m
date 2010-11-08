@@ -7,27 +7,8 @@ addpath('../pds'); %#ok<MCAP>
 
 
 %% set config
-config = struct;
-config.create_roseplots = 0;
-config.nmf_stab_plots   = 0;
-config.fetch_data       = 0;
-config.Niter_exploration= 50;
-config.n_iter_stab      = 50;
-config.Niter_res_test   = 20;
-config.dimensions       = 3;
-config.significant      = 25;
-config.channels2take    = find(logical([0  1  1  1  1  1  1  1  1  1  1  1  0  0  0  0 ]));
-config.n_used_channels  = length(config.channels2take);
-config.emgdat_path      = '/Volumes/DEDAN_DISK/vega/EMGdat/';
-config.outpath          = '~/Documents/uni/yifat_lab/results/nonevoked_syns/';
-config.image_format     = 'pdf';
-config.res_folder       = '~/Documents/uni/yifat_lab/results/';
-config.pd_folder        = '/Volumes/DEDAN_DISK/vega/pd_files/';
-config.names            = {'_pro', '_sup',''};
-config.opt              = statset('MaxIter',5);
+run '../config/vega'
 
-% config.emgdat_path      = 'F:\vega\EMGdat\';
-% config.outpath          = 'F:\out\';
 
 mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
