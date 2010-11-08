@@ -1,0 +1,942 @@
+Warning: Unable to open display , MATLAB is starting without a display.
+  You will not be able to display graphics on the screen.
+
+                              < M A T L A B >
+                  Copyright 1984-2007 The MathWorks, Inc.
+                         Version 7.4.0.287 (R2007a)
+                              January 29, 2007
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>        n_debug_images: 10
+       debug_sessions: []
+         debug_images: 1
+               inflag: 0
+               erflag: 1
+         image_format: 'tiff'
+        result_folder: '~/Documents/uni/yifat_lab/results/'
+           start_time: '18122008__1235'
+         cur_res_fold: '~/Documents/uni/yifat_lab/results/18122008__1235/'
+        normalization: 2
+           dimensions: 10
+             channels: [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44]
+           n_channels: 16
+               window: [6 30]
+        sampling_rate: 500
+         apply_filter: 0
+           stim_value: 150
+       Niter_res_test: 50
+    Niter_exploration: 250
+            rand_stim: 0
+               monkey: 'vega'
+               volume: '/Volumes/new_disk/'
+               folder: '/Volumes/new_disk/vega/'
+            pd_folder: '/Volumes/new_disk/vega/pd_files/'
+           dat_folder: '/Volumes/new_disk/vega/data/'
+             syn_plot: 2
+
+>> >> >> >> >> >> >> >> calculate responses and normalize.. 
+>> >> >> >> >> >> >> >> >> >>     97    81   100    72    48    92   100    93    62    53
+
+>> >> >> >> >> >> >> >> >> >> average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+could not load: /Volumes/new_disk/vega/pd_files/v200607 -- 84
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+could not load: /Volumes/new_disk/vega/pd_files/v200607 -- 84
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+could not load: /Volumes/new_disk/vega/pd_files/v210607 -- 85
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+could not load: /Volumes/new_disk/vega/pd_files/v210607 -- 85
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+could not load: /Volumes/new_disk/vega/pd_files/v210607 -- 85
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+could not load: /Volumes/new_disk/vega/pd_files/v210607 -- 85
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+could not load: /Volumes/new_disk/vega/pd_files/v210607 -- 85
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
+Error: MATLAB:UndefinedFunction
+responses error handling: 
+Error: 
+average windows error handling: 
