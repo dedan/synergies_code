@@ -1,0 +1,8 @@
+
+while starting again work on this project I realize that there
+is code in some folders that I don't use anymore. It confussed me
+because I thought I cleaned up everything before I did the last commit
+in the thesis repository. But apparently not. Maybe because in the end
+I did not work on the nonevoked syns folder anymore, this was done in
+the beginning. So all the files which are not used currently are moved
+to this "yuval_old" folder
