@@ -19,6 +19,8 @@ for i=1:length(fdat)
     % only when data for different handpositions available
     if length(data.chdata) > 1
         
+        display(['processing file: ' num2str(i) ' of ' num2str(length(fdat))]);
+        
         % get the data in mat that contains all and in a struct mathand
         % separated by handposition
         mats = struct;
