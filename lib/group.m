@@ -23,6 +23,7 @@ dif = big_number;
 
 % run kmeans several times as it is known to be not the most stable
 % algorithm
+warning off stats:kmeans:EmptyCluster
 for i = 1:n_iter
    [tmp_idx tmp_c err] = kmeans(flat, group_size,'emptyaction', 'singleton', 'display', 'off');   
    if sum(err) < dif
@@ -31,6 +32,8 @@ for i = 1:n_iter
       c     = tmp_c;
    end
 end
+warning on stats:kmeans:EmptyCluster
+
 
 grouped.idx    = idx;
 grouped.center = c;
