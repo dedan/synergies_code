@@ -1,0 +1,6 @@
+this is a old programmed that I just cleaned up and made work
+
+the problem was that we had thousand versions of it and all
+were somehow buggy. Now this will become the one and only version
+of the program which is used to create the emg files that look
+like for example EMGv010407.mat
