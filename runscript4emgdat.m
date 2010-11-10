@@ -1,31 +1,26 @@
-function runscript4emgdat
+clear
 
-
-config.data_dir = '/Volumes/LAB/vega/data/';
-config.ses_data = '/Volumes/LAB/vega/VegaSession';
-config.monk     = 'v';
-config.eddir    = '/Volumes/LAB/vega/EDfiles/';
+config.path     = '/Volumes/LAB/vega/';
+config.outpath  = '/Volumes/LAB/vega/EMGdat_neu';
+config.monk     = 'vega';
 config.e2add    = 'e';
-config.outpath  = '/Volumes/LAB/vega/EMGdat/EMG';
+config.verbose  = 0;
 
+vdir = dir([config.path 'data' filesep config.monk(1) '*']);
+vdir = sortdirs( vdir);
 
-
-vdir = dir([config.data_dir config.monk '*']);
-                
-vdir= sortdirs( vdir);
-
-for i=1:length(vdir),
+for i= 2 %1:length(vdir),
     
     curdir = char(vdir(i));
-    if ~exist(['EMGdat' filesep 'EMG' curdir '.mat'], 'file'),
-
-        disp(curdir);
+    if ~exist([config.outpath filesep 'EMG' curdir '.mat'], 'file'),
+        
+        disp(['file ' num2str(i) ' of ' num2str(length(vdir)) ': ' curdir]);
         [em2take,e1,e2] = findEMGchannels( curdir, config);
         if ~isempty(em2take),
-            [chdata,emgpsth] = muscleSyn( curdir, e1,e2, em2take, config); %#ok<NASGU>
+            [chdata,emgpsth] = MuscleSyn( curdir, e1,e2, em2take, config); 
             if ~isempty(chdata),
-                save(['EMG' curdir], 'chdata', 'emgpsth');
-                disp(['save EMG' curdir ' chdata emgpsth']);
+                save([config.outpath filesep 'EMG' curdir], 'chdata', 'emgpsth');
+                disp(['save EMG' curdir '.mat to ' config.outpath]);
             else
                 disp('No available data');
             end
@@ -35,18 +30,3 @@ for i=1:length(vdir),
     end
 end
 
-
-function odir = sortdirs( idir )
-
-Ndates  = NaN(length(idir),2);
-odir    = cell(length(idir));
-for i=1:length(idir),
-    curname = char(idir(i).name);
-    Nday = str2double( curname(2:3));
-    Nmonth = str2double(curname(4:5));
-    Ndates(i,1) = Nmonth;
-    Ndates(i,2) = Nday;
-    odir(i) = {curname};
-end
-[~,ilist]=sortrows(Ndates);
-odir = (odir(ilist));

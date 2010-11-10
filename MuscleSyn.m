@@ -3,37 +3,40 @@ function [chdata, emgpsth] = MuscleSyn( sessname, f1, f2, chnls, config)
 chdata = [];
 emgpsth = struct;
 
-load(config.ses_data);
-emgdir  = [ config.data_dir sessname filesep 'mat' filesep ];
-eddir   = config.eddir;
+load([config.path config.monk 'session']);
+emgdir = [config.path 'data' filesep sessname filesep 'mat' filesep ];
+eddir  = [config.path 'EDfiles' filesep];
 
 
-indx = 1;
+indx        = 1;
 point2empty = [];
-edfiles = cell(0);
+edfiles     = cell(0);
+
+emgname = cell(1,length(f1:f2));
 for i=f1:f2,
-    edname = extract_edname( config.monk, subss, sessname,  i, config.e2add );
+    edname = extract_edname( config.monk(1), subss, sessname,  i, config.e2add );
     if ~isempty(edname),
         if i< 10,
-            str2add = ['00' num2str(i)];
+            str2add  = ['00' num2str(i)];
         elseif i< 100,
-            str2add = ['0' num2str(i)];
-            else2add = [ num2str(i)];
+            str2add  = ['0' num2str(i)];
         end
         emgname(i-f1+1) = {[emgdir sessname str2add '_emg.mat']};
         if ~isempty(edname),
-            edfiles(i-f1+1) = {[eddir edname]};
+            edfiles(i-f1+1)     = {[eddir edname]};
         else
-            point2empty(indx) = i-f1+1;
-            indx = indx+1;
+            point2empty(indx)   = i-f1+1; %#ok<AGROW>
+            indx                = indx+1;
         end
     end
 end
+
 if isempty(edfiles),
-    chdata = [];
+    chdata  = [];
     emgpsth = [];
     return;
 end
+
 if ~isempty(point2empty),
     for j=1:length(point2empty),
         curpos = point2empty(j);
@@ -46,17 +49,20 @@ if ~isempty(point2empty),
     emgname = emgname(indx);
 end
 
-Data = loadEMGdata( emgname, edfiles, chnls);
-Nch = length(Data.channel);
+Data = loadEMGdata( emgname, edfiles, chnls, config);
+Nch  = length(Data.channel);
 if Nch == 0,
     disp('No emg data was found');
     return;
 end
-trg = Data.channel(1).Target;
+
+trg = Data.channel(1).Target;               % target of trial
 Ntr = unique(trg);
-Ntr  = Ntr(find(Ntr > 0));
-hnd = Data.channel(1).hand_position;
-Nh = unique(hnd(find(trg > 0)));
+Ntr = Ntr(Ntr > 0);                         % list of targets
+hnd = Data.channel(1).hand_position;        % hand position is the same for all channels
+Nh  = unique(hnd(trg > 0));                 % list of hand positions
+
+chdata = struct;
 for k=1:length(Nh),
     
     % now computing the mean bckground level per channel
@@ -112,12 +118,12 @@ while i < length(subss),
             if ID < 10,
                 str1 = ['0' num2str(ID)];
             else
-                str1 = [num2str(ID)];
+                str1 = num2str(ID);
             end
             if subID < 10,
                 str2 = ['0' num2str(subID)];
             else
-                str2 = [num2str(subID)];
+                str2 = num2str(subID);
             end
             edname = [monk str1 str2 'e' e2add '.' num2str(ednum) '.mat'];
             return;
