@@ -77,12 +77,8 @@ for k=1:length(Nh),
             if length(jindx) >= 1,
                 
                 % this is the relevant data for further investigation
-                chdata(k).mat(i,j)      = mean(Data.channel(i).amp(jindx));
-                chdata(k).mat_rel(i,j)  = mean(Data.channel(i).amp(jindx)) / mean(Data.channel(i).bck_amp(jindx));
-                
-                chdata(k).mat_raw{i,j}      = Data.channel(i).amp(jindx);
-                chdata(k).mat_rel_raw{i,j}  = Data.channel(i).amp(jindx) ./ Data.channel(i).bck_amp(jindx);
-
+                chdata(k).amp{i,j}     = Data.channel(i).amp(jindx);
+                chdata(k).bck_amp{i,j} = Data.channel(i).bck_amp(jindx);
                 
                 if length(jindx)> 1,
                     emgpsth(i).hand(k).target(j,:) = mean(Data.channel(i).signal(jindx,:));
@@ -93,10 +89,6 @@ for k=1:length(Nh),
                 chdata(k).mat(i,j) = 0;
             end
         end;
-        
-        if any(isnan(chdata(k).mat_rel))
-            warning('dedan:nan', 'NaN problem');
-        end
     end
 end
 
