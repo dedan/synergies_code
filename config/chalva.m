@@ -9,9 +9,12 @@ config.n_iter_stab      = 50;
 config.Niter_res_test   = 5;
 config.dimensions       = 3;
 config.significant      = 25;
-config.channels2take    = find(logical([0  1  1  1  1  1  1  1  1  1  1  1  0  0  0  0 ]));
+config.normalization    = 1;
+% normalization 1: mean activity in window after TO - mean activity before
+% normalization 2: mean activity in window after TO / mean activity before
+config.channels2take    = find(logical([1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 ]));
 config.n_used_channels  = length(config.channels2take);
-config.monk             = 'vega';
+config.monk             = 'chalva';
 config.emgdat_path      = ['/Volumes/LAB/' config.monk filesep 'EMGdat' filesep];
 config.outpath          = '~/Documents/uni/yifat_lab/results/nonevoked_syns/';
 config.image_format     = 'pdf';
