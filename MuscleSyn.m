@@ -73,12 +73,15 @@ for k=1:length(Nh),
     for j=1:length(Ntr),
         jindx = find(trg == Ntr(j) & hnd == Nh(k));
         chdata(k).N(j) = length(jindx);
+        
+        tmp_amp = NaN(Nch, length(jindx));
+        tmp_bck = NaN(Nch, length(jindx));
         for i=1:Nch,
             if length(jindx) >= 1,
                 
                 % this is the relevant data for further investigation
-                chdata(k).amp{i,j}     = Data.channel(i).amp(jindx);
-                chdata(k).bck_amp{i,j} = Data.channel(i).bck_amp(jindx);
+                tmp_amp(i,:) = Data.channel(i).amp(jindx);
+                tmp_bck(i,:) = Data.channel(i).bck_amp(jindx);
                 
                 if length(jindx)> 1,
                     emgpsth(i).hand(k).target(j,:) = mean(Data.channel(i).signal(jindx,:));
@@ -89,6 +92,8 @@ for k=1:length(Nh),
                 chdata(k).mat(i,j) = 0;
             end
         end;
+        chdata(k).amp{j}     = tmp_amp;
+        chdata(k).bck_amp{j} = tmp_bck;
     end
 end
 
