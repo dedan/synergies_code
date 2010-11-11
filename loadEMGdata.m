@@ -48,7 +48,9 @@ for i=1:length(emgfiles)
         
         % compute targets if bhvStat does not exist
         if ~isfield( bhvdata, 'bhvStat')
-            disp 'here' %just want to check whether this condition ever occurs
+            if 1    % config.verbose
+                disp 'computing targets' %just want to check whether this condition ever occurs
+            end
             trials  = locate_trials(bhvdata,'all');
             targets = NaN(1,size(trials,1));
             for tri=1:size(trials,1),
@@ -65,11 +67,10 @@ for i=1:length(emgfiles)
             itrials =(find(bhvStat(:,1)>=-200 & bhvStat(:,1)<=500 & bhvStat(:,2)<=1500  & bhvStat(:,2)>=500 & abs(bhvStat(:,5))<=35));
             trials  = bhvdata.trials(itrials,1:2);
             if isfield(bhvdata, 'targets'),
-                disp 'same here' %just want to check whether this condition ever occurs
-                targets = bhvdata.targets(itrials);
-                if ~isempty(find(targets==0, 1)),
-                    disp('here');
+                if config.verbose
+                    disp('found target data');
                 end
+                targets = bhvdata.targets(itrials);
             else
                 if config.verbose
                     disp('creating target data');
