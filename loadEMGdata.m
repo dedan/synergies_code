@@ -86,7 +86,6 @@ for i=1:length(emgfiles)
             trials = [];
         end
         
-        trialCounter = 0;
         if ~isempty(trials),
             for m=1:length(channels)
                 
@@ -105,7 +104,6 @@ for i=1:length(emgfiles)
                 time    = (1:Lemg)/Fs; 
                 
                 for k=1:size(trials,1)
-                    trialCounter    = trialCounter+1;
                     direction       = targets(k);
                     refTime         = getRefTime(bhvdata,trials(k,:),bhv, direction);
                     
@@ -117,30 +115,27 @@ for i=1:length(emgfiles)
                     end
                     signal  = EMG(index);
                     signal2 = EMG(index2);
-                    tuning.channel(m).dir(trialCounter+total_trials)    = direction;
-                    tuning.channel(m).Target(trialCounter+total_trials) = direction;
-                    tuning.channel(m).amp(trialCounter+total_trials)    = mean(abs(signal2));
-                    tuning.channel(m).signal(trialCounter+total_trials,1:length(signal)) = abs(signal);
+                    tuning.channel(m).dir(k+total_trials)    = direction;
+                    tuning.channel(m).Target(k+total_trials) = direction;
+                    tuning.channel(m).amp(k+total_trials)    = mean(abs(signal2));
+                    tuning.channel(m).signal(k+total_trials,1:length(signal)) = abs(signal);
                     
                     % we are now computing the backcground emg level - 500 ms before cue onset
-                    
                     refTime     = getRefTime(bhvdata,trials(k,:),bck_bhv, direction);
                     index       = time>=refTime+bck_win(1) & time<=refTime+bck_win(2);
                     bck_signal  = EMG(index);
                     bck_amp     = mean(abs(bck_signal));
-                    tuning.channel(m).bck_amp(trialCounter+total_trials) = bck_amp;
+                    tuning.channel(m).bck_amp(k+total_trials) = bck_amp;
             
                     if handFlag
-                        tuning.channel(m).hand_position(trialCounter+total_trials) = hand_position;
+                        tuning.channel(m).hand_position(k+total_trials) = hand_position;
                     end
                 end
             end
             eval(['clear EMG' chstr ' EMG'])
         end
-    else
-        trialCounter = 0;
     end
-	total_trials = total_trials + trialCounter;
+	total_trials = total_trials + size(trials,1);
 end
 
         
