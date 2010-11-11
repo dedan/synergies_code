@@ -75,11 +75,14 @@ for k=1:length(Nh),
         chdata(k).N(j) = length(jindx);
         for i=1:Nch,
             if length(jindx) >= 1,
-                chdata(k).mat(i,j) = mean(Data.channel(i).amp(jindx));
                 
-                % compute also the relative activation in percentages
-                chdata(k).mat_rel(i,j) = (mean(Data.channel(i).amp(jindx))  - emgpsth(i).hand(k).bck_amp) / emgpsth(i).hand(k).bck_amp;
-                chdata(k).mat_rel1(i,j) = (mean(Data.channel(i).amp(jindx))) / emgpsth(i).hand(k).bck_amp;
+                % this is the relevant data for further investigation
+                chdata(k).mat(i,j)      = mean(Data.channel(i).amp(jindx));
+                chdata(k).mat_rel(i,j)  = mean(Data.channel(i).amp(jindx)) / mean(Data.channel(i).bck_amp(jindx));
+                
+                chdata(k).mat_raw{i,j}      = Data.channel(i).amp(jindx);
+                chdata(k).mat_rel_raw{i,j}  = Data.channel(i).amp(jindx) / Data.channel(i).bck_amp(jindx);
+
                 
                 if length(jindx)> 1,
                     emgpsth(i).hand(k).target(j,:) = mean(Data.channel(i).signal(jindx,:));
@@ -92,15 +95,9 @@ for k=1:length(Nh),
         end;
         
         if any(isnan(chdata(k).mat_rel))
-            disp('NaN problem');
+            warning('dedan:nan', 'NaN problem');
         end
     end
-    
-    
-    
-    
-    %     subplot(4,4,i);
-    %     bar(chdata(i,:));
 end
 
 
