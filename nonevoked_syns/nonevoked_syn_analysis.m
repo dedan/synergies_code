@@ -1,5 +1,6 @@
 
 % analysis of the synergist found in a non-stimulation condition
+clear
 
 %% add path
 addpath('../lib'); %#ok<MCAP>
@@ -7,7 +8,7 @@ addpath('../pds'); %#ok<MCAP>
 
 
 %% set config
-run '../config/vega'
+run '../config/chalva'
 
 
 mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
@@ -34,8 +35,8 @@ end
 % first store them in a convenient matrix
 rank1 = NaN(2,length(all_sessions));
 for i = 1:length(all_sessions)
-    rank1(1,i)  = all_sessions(i).test.r_nmf(1);
-    rank1(2,i)  = all_sessions(i).test.r_pca(1);
+    rank1(1,i)  = all_sessions(i).test.r_nmf_pro(1);
+    rank1(2,i)  = all_sessions(i).test.r_pca_pro(1);
 end
 
 h = figure('Visible','off');
@@ -69,7 +70,7 @@ clear rank1
 sig_sessions = struct;
 sc           = 1;
 for i = 1:length(all_sessions)
-    if all_sessions(i).test.r_nmf(1) > config.significant
+    if all_sessions(i).test.r_nmf_pro(1) > config.significant
         sig_sessions(sc).test = all_sessions(i).test;
         sig_sessions(sc).mats = all_sessions(i).mats;
         sig_sessions(sc).info = all_sessions(i).info;
@@ -82,47 +83,55 @@ clear sc
 
 %% plot residuals for all sessions in one plot
 for i = 1:length(config.names)
-    all_resid = [];
+    n_max_targets = 8;
+    all_resid     = zeros(length(sig_sessions)+2,n_max_targets);
+    
     for j = 1:length(sig_sessions)
-        all_resid = [all_resid; sig_sessions(j).test.(['r_nmf' config.names{i}])]; %#ok<AGROW>
+        tmp_test = sig_sessions(j).test.(['r_nmf' config.names{i}]);
+        all_resid(j,1:length(tmp_test)) = tmp_test;
     end
-    all_resid = [all_resid; mean(all_resid); ones(1,size(all_resid,2))*10]; %#ok<AGROW>
+    all_resid(length(sig_sessions)+1,:) = mean(all_resid);
+    all_resid(length(sig_sessions)+2,:) = ones(1,size(all_resid,2))*10;
     h = plot_all_resid(all_resid');
     saveas(h, [config.outpath  'all_resid' config.names{i} '.' config.image_format]);
     close(h);
-    
-    all_resid = [];
+
+    all_resid     = zeros(length(sig_sessions)+2,n_max_targets);    
     for j = 1:length(sig_sessions)
-        all_resid = [all_resid; sig_sessions(j).test.(['r_nmf_s' config.names{i}])]; %#ok<AGROW>
+        tmp_test = sig_sessions(j).test.(['r_nmf_s' config.names{i}]);
+        all_resid(j,1:length(tmp_test)) = tmp_test;
     end
-    all_resid = [all_resid; mean(all_resid); ones(1,size(all_resid,2))*10]; %#ok<AGROW>
+    all_resid(length(sig_sessions)+1,:) = mean(all_resid);
+    all_resid(length(sig_sessions)+2,:) = ones(1,size(all_resid,2))*10;
     h = plot_all_resid(all_resid');
     saveas(h, [config.outpath  'all_resid_s' config.names{i} '.' config.image_format]);
     close(h);
 
 end
 
-clear all_resid
+clear all_resid n_max_targets tmp_test
 
 
 %% plot all at once
-all_resid1 = [];
-all_resid2 = [];
-all_resid3 = [];
-for j = 1:length(sig_sessions)
-    all_resid1 = [all_resid1; sig_sessions(j).test.('r_nmf_s_pro')]; %#ok<AGROW>
-    all_resid2 = [all_resid2; sig_sessions(j).test.('r_nmf_s_sup')]; %#ok<AGROW>
-    all_resid3 = [all_resid3; sig_sessions(j).test.('r_nmf_s')]; %#ok<AGROW>
+if length(sig_sessions(1).mats) > 1
+    
+    all_resid1 = [];
+    all_resid2 = [];
+    all_resid3 = [];
+    for j = 1:length(sig_sessions)
+        all_resid1 = [all_resid1; sig_sessions(j).test.('r_nmf_s_pro')]; %#ok<AGROW>
+        all_resid2 = [all_resid2; sig_sessions(j).test.('r_nmf_s_sup')]; %#ok<AGROW>
+        all_resid3 = [all_resid3; sig_sessions(j).test.('r_nmf_s')]; %#ok<AGROW>
+    end
+    
+    all_resid1 = [all_resid1; mean(all_resid1)];
+    all_resid2 = [all_resid2; mean(all_resid2)];
+    all_resid3 = [all_resid3; mean(all_resid3); ones(1,size(all_resid3,2))*10];
+    
+    h = plot_all_resid_all(all_resid1',all_resid2',all_resid3');
+    saveas(h, [config.outpath  'all_resid_all_s' config.names{i} '.' config.image_format]);
+    close(h);
 end
-
-all_resid1 = [all_resid1; mean(all_resid1)];
-all_resid2 = [all_resid2; mean(all_resid2)];
-all_resid3 = [all_resid3; mean(all_resid3); ones(1,size(all_resid3,2))*10];
-
-h = plot_all_resid_all(all_resid1',all_resid2',all_resid3');
-saveas(h, [config.outpath  'all_resid_all_s' config.names{i} '.' config.image_format]);
-close(h);
-
 
 
 
@@ -131,8 +140,8 @@ close(h);
 %% how many synergists do we need to have remaining error smaller then 10 % ?
 n_syn_dists = NaN(2, length(sig_sessions));
 for i = 1:length(sig_sessions)
-    n_syn_dists(1,i)  = find(sig_sessions(i).test.r_nmf < 10, 1);
-    n_syn_dists(2,i)  = find(sig_sessions(i).test.r_pca < 10, 1);
+    n_syn_dists(1,i)  = find(sig_sessions(i).test.r_nmf_pro < 10, 1);
+    n_syn_dists(2,i)  = find(sig_sessions(i).test.r_pca_pro < 10, 1);
 end
 
 h = figure('Visible','off');
@@ -156,7 +165,7 @@ for i = 1:length(sig_sessions)
     
     tmp_data = sig_sessions(i).mats;
     % compute pcaica synergies and resids
-    for j = 1:3
+    for j = 1:length(config.names)
         tmp_pca                                             = pcaica(tmp_data(j).data, config.dimensions)';
         sig_sessions(i).res.(['syn_pca' config.names{j}])   = tmp_pca;
         all_syns(i).(['pca' config.names{j}])               = tmp_pca;
@@ -183,7 +192,7 @@ clear tmp_data nmf_res
 %% similarity of nmf and pcaica synergies (sep condition)
 
 h = figure('Visible','off');
-for i = 1:3
+for i = 1:length(config.names)
     all_nmf = [];
     all_pca = [];
     for j = 1:length(sig_sessions)
@@ -209,14 +218,14 @@ close(h);
 %% compute synergies, for all sessions at once
 all = struct;
 fin_syns    = struct;
-for i = 1:3
+for i = 1:length(config.names)
     all(i).flat = [];
     for j = 1:length(sig_sessions)
         all(i).flat = [all(i).flat; sig_sessions(j).mats(i).data];
     end
 end
 
-for i = 1:3
+for i = 1:length(config.names)
     fin_syns.(['pca_all' config.names{i}]) = pcaica(all(i).flat, config.dimensions)';
     
     nmf_res = nmf_explore(all(i).flat, config);
@@ -238,14 +247,14 @@ clear col W0 H0 W H_ score errs bla idx best grouped flat
 
 %% a resid plot for this pooled sessions synergies
 for i = 1:length(all)
-    resid_res(i,:)  = test_resid_nmf(all(i).flat, config); %#ok<AGROW>
+    resid_res(i,:)  = test_resid_nmf(all(i).flat, config); 
     
     %repeat for shuffled data as only one random shuffling might not be representative
     tmp = zeros(config.Niter_res_test, min(size(all(i).flat)));
     for j = 1:config.Niter_res_test
         tmp(j,:)    = test_resid_nmf(shuffle_inc(all(i).flat), config);
     end
-    resid_resr(i,:) = mean(tmp); %#ok<AGROW>;
+    resid_resr(i,:) = mean(tmp); 
     
 end
 
@@ -265,11 +274,16 @@ for i = 1:length(all)
     resid_resr      = [resid_resr; mean(tmp)]; %#ok<AGROW>
 end
 
-first = ones(7,1)*100; first(4) = 10;
+if length(all) > 1
+    first = ones(7,1)*100; first(4) = 10;
+else
+    first = ones(3,1)*100; first(2) = 10;
+end
 h = createfigure1([first resid_res]', [first resid_resr]',config);
 saveas(h, [config.outpath 'resid_all_together.' config.image_format]);
-%    close(h);
+close(h);
 
+clear resid_res resid_resr first tmp
 
 
 
@@ -277,56 +291,54 @@ saveas(h, [config.outpath 'resid_all_together.' config.image_format]);
 
 % nmf seems to be quite stable, nevertheless I take the center of the
 % prototypes found in the five runs
-all_names1 = {'nmf', 'nmf_pro', 'nmf_sup'};
-all_names = {'pca', 'pca_pro', 'pca_sup'};
 
-for i = 1:length(all_names);
+for i = 1:length(config.names);
     
-    grouped = group(all_syns, all_names1{i});
-    fin_syns.(all_names1{i}) = grouped.center;
+    grouped = group(all_syns, ['nmf' config.names{i}]);
+    fin_syns.(['nmf' config.names{i}]) = grouped.center;
 
     
-    grouped = group(all_syns, all_names{i});
-    fin_syns.(all_names{i}) = grouped.center;
+    grouped = group(all_syns, ['pca' config.names{i}]);
+    fin_syns.(['pca' config.names{i}]) = grouped.center;
     
     flat = [];
     for j = 1:length(grouped)
         flat = [flat; grouped(j).dat]; %#ok<AGROW>
     end
     
-    h = figure%('Visible','off');
+    h = figure('Visible','off');
     subplot(4,1,1:3);
     imagesc(flat);
     colormap(config.mymap);
     axis off
-    title(['consistency of synergists over sessions ' all_names{i}]);
+    title(['consistency of synergists over sessions ' config.names{i}]);
     
     subplot(4,1,4);
     imagesc(grouped(1).center);
     colormap(config.mymap);
     axis off
-    title(['centers ' all_names{i}]);
-    saveas(h, [config.outpath  'syn_consist_sessions_' all_names{i} '.' config.image_format]);
-    %close(h);
+    title(['centers ' config.names{i}]);
+    saveas(h, [config.outpath  'syn_consist_sessions_' config.names{i} '.' config.image_format]);
+    close(h);
     
-    stds(i,:) = grouped(1).idx;     %#ok<AGROW>
+    stds(i,:) = grouped(1).idx;   %#ok<SAGROW>
 end
 
 h = figure('Visible', 'off');
-for i = 1:length(all_names)
+for i = 1:length(config.names)
     subplot(3,1,i);
     hist(stds(i,:));
-    title([all_names{i} ' std of clustering: ' num2str(std(hist(stds(i,:), config.dimensions)))]);
+    title([config.names{i} ' std of clustering: ' num2str(std(hist(stds(i,:), config.dimensions)))]);
 end
 saveas(h, [config.outpath  'syn_consist_sessions_std.' config.image_format]);
 close(h);
 
 
-%clear flat grouped all_names
+clear flat grouped all_names
 
 
 
-%% comparison wheather synergies are computed on all sessions together or
+%% comparison whether synergies are computed on all sessions together or
 % over the single sessions and then grouped and mean taken afterwards
 
 % as it shows a strong similarity of the results, I use the together
@@ -369,33 +381,40 @@ end
 %% compare the three best nmf synergists for pronation and supination 
 % as nmf and pca showed to lead to very similar results I continued with
 % nmf
-h = figure('Visible','off');
-syn_compare(fin_syns.nmf_all_pro, fin_syns.nmf_all_sup, 'pronation', 'supination');
-saveas(h, [config.outpath  'between_pos_syn_relation_nmf_all.' config.image_format]);
-close(h);
+if length(config.names) > 1
+    h = figure('Visible','off');
+    syn_compare(fin_syns.nmf_all_pro, fin_syns.nmf_all_sup, 'pronation', 'supination');
+    saveas(h, [config.outpath  'between_pos_syn_relation_nmf_all.' config.image_format]);
+    close(h);
+end
 
 %% look whether I come to the same result if I take pro and sup together
 % --> yep, so we take the "together" computation
-h = figure('Visible','off');
-syn_compare(fin_syns.nmf_all_pro, fin_syns.nmf_all, 'pronation', 'together');
-saveas(h, [config.outpath  'between_posTog_syn_relation_nmf_all.' config.image_format]);
-close(h);
+if length(config.names) > 1
+    h = figure('Visible','off');
+    syn_compare(fin_syns.nmf_all_pro, fin_syns.nmf_all, 'pronation', 'together');
+    saveas(h, [config.outpath  'between_posTog_syn_relation_nmf_all.' config.image_format]);
+    close(h);
+end
          
 %% compare the three best nmf synergists for pronation and supination 
 % as nmf and pca showed to lead to very similar results I continued with
 % nmf
-h = figure('Visible','off');
-syn_compare(fin_syns.nmf_pro, fin_syns.nmf_sup, 'pronation', 'supination');
-saveas(h, [config.outpath  'between_pos_syn_relation_nmf_all_sep.' config.image_format]);
-close(h);
+if length(config.names) > 1
+    h = figure('Visible','off');
+    syn_compare(fin_syns.nmf_pro, fin_syns.nmf_sup, 'pronation', 'supination');
+    saveas(h, [config.outpath  'between_pos_syn_relation_nmf_all_sep.' config.image_format]);
+    close(h);
+end
 
 %% look whether I come to the same result if I take pro and sup together
 % --> yep, so we take the "together" computation
-h = figure('Visible','off');
-syn_compare(fin_syns.nmf_pro, fin_syns.nmf, 'pronation', 'together');
-saveas(h, [config.outpath  'between_posTog_syn_relation_nmf_sep.' config.image_format]);
-close(h);
-
+if length(config.names) > 1
+    h = figure('Visible','off');
+    syn_compare(fin_syns.nmf_pro, fin_syns.nmf, 'pronation', 'together');
+    saveas(h, [config.outpath  'between_posTog_syn_relation_nmf_sep.' config.image_format]);
+    close(h);
+end
 
 
 %% save the final results
