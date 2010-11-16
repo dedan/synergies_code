@@ -20,14 +20,19 @@ hold('all');
 
 % Create multiple lines using matrix input to plot
 plot1 = plot(YMatrix1,'Parent',subplot1);
-set(plot1(1),'DisplayName','nmf pronation');
-set(plot1(2),'DisplayName','nmf supination');
-set(plot1(3),'DisplayName','nmf pro sup');
-set(plot1(4),'DisplayName','90 %');
-set(plot1(5),'DisplayName','pcaica pronation');
-set(plot1(6),'DisplayName','pcaica supination');
-set(plot1(7),'DisplayName','pcaica pro sup');
-
+if size(YMatrix1,2) == 3
+    set(plot1(1),'DisplayName','nmf pronation');
+    set(plot1(2),'DisplayName','90 %');
+    set(plot1(3),'DisplayName','pcaica pronation');
+else
+    set(plot1(1),'DisplayName','nmf pronation');
+    set(plot1(2),'DisplayName','nmf supination');
+    set(plot1(3),'DisplayName','nmf pro sup');
+    set(plot1(4),'DisplayName','90 %');
+    set(plot1(5),'DisplayName','pcaica pronation');
+    set(plot1(6),'DisplayName','pcaica supination');
+    set(plot1(7),'DisplayName','pcaica pro sup');
+end
 
 
 % Create xlabel
@@ -49,13 +54,19 @@ hold('all');
 
 % Create multiple lines using matrix input to plot
 plot2 = plot(YMatrix2,'Parent',subplot2);
-set(plot2(1),'DisplayName','nmf pronation');
-set(plot2(2),'DisplayName','nmf supination');
-set(plot2(3),'DisplayName','nmf pro sup');
-set(plot2(4),'DisplayName','90 %');
-set(plot2(5),'DisplayName','pcaica pronation');
-set(plot2(6),'DisplayName','pcaica supination');
-set(plot2(7),'DisplayName','pcaica pro sup');
+if size(YMatrix2,2) == 3
+    set(plot1(1),'DisplayName','nmf pronation');
+    set(plot1(2),'DisplayName','90 %');
+    set(plot1(3),'DisplayName','pcaica pronation');
+else
+    set(plot2(1),'DisplayName','nmf pronation');
+    set(plot2(2),'DisplayName','nmf supination');
+    set(plot2(3),'DisplayName','nmf pro sup');
+    set(plot2(4),'DisplayName','90 %');
+    set(plot2(5),'DisplayName','pcaica pronation');
+    set(plot2(6),'DisplayName','pcaica supination');
+    set(plot2(7),'DisplayName','pcaica pro sup');
+end
 
 % Create xlabel
 xlabel('model order');
