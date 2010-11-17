@@ -1,7 +1,7 @@
 function [chdata, emgpsth] = MuscleSyn( sessname, f1, f2, chnls, config)
 
-chdata = [];
 emgpsth = struct;
+chdata  = struct;
 
 load([config.path config.monk 'session']);
 emgdir = [config.path 'data' filesep sessname filesep 'mat' filesep ];
@@ -14,7 +14,7 @@ edfiles     = cell(0);
 
 emgname = cell(1,length(f1:f2));
 for i=f1:f2,
-    edname = extract_edname( config.monk(1), subss, sessname,  i, config.e2add );
+    [edname, chdata.id] = extract_edname( config.monk(1), subss, sessname,  i, config.e2add );
     if ~isempty(edname),
         if i< 10,
             str2add  = ['00' num2str(i)];
@@ -62,7 +62,6 @@ Ntr = Ntr(Ntr > 0);                         % list of targets
 hnd = Data.channel(1).hand_position;        % hand position is the same for all channels
 Nh  = unique(hnd(trg > 0));                 % list of hand positions
 
-chdata = struct;
 for k=1:length(Nh),
     
     % now computing the mean bckground level per channel
@@ -99,14 +98,16 @@ end
 
 
 
-function   edname = extract_edname( monk,  subss, sessname, findx , e2add)
+function [edname, id] = extract_edname( monk,  subss, sessname, findx , e2add)
 
-i = 1;
-edname = '';
+id      = -1;
+i       = 1;
+edname  = '';
 while i < length(subss),
     if strcmp( char(subss(i).Session), sessname ), % this is the right session,
         if ismember( findx, subss(i).Files(1):subss(i).Files(end)),
             ID = subss(i).ID;
+            id = subss(i).ID;
             subID = subss(i).SubSess;
             ednum = find(  subss(i).Files(1):subss(i).Files(end) == findx);
             if ID < 10,
