@@ -10,7 +10,7 @@ fdat  = dir([config.emgdat_path 'EMG' config.monk(1) '*.mat']);
 rc    = 1;      % result counter
 
 % iterate over all the EMG files
-for i= 1:5 %:length(fdat)
+for i= 1:length(fdat)
     
     data = load([config.emgdat_path char(fdat(i).name)]);
     display(['processing file: ' num2str(i) ' of ' num2str(length(fdat))]);
@@ -19,23 +19,26 @@ for i= 1:5 %:length(fdat)
     % for both handpositions
     for j=1:length(data.chdata)
         mats(j).data_raw = [];
-        
-        for k=1:length(data.chdata.amp)
-            tmp_amp           = data.chdata.amp{k};
-            tmp_bck           = data.chdata.bck_amp{k};
+
+        % for all trials
+        for k=1:length(data.chdata(j).amp)
+            tmp_amp           = data.chdata(j).amp{k};
+            tmp_bck           = data.chdata(j).bck_amp{k};
             
             % normalized by division with acitivity before TO
-            mats(j).data_raw  = [mats(j).data_raw; tmp_amp(config.channels2take,:)' ./ tmp_bck(config.channels2take,:)'];
-            mats(j).data(k,:) = mean(tmp_amp(config.channels2take,:) ./ tmp_bck(config.channels2take,:),2)';
-            mats(j).data_test(k,:) = mean(tmp_amp(config.channels2take,:),2)' ./ mean(tmp_bck(config.channels2take,:),2)';
-            
-
+            mats(j).data_raw        = [mats(j).data_raw; tmp_amp' ./ tmp_bck'];
+            mats(j).data(k,:)       = mean(tmp_amp ./ tmp_bck,2)';
+            mats(j).data_test(k,:)  = mean(tmp_amp,2)' ./ mean(tmp_bck,2)';
         end
+        mats(j).data(isnan(mats(j).data))           = 0;
+        mats(j).data_raw(isnan(mats(j).data_raw))   = 0;
     end
+    
+    % if two handpositions available
     if length(data.chdata) > 1
-        mats(3).data_raw = [mats(1).data_raw; mats(2).data_raw];
-        mats(3).data     = [mats(1).data; mats(2).data];
-        mats(3).data_test     = [mats(1).data_test; mats(2).data_test];
+        mats(3).data_raw    = [mats(1).data_raw; mats(2).data_raw];
+        mats(3).data        = [mats(1).data; mats(2).data];
+        mats(3).data_test   = [mats(1).data_test; mats(2).data_test];
         
     end
     
@@ -62,7 +65,7 @@ for i= 1:5 %:length(fdat)
             res(rc).test.(['r_nmf_s' config.names{j}]) = mean(tmp);
             
             % and the same for the raw version
-            [r s]                                       = test_resid_nmf( mats(j).data_raw, config);
+            [r s]                                           = test_resid_nmf( mats(j).data_raw, config);
             res(rc).test.(['r_nmf_raw' config.names{j}])    = r;
             res(rc).test.(['std_nmf_raw' config.names{j}])  = s;
             res(rc).test.(['r_pca_raw' config.names{j}])    = test_resid_pcaica( mats(j).data, config);
@@ -79,9 +82,6 @@ for i= 1:5 %:length(fdat)
         rc = rc +1;
     end
 end
-all_sessions = res; %#ok<NASGU>
-
-save([config.outpath 'all_nonevoked_sessions'], 'all_sessions');
 
 
 
