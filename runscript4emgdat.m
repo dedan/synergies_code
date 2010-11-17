@@ -8,6 +8,14 @@ config.monk     = monk;
 config.e2add    = 'e';
 config.verbose  = 0;
 
+config.df      = 100;
+config.bhv     = 'TO';
+config.bck_bhv = 'SC';
+config.pre     = -500;
+config.post    = 1000;
+config.win     = [0 500];  % time relative to torque onset TO
+config.bck_win = [-500 0]; % time relative to spatial cue (SC)
+
 vdir = dir([config.path 'data' filesep config.monk(1) '*']);
 vdir = sortdirs( vdir);
 

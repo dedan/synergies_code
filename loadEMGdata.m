@@ -1,14 +1,7 @@
 function tuning = loadEMGdata( emgfiles, edfiles, channels, config )
 
-df      = 100;
-tuning  = [];
-bhv     = 'TO';
-bck_bhv = 'SC';
-pre     = -500;
-post    = 1000;
-win     = [0 500];  % time relative to torque onset TO
-bck_win = [-500 0]; % time relative to spatial cue (SC)
 total_trials = 0;
+tuning       = [];
 
 
 for i=1:length(emgfiles)
@@ -99,18 +92,18 @@ for i=1:length(emgfiles)
                 
                 % preprocessing
                 EMG     = abs(EMG-mean(EMG));
-                EMG     = decimate( EMG, df);
-                Fs      = Fs/df;
+                EMG     = decimate( EMG, config.df);
+                Fs      = Fs/config.df;
                 Lemg    = length(EMG);
                 time    = (1:Lemg)/Fs; 
                 
                 for k=1:size(trials,1)
                     direction       = targets(k);
-                    refTime         = getRefTime(bhvdata,trials(k,:),bhv, direction);
+                    refTime         = getRefTime(bhvdata,trials(k,:),config.bhv, direction);
                     
                     % select signals in the windows
-                    index           = find(time>=refTime+pre & time<=refTime+post);
-                    index2          = time>=refTime+win(1) & time<=refTime+win(2);
+                    index           = find(time>=refTime+config.pre & time<=refTime+config.post);
+                    index2          = time>=refTime+config.win(1) & time<=refTime+config.win(2);
                     if mod(length(index),2)~=0
                         index=index(1:end-1);
                     end
@@ -122,8 +115,8 @@ for i=1:length(emgfiles)
                     tuning.channel(m).signal(k+total_trials,1:length(signal)) = abs(signal);
                     
                     % we are now computing the backcground emg level - 500 ms before cue onset
-                    refTime     = getRefTime(bhvdata,trials(k,:),bck_bhv, direction);
-                    index       = time>=refTime+bck_win(1) & time<=refTime+bck_win(2);
+                    refTime     = getRefTime(bhvdata,trials(k,:),config.bck_bhv, direction);
+                    index       = time>=refTime+config.bck_win(1) & time<=refTime+config.bck_win(2);
                     bck_signal  = EMG(index);
                     bck_amp     = mean(abs(bck_signal));
                     tuning.channel(m).bck_amp(k+total_trials) = bck_amp;
