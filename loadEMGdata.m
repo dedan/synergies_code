@@ -2,6 +2,7 @@ function tuning = loadEMGdata( emgfiles, edfiles, channels, config )
 
 total_trials = 0;
 tuning       = [];
+trials       = [];
 
 
 for i=1:length(emgfiles)
@@ -26,7 +27,7 @@ for i=1:length(emgfiles)
         end
     end
     
-    if exist(curfile,'file') && exist(curbhv, 'file')
+    if exist(curbhv, 'file')
         bhvdata = load(curbhv);
         if config.verbose
             disp(curbhv);
@@ -95,11 +96,18 @@ for i=1:length(emgfiles)
                 EMG     = decimate( EMG, config.df);
                 Fs      = Fs/config.df;
                 Lemg    = length(EMG);
+
                 time    = (1:Lemg)/Fs; 
                 
                 for k=1:size(trials,1)
                     direction       = targets(k);
                     refTime         = getRefTime(bhvdata,trials(k,:),config.bhv, direction);
+                    
+                    if refTime > max(time)
+                        disp('refTime Problem');
+                        tuning = [];
+                        return;
+                    end
                     
                     % select signals in the windows
                     index           = find(time>=refTime+config.pre & time<=refTime+config.post);
@@ -128,6 +136,8 @@ for i=1:length(emgfiles)
             end
             eval(['clear EMG' chstr ' EMG'])
         end
+    else
+        disp(['file: ' curbhv ' missing !!!']);
     end
 	total_trials = total_trials + size(trials,1);
 end

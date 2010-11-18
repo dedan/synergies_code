@@ -1,7 +1,7 @@
 function [chdata, emgpsth] = MuscleSyn( sessname, f1, f2, chnls, config)
 
 emgpsth = struct;
-chdata  = struct;
+chdata  = [];
 
 load([config.path config.monk 'session']);
 emgdir = [config.path 'data' filesep sessname filesep 'mat' filesep ];
@@ -14,7 +14,7 @@ edfiles     = cell(0);
 
 emgname = cell(1,length(f1:f2));
 for i=f1:f2,
-    [edname, chdata.id] = extract_edname( config.monk(1), subss, sessname,  i, config.e2add );
+    [edname, id] = extract_edname( config.monk(1), subss, sessname,  i, config.e2add );
     if ~isempty(edname),
         if i< 10,
             str2add  = ['00' num2str(i)];
@@ -50,12 +50,17 @@ if ~isempty(point2empty),
 end
 
 Data = loadEMGdata( emgname, edfiles, chnls, config);
+if isempty(Data)
+    disp('problem in loadEMG');
+    return;
+end
 Nch  = length(Data.channel);
 if Nch == 0,
     disp('No emg data was found');
     return;
 end
 
+chdata.id = id;
 trg = Data.channel(1).Target;               % target of trial
 Ntr = unique(trg);
 Ntr = Ntr(Ntr > 0);                         % list of targets
