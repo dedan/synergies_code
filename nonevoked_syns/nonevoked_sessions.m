@@ -30,8 +30,9 @@ for i= 1:length(fdat)
             mats(j).data(k,:)       = mean(tmp_amp ./ tmp_bck,2)';
             mats(j).data_test(k,:)  = mean(tmp_amp,2)' ./ mean(tmp_bck,2)';
         end
-        mats(j).data(isnan(mats(j).data))           = 0;
-        mats(j).data_raw(isnan(mats(j).data_raw))   = 0;
+        if isnan(mats(j).data) || isnan(mats(j).data_raw)
+            error('nan problem');
+        end
     end
     
     % if two handpositions available
@@ -50,7 +51,7 @@ for i= 1:length(fdat)
         res(rc).mats    = mats;
         res(rc).name    = char(fdat(i).name);
         res(rc).monk    = config.monk;
-        res(rc).id      = id;
+        res(rc).id      = data.chdata.id;
         
         % explained variance tests
         for j = 1:length(mats)
@@ -83,6 +84,7 @@ for i= 1:length(fdat)
         end
         rc = rc +1;
     end
+    save([config.outpath num2str(i)], 'res');
 end
 
 
