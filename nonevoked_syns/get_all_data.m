@@ -9,39 +9,39 @@ addpath('../lib'); %#ok<MCAP>
 
 % general settings
 config = struct;
-config.Niter_exploration= 3;
-config.n_iter_stab      = 3;
-config.Niter_res_test   = 1;
+config.Niter_exploration= 5;
+config.n_iter_stab      = 5;
+config.Niter_res_test   = 5;
 config.opt              = statset('MaxIter',5);
-config.outpath          = '~/Documents/uni/yifat_lab/results/natural_mov/';
-config.res_folder       = '~/Documents/uni/yifat_lab/results/';
+config.outpath          = 'E:\results\natural_mov\';
+config.res_folder       = 'E:\results\';
+% config.outpath          = '~/Documents/uni/yifat_lab/results/natural_mov/';
+% config.res_folder       = '~/Documents/uni/yifat_lab/results/';
+config.data_path        = 'E:\';
 
 diary([config.outpath 'log.txt']);
 
-
-% for chalva
-config.monk             = 'chalva';
-config.emgdat_path      = ['/Volumes/LAB/' config.monk filesep 'EMGdat' filesep];
-config.pd_folder        = ['/Volumes/LAB/' config.monk filesep 'pd_files' filesep];
-config.names            = {'_pro'};
+% for vega
+config.monk             = 'vega';
+config.emgdat_path      = [config.data_path config.monk filesep 'EMGdat' filesep];
+config.pd_folder        = [config.data_path config.monk filesep 'pd_files' filesep];
+config.names            = {'_pro', '_sup', ''};
 
 sessions = nonevoked_sessions(config);
 
-
-
-% for vega
-config.monk             = 'vega';
-config.emgdat_path      = ['/Volumes/LAB/' config.monk filesep 'EMGdat' filesep];
-config.pd_folder        = ['/Volumes/LAB/' config.monk filesep 'pd_files' filesep];
-config.names            = {'_pro', '_sup', ''};
+% for chalva
+config.monk             = 'chalva';
+config.emgdat_path      = [config.data_path config.monk filesep 'EMGdat' filesep];
+config.pd_folder        = [config.data_path config.monk filesep 'pd_files' filesep];
+config.names            = {'_pro'};
 
 sessions = [sessions nonevoked_sessions(config)];
 
 
 % for darma
 config.monk             = 'darma';
-config.emgdat_path      = ['/Volumes/LAB/' config.monk filesep 'EMGdat' filesep];
-config.pd_folder        = ['/Volumes/LAB/' config.monk filesep 'pd_files' filesep];
+config.emgdat_path      = [config.data_path config.monk filesep 'EMGdat' filesep];
+config.pd_folder        = [config.data_path config.monk filesep 'pd_files' filesep];
 config.names            = {'_pro', '_sup', ''};
 
 sessions = [sessions nonevoked_sessions(config)];

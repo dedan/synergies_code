@@ -16,8 +16,13 @@ for i= 1:length(fdat)
     display(['processing file: ' num2str(i) ' of ' num2str(length(fdat))]);
     mats = struct;
     
-    % for both handpositions
-    for j=1:length(data.chdata)
+    % for pronation and supination (middle position skipped because only
+    % available for a few sessions
+    positions = length(data.chdata);
+    if positions > 2
+        positions = 2;
+    end
+    for j=1:positions
         mats(j).data_raw = [];
 
         % for all trials
@@ -30,8 +35,10 @@ for i= 1:length(fdat)
             mats(j).data(k,:)       = mean(tmp_amp ./ tmp_bck,2)';
             mats(j).data_test(k,:)  = mean(tmp_amp,2)' ./ mean(tmp_bck,2)';
         end
-        if isnan(mats(j).data) || isnan(mats(j).data_raw)
-            error('nan problem');
+        if any(isnan(mats(j).data(:))) || any(isnan(mats(j).data_raw(:)))
+            disp(['nan problem in: ' fdat(i).name]);
+            mats(j).data(isnan(mats(j).data)) = 0;
+            mats(j).data_raw(isnan(mats(j).data_raw)) = 0;
         end
     end
     
@@ -55,6 +62,7 @@ for i= 1:length(fdat)
         
         % explained variance tests
         for j = 1:length(mats)
+            try
             [r s]                                       = test_resid_nmf( mats(j).data, config);
             res(rc).test.(['r_nmf' config.names{j}])    = r;
             res(rc).test.(['std_nmf' config.names{j}])  = s;
@@ -79,7 +87,10 @@ for i= 1:length(fdat)
                 tmp(k,:)    = test_resid_nmf(shuffle_inc(mats(j).data_raw), config);
             end
             res(rc).test.(['r_nmf_s_raw' config.names{j}]) = mean(tmp);
-
+            
+            catch
+                disp('no convergence');
+            end
             
         end
         rc = rc +1;
