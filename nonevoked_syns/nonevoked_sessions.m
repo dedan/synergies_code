@@ -12,6 +12,9 @@ rc    = 1;      % result counter
 % iterate over all the EMG files
 for i= 1:length(fdat)
     
+    if exist([config.outpath config.monk(1) num2str(i)], 'file')
+        continue;
+    end
     data = load([config.emgdat_path char(fdat(i).name)]);
     display(['processing file: ' num2str(i) ' of ' num2str(length(fdat))]);
     mats = struct;
@@ -42,14 +45,6 @@ for i= 1:length(fdat)
         end
     end
     
-    % if two handpositions available
-    if length(data.chdata) > 1
-        mats(3).data_raw    = [mats(1).data_raw; mats(2).data_raw];
-        mats(3).data        = [mats(1).data; mats(2).data];
-        mats(3).data_test   = [mats(1).data_test; mats(2).data_test];
-        
-    end
-    
     if isempty(mats(1).data)
         disp(['problem with: ' fdat(i).name]);
     else
@@ -59,43 +54,54 @@ for i= 1:length(fdat)
         res(rc).name    = char(fdat(i).name);
         res(rc).monk    = config.monk;
         res(rc).id      = data.chdata.id;
+        res(rc).hands   = length(data.chdata);
         
-        % explained variance tests
-        for j = 1:length(mats)
+        % explained variance tests 
+        for j = 1:positions
             try
             [r s]                                       = test_resid_nmf( mats(j).data, config);
-            res(rc).test.(['r_nmf' config.names{j}])    = r;
-            res(rc).test.(['std_nmf' config.names{j}])  = s;
-            res(rc).test.(['r_pca' config.names{j}])    = test_resid_pcaica( mats(j).data, config);
+            res(rc).(['r_nmf' config.names{j}])    = r;
+            res(rc).(['std_nmf' config.names{j}])  = s;
+            res(rc).(['r_pca' config.names{j}])    = test_resid_pcaica( mats(j).data, config);
             
             %repeat for shuffled data as only one random shuffling might not be representative
             tmp = zeros(config.Niter_res_test, min(size(mats(j).data)));
             for k = 1:config.Niter_res_test
                 tmp(k,:)    = test_resid_nmf(shuffle_inc(mats(j).data), config);
             end
-            res(rc).test.(['r_nmf_s' config.names{j}]) = mean(tmp);
+            res(rc).(['r_nmf_s' config.names{j}]) = mean(tmp);
             
             % and the same for the raw version
             [r s]                                           = test_resid_nmf( mats(j).data_raw, config);
-            res(rc).test.(['r_nmf_raw' config.names{j}])    = r;
-            res(rc).test.(['std_nmf_raw' config.names{j}])  = s;
-            res(rc).test.(['r_pca_raw' config.names{j}])    = test_resid_pcaica( mats(j).data, config);
+            res(rc).(['r_nmf_raw' config.names{j}])    = r;
+            res(rc).(['std_nmf_raw' config.names{j}])  = s;
+            res(rc).(['r_pca_raw' config.names{j}])    = test_resid_pcaica( mats(j).data, config);
             
             %repeat for shuffled data as only one random shuffling might not be representative
             tmp = zeros(config.Niter_res_test, min(size(mats(j).data_raw)));
             for k = 1:config.Niter_res_test
                 tmp(k,:)    = test_resid_nmf(shuffle_inc(mats(j).data_raw), config);
             end
-            res(rc).test.(['r_nmf_s_raw' config.names{j}]) = mean(tmp);
+            res(rc).(['r_nmf_s_raw' config.names{j}]) = mean(tmp);
             
-            catch
+            catch err
+                disp(err.message);
                 disp('no convergence');
-            end
-            
+            end 
+        end
+        if positions == 1
+            res(rc).('r_nmf_sup')        = 0;
+            res(rc).('std_nmf_sup')      = 0;
+            res(rc).('r_pca_sup')        = 0;
+            res(rc).('r_nmf_s_sup')      = 0;            
+            res(rc).('r_nmf_raw_sup')    = 0;
+            res(rc).('std_nmf_raw_sup')  = 0;
+            res(rc).('r_pca_raw_sup')    = 0;
+            res(rc).('r_nmf_s_raw_sup')  = 0;            
         end
         rc = rc +1;
     end
-    save([config.outpath num2str(i)], 'res');
+    save([config.outpath config.monk(1) num2str(i)], 'res');
 end
 
 
