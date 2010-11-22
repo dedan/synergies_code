@@ -56,33 +56,48 @@ for i= 1:length(fdat)
         res(rc).id      = data.chdata.id;
         res(rc).hands   = length(data.chdata);
         
+        % initialize test results (to make them all same length)
+        vars = {'r_nmf', 'std_nmf', 'r_pca', 'r_nmf_s', ...
+                'r_nmf_raw', 'std_nmf_raw', 'r_pca_raw', 'r_nmf_s_raw'};
+        for k = 1:length(vars)
+            for l = 1:positions
+                res(rc).([vars{k} config.names{l}]) = zeros(1,config.max_channels);
+            end
+        end
+        
         % explained variance tests 
         for j = 1:positions
             try
-            [r s]                                       = test_resid_nmf( mats(j).data, config);
-            res(rc).(['r_nmf' config.names{j}])    = r;
-            res(rc).(['std_nmf' config.names{j}])  = s;
-            res(rc).(['r_pca' config.names{j}])    = test_resid_pcaica( mats(j).data, config);
+            [r s]                                               = test_resid_nmf( mats(j).data, config);
+            res(rc).(['r_nmf' config.names{j}])(1:length(r))    = r;
+            res(rc).(['std_nmf' config.names{j}])(1:length(s))  = s;
+            
+            r                                                   = test_resid_pcaica( mats(j).data, config);
+            res(rc).(['r_pca' config.names{j}])(1:length(r))    = r;
             
             %repeat for shuffled data as only one random shuffling might not be representative
             tmp = zeros(config.Niter_res_test, min(size(mats(j).data)));
             for k = 1:config.Niter_res_test
                 tmp(k,:)    = test_resid_nmf(shuffle_inc(mats(j).data), config);
             end
-            res(rc).(['r_nmf_s' config.names{j}]) = mean(tmp);
+            m = mean(tmp);
+            res(rc).(['r_nmf_s' config.names{j}])(1:length(m))  = m;
             
             % and the same for the raw version
-            [r s]                                           = test_resid_nmf( mats(j).data_raw, config);
-            res(rc).(['r_nmf_raw' config.names{j}])    = r;
-            res(rc).(['std_nmf_raw' config.names{j}])  = s;
-            res(rc).(['r_pca_raw' config.names{j}])    = test_resid_pcaica( mats(j).data, config);
+            [r s]                                                   = test_resid_nmf( mats(j).data_raw, config);
+            res(rc).(['r_nmf_raw' config.names{j}])(1:length(r))    = r;
+            res(rc).(['std_nmf_raw' config.names{j}])(1:length(s))  = s;
+            
+            r                                                       = test_resid_pcaica( mats(j).data_raw, config);
+            res(rc).(['r_pca_raw' config.names{j}])(1:length(r))    = r;
             
             %repeat for shuffled data as only one random shuffling might not be representative
             tmp = zeros(config.Niter_res_test, min(size(mats(j).data_raw)));
             for k = 1:config.Niter_res_test
                 tmp(k,:)    = test_resid_nmf(shuffle_inc(mats(j).data_raw), config);
             end
-            res(rc).(['r_nmf_s_raw' config.names{j}]) = mean(tmp);
+            m = mean(tmp);
+            res(rc).(['r_nmf_s_raw' config.names{j}])(1:length(m))  = m;
             
             catch err
                 disp(err.message);

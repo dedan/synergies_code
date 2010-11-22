@@ -9,10 +9,11 @@ addpath('../lib'); %#ok<MCAP>
 
 % general settings
 config = struct;
-config.Niter_exploration= 50;
-config.n_iter_stab      = 50;
-config.Niter_res_test   = 50;
+config.Niter_exploration= 2;
+config.n_iter_stab      = 2;
+config.Niter_res_test   = 2;
 config.opt              = statset('MaxIter',5);
+config.max_channels     = 16;
 config.outpath          = 'E:\results\natural_mov\';
 config.res_folder       = 'E:\results\';
 % config.outpath          = '~/Documents/uni/yifat_lab/results/natural_mov/';
