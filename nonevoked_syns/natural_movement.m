@@ -54,11 +54,10 @@ for i = 1:length(sessions)
     stats(i).monk           = sessions(i).monk;
     stats(i).target1        = size(sessions(i).mats(1).data,1);
     stats(i).channels       = size(sessions(i).mats(1).data,2);
-    stats(i).hands          = 1;
+    stats(i).hands          = sessions(i).hands;
     
-    if length(sessions(i).mats) == 3
+    if length(sessions(i).mats) == 2
         stats(i).target2    = size(sessions(i).mats(2).data,1);
-        stats(i).hands      = 2;
     else
         stats(i).target2    = -1;
     end
