@@ -55,6 +55,7 @@ for i= 1:length(fdat)
         res(rc).monk    = config.monk;
         res(rc).id      = data.chdata.id;
         res(rc).hands   = length(data.chdata);
+        res(rc).channels    = data.chadata.channels;
         
         % initialize test results (to make them all same length)
         vars = {'r_nmf', 'std_nmf', 'r_pca', 'r_nmf_s', ...
@@ -64,6 +65,7 @@ for i= 1:length(fdat)
                 res(rc).([vars{k} config.names{l}]) = zeros(1,config.max_channels);
             end
         end
+
         
         % explained variance tests 
         for j = 1:positions
