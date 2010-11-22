@@ -1,4 +1,3 @@
 *.m~
-
-/log.txt
 all_log.txt
+log.txt

@@ -16,6 +16,8 @@ config.post    = 1000;
 config.win     = [0 500];  % time relative to torque onset TO
 config.bck_win = [-500 0]; % time relative to spatial cue (SC)
 
+all = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
+
 vdir = dir([config.path 'data' filesep config.monk(1) '*']);
 vdir = sortdirs( vdir);
 
@@ -26,9 +28,16 @@ for i= 1:length(vdir),
     if ~exist([config.outpath filesep 'EMG' curdir '.mat'], 'file'),
         
         [em2take,e1,e2] = findEMGchannels( curdir, config);
+        
+        channels = zeros(1,length(all));
+        for j = 1:length(em2take)
+            channels(all == em2take(j)) = 1;
+        end           
+        
         if ~isempty(em2take),
             [chdata,emgpsth] = MuscleSyn( curdir, e1,e2, em2take, config);  %#ok<NASGU>
             if ~isempty(chdata),
+                chdata.channels = channels;
                 save([config.outpath filesep 'EMG' curdir], 'chdata', 'emgpsth');
                 disp(['save EMG' curdir '.mat to ' config.outpath]);
             else
