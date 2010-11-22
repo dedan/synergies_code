@@ -1,7 +1,7 @@
 function runscript4emgdat(monk)
 
 
-path = '/Volumes/LAB/';
+path = 'E:\';
 config.path     = [path monk filesep];
 config.outpath  = [path monk filesep 'EMGdat'];
 config.monk     = monk;
@@ -19,7 +19,7 @@ config.bck_win = [-500 0]; % time relative to spatial cue (SC)
 vdir = dir([config.path 'data' filesep config.monk(1) '*']);
 vdir = sortdirs( vdir);
 
-for i= 1 %:length(vdir),
+for i= 1:length(vdir),
 
     curdir = char(vdir(i));
     disp(['file ' num2str(i) ' of ' num2str(length(vdir)) ': ' curdir]);

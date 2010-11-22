@@ -42,8 +42,8 @@ for i=1:length(emgfiles)
         
         % compute targets if bhvStat does not exist
         if ~isfield( bhvdata, 'bhvStat')
-            if 1    % config.verbose
-                disp 'computing targets' %just want to check whether this condition ever occurs
+            if config.verbose
+                disp 'computing targets'
             end
             trials  = locate_trials(bhvdata,'all');
             targets = NaN(1,size(trials,1));
