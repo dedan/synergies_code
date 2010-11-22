@@ -48,10 +48,11 @@ for i= 1:length(fdat)
     else
         
         % put in struct what we got so far
-        res(rc).mats    = mats;
-        res(rc).name    = char(fdat(i).name);
-        res(rc).monk    = config.monk;
-        res(rc).id      = data.chdata.id;
+        res(rc).mats        = mats;
+        res(rc).name        = char(fdat(i).name);
+        res(rc).monk        = config.monk;
+        res(rc).id          = data.chdata.id;
+        res(rc).channels    = data.chadata.channels;
         
         % explained variance tests
         for j = 1:length(mats)
