@@ -21,8 +21,8 @@ end
 
 % sort the error values and choose twenty best results
 result.errs = [col.errs];
-[bla idx] = sort(result.errs);
-best = col(idx(1:20));
+[~, idx]    = sort(result.errs);
+best        = col(idx(1:config.n_best));
 
 % group, plot and save the results  --> show nmf stability
 grouped     = group(best, 'syns');

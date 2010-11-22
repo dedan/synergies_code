@@ -13,22 +13,37 @@
 % for the beginning I will structure this file with analysis like done in
 % the poster for Ein Gedi
 
-%% confurations
+%% configurations
 
 clear;
 clc;
 conf = struct;
-conf.opt              = statset('MaxIter',5);
-conf.outpath          = '~/Documents/uni/yifat_lab/results/natural_mov/';
-conf.res_folder       = '~/Documents/uni/yifat_lab/results/';   
-conf.names            = {'vega', 'darma', 'chalva'};
-conf.n_monks          = length(conf.names);
+conf.opt                = statset('MaxIter',5);
+conf.outpath            = '~/Documents/uni/yifat_lab/results/natural_mov/';
+conf.res_folder         = '~/Documents/uni/yifat_lab/results/';   
+conf.names              = {'vega', 'chalva', 'darma'};
+conf.n_monks            = length(conf.names);
+conf.significant        = 25;
+conf.max_channels       = 16;
+conf.dimensions         = 3;
+conf.Niter_exploration  = 5;
+conf.n_best             = 5;
+mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
+mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
+conf.map = mymap;
+
+
 
 diary([conf.outpath 'log.txt']);
+
+if conf.n_best > conf.Niter_exploration
+    disp('das geht doch nicht');
+end
 
 
 %% load data
 load([conf.outpath 'all_data_dummy']);
+addpath('../lib'); 
 
 
 %% statistics
