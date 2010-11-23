@@ -99,6 +99,25 @@ title('handpositions');
 
 
 
+
+%% which channels
+% assign muscle mappings
+     %(vega_first, vega_later, darma, chalva)
+chan = {'BR-B', 'EDC-E', 'APL-E', 'ECU-E', 'FCR-F', 'APL-E', 'ED45-E', 'ED23-E', ...
+            'ECU-E', 'BR-B', 'PL-F', 'FCR-F', 'X', 'X', 'X', 'FDS-F';
+        'ECU-E', 'ED45-E', 'EDC-E', 'APL-E', 'ECR-E', 'ED23-E', 'BIC-P', 'BIC-P', ...
+            'FDS-F', 'PL-F', 'FCU-F', 'FCR-F', 'PT-F', 'FDP-F', 'TRIC-P', 'BIC-P';
+        'FCU-F', 'FDS-F', 'PL-F', 'FCR-F', 'PT-F', 'FDP-F', 'PL-F', 'BIC-P', ...
+            'ECU-E', 'EDC-E', 'ED45-E', 'ECR-E', 'ED23-E', 'APL-E', 'ECR-E', 'TRIC-P'};
+        
+tmp = intersect({chan{1,:}},{chan{2,:}});
+tmp = intersect(tmp,{chan{3,:}});
+
+% es sind nur sieben die alle gemeinsam haben, bzw acht wenn ich die ersten
+% vega sessions weg lasse.
+
+
+
 %% rank1 analysis
 
 % plot the rank1 values for all sessions and the different tests to see
