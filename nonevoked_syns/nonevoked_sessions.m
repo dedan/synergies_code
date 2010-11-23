@@ -50,12 +50,12 @@ for i= 1:length(fdat)
     else
         
         % put in struct what we got so far
-        res(rc).mats    = mats;
-        res(rc).name    = char(fdat(i).name);
-        res(rc).monk    = config.monk;
-        res(rc).id      = data.chdata.id;
-        res(rc).hands   = length(data.chdata);
-        res(rc).channels    = data.chadata.channels;
+        res(rc).mats     = mats;
+        res(rc).name     = char(fdat(i).name);
+        res(rc).monk     = config.monk;
+        res(rc).id       = data.chdata.id;
+        res(rc).hands    = length(data.chdata);
+        res(rc).channels = data.chadata(1).channels;
         
         % initialize test results (to make them all same length)
         vars = {'r_nmf', 'std_nmf', 'r_pca', 'r_nmf_s', ...

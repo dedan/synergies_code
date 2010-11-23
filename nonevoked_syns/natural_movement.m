@@ -244,15 +244,24 @@ if exist([conf.outpath 'all_data_syn.mat'], 'file')
     load([conf.outpath 'all_data_syn']);
 else
     
-    for i = 1:length(sessions)
+    for i = 1:conf.n_monks
         
-        disp(['computing synergies for session: ' num2str(i)]);
-        nmf_res = nmf_explore(sessions(i).mats(1).data_raw, conf);
-        sessions(i).syn_pro = nmf_res.syns; %#ok<SAGROW>
+        % only use channels which are available for all sessions of a monk
+        all_chan = vertcat(sessions(idx.(conf.names{i})).channels);
+        c2take   = all(all_chan);
         
-        if length(sessions(i).mats) > 1
-            nmf_res = nmf_explore(sessions(i).mats(2).data_raw, conf);
-            sessions(i).syn_sup = nmf_res.syns; %#ok<SAGROW>
+        for j = idx.(conf.names{i})'
+            
+            disp(['monk: ' conf.names{i} ' session: ' num2str(j)]);
+            data    = sessions(j).mats(1).data_raw(:,c2take);
+            nmf_res = nmf_explore(data, conf);
+            sessions(j).syn_pro = nmf_res.syns;
+            
+            if length(sessions(j).mats) > 1
+                data    = sessions(j).mats(2).data_raw(:,c2take);
+                nmf_res = nmf_explore(data, conf);
+                sessions(i).syn_sup = nmf_res.syns;
+            end
         end
     end
     save([conf.outpath 'all_data_syn'], 'sessions');
