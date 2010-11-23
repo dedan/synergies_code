@@ -35,9 +35,11 @@ for i= 1:length(vdir),
         end           
         
         if ~isempty(em2take),
-            [chdata,emgpsth] = MuscleSyn( curdir, e1,e2, em2take, config);  %#ok<NASGU>
+            [chdata,emgpsth] = MuscleSyn( curdir, e1,e2, all, config);  %#ok<NASGU>
             if ~isempty(chdata),
-                chdata.channels = channels;
+                for j = 1:length(chdata)
+                    chdata(j).channels = channels;
+                end
                 save([config.outpath filesep 'EMG' curdir], 'chdata', 'emgpsth');
                 disp(['save EMG' curdir '.mat to ' config.outpath]);
             else
