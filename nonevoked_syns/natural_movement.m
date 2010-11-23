@@ -45,6 +45,12 @@ end
 load([conf.outpath 'all_data_dummy']);
 addpath('../lib'); 
 
+% sort out the first vega sessions because they were recorded from
+% different muscles and have only 8 muscles in common with the later
+% sessions which is I think not enough
+not_first_vega  = ~strcmp('vega', {sessions.monk}) | [sessions.id] > 26;
+sessions        = sessions(not_first_vega);
+
 
 %% statistics
 % First lets get some statistics on the Data we have available
