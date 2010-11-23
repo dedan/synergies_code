@@ -92,8 +92,6 @@ for k=1:length(Nh),
                 else
                     emgpsth(i).hand(k).target(j,:) = (Data.channel(i).signal(jindx,:));
                 end
-            else
-                chdata(k).mat(i,j) = 0;
             end
         end;
         chdata(k).amp{j}     = tmp_amp;

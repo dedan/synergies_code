@@ -1,7 +1,8 @@
 function runscript4emgdat(monk)
 
 
-path = 'E:\';
+% path = 'E:\';
+path = '/Volumes/LAB/';
 config.path     = [path monk filesep];
 config.outpath  = [path monk filesep 'EMGdat'];
 config.monk     = monk;
@@ -32,14 +33,28 @@ for i= 1:length(vdir),
         channels = zeros(1,length(all));
         for j = 1:length(em2take)
             channels(all == em2take(j)) = 1;
-        end           
+        end
         
         if ~isempty(em2take),
-            [chdata,emgpsth] = MuscleSyn( curdir, e1,e2, all, config);  %#ok<NASGU>
+            [chdata,emgpsth] = MuscleSyn( curdir, e1,e2, em2take, config);   %#ok<NASGU>
             if ~isempty(chdata),
                 for j = 1:length(chdata)
                     chdata(j).channels = channels;
                 end
+                
+                % give all data the same size (as if recorded from all channels)
+                for k = 1:length(chdata)
+                    for l = 1:length(chdata(k).amp)
+                        tmp = zeros(length(chdata(k).channels), size(chdata(k).amp{l},2));
+                        tmp(logical(chdata(k).channels),:) = chdata(k).amp{l};
+                        chdata(k).amp{l} = tmp; 
+                        
+                        tmp = zeros(length(chdata(k).channels), size(chdata(k).bck_amp{l},2));
+                        tmp(logical(chdata(k).channels),:) = chdata(k).bck_amp{l};
+                        chdata(k).bck_amp{l} = tmp; 
+                    end
+                end
+                
                 save([config.outpath filesep 'EMG' curdir], 'chdata', 'emgpsth');
                 disp(['save EMG' curdir '.mat to ' config.outpath]);
             else
