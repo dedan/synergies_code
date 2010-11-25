@@ -19,15 +19,11 @@ for i = 1:length(sessions)
     all_chan    = vertcat(sessions(idx).channels);
     c2take      = all(all_chan);
     
-    subplot 311
+    subplot 211
     imagesc(sessions(i).mats(1).data(:,c2take));
     title('averaged over trials (per target)');
     
-    subplot 312
-    imagesc(sessions(i).mats(1).data_test(:,c2take));
-    title('averaged over trials (other)');
-
-    subplot 313
+    subplot 212
     imagesc(sessions(i).mats(1).data_raw(:,c2take));
     title('without averaging');
 
