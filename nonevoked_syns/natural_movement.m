@@ -28,17 +28,17 @@ conf.max_channels       = 16;
 conf.dimensions         = 3;
 conf.Niter_exploration  = 5;
 conf.n_best             = 5;
+conf.image_format       = 'jpg';
 mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
 conf.map = mymap;
 
-
-
 diary([conf.outpath 'log.txt']);
 
 if conf.n_best > conf.Niter_exploration
-    disp('das geht doch nicht');
+    disp('n_best has to be smaller than Niter_exploration');
 end
+clear mymap
 
 
 %% load data
@@ -50,26 +50,24 @@ addpath('../lib');
 % sessions which is I think not enough
 not_first_vega  = ~strcmp('vega', {sessions.monk}) | [sessions.id] > 26;
 sessions        = sessions(not_first_vega);
+clear not_first_vega
 
 
 %% statistics
 % First lets get some statistics on the Data we have available
 
-stats = struct;
 for i = 1:length(sessions)
-    stats(i).monk           = sessions(i).monk;
-    stats(i).target1        = size(sessions(i).mats(1).data,1);
-    stats(i).channels       = size(sessions(i).mats(1).data,2);
-    stats(i).hands          = sessions(i).hands;
+    sessions(i).target1     = size(sessions(i).mats(1).data,1);
+    sessions(i).n_channels  = length(find(sessions(i).channels));
     
     if length(sessions(i).mats) == 2
-        stats(i).target2    = size(sessions(i).mats(2).data,1);
+        sessions(i).target2    = size(sessions(i).mats(2).data,1);
     else
-        stats(i).target2    = -1;
+        sessions(i).target2    = -1;
     end
 end
 
-figure(1);
+h = figure('Visible', 'off');
 disp(['data from in total: ' num2str(length(sessions)) ' sessions']);
 
 for i = 1:conf.n_monks
@@ -80,11 +78,11 @@ for i = 1:conf.n_monks
     % distribution of targets
     subplot(3,conf.n_monks,i);
     
-    [y x] = hist([stats(idx.(conf.names{i})).target1],-1:8);
+    [y x] = hist([sessions(idx.(conf.names{i})).target1],-1:8);
     bar(x,y,'r');
     
     hold on
-    [y x] = hist([stats(idx.(conf.names{i})).target2],-1:8);
+    [y x] = hist([sessions(idx.(conf.names{i})).target2],-1:8);
     bar(x+0.2,y,'b');
     hold off
     title(conf.names{i});
@@ -94,7 +92,7 @@ for i = 1:conf.n_monks
     % distribution of used channels
     subplot(3, conf.n_monks, conf.n_monks +i);
     
-    [y x] = hist([stats(idx.(conf.names{i})).channels],1:16);
+    [y x] = hist([sessions(idx.(conf.names{i})).n_channels],1:16);
     bar(x,y,'b');
     xlabel('channels');
 end
@@ -102,6 +100,10 @@ end
 subplot(3,conf.n_monks, conf.n_monks*2+1);
 hist([sessions.hands]);
 title('handpositions');
+
+saveas(h, [conf.outpath  'statistics.' conf.image_format]);
+close(h);
+clear y x
 
 
 
@@ -118,9 +120,9 @@ chan = {'BR-B', 'EDC-E', 'APL-E', 'ECU-E', 'FCR-F', 'APL-E', 'ED45-E', 'ED23-E',
         
 tmp = intersect({chan{1,:}},{chan{2,:}});
 tmp = intersect(tmp,{chan{3,:}});
+disp([num2str(length(tmp)) ' channels in common for all monkeys']);
+clear tmp chan
 
-% es sind nur sieben die alle gemeinsam haben, bzw acht wenn ich die ersten
-% vega sessions weg lasse.
 
 
 
@@ -137,7 +139,7 @@ for i = 1:length(sessions)
     rank1(2,i)  = sessions(i).r_pca_pro(1);
 end
 
-h = figure(2);
+h = figure('Visible', 'off');
 
 % plot the rank1 values for pca and nmf and also the difference between
 % them. furthermore the line at the value at which sessions are chosen as
@@ -161,9 +163,9 @@ text(min(idx.(conf.names{3}))+2, 70, conf.names{3});
 [r p] = corrcoef(rank1');
 title(['nmf vs. pcaica, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
-%saveas(h, [config.outpath  'rank1.' config.image_format]);
-%close(h);
-clear rank1
+saveas(h, [conf.outpath  'rank1.' conf.image_format]);
+close(h);
+clear rank1 r p
 
 
 
@@ -176,7 +178,7 @@ clear rank1
 % make all test fields the same length (easier access later on)
 
 
-h = figure(3);
+h = figure('Visible', 'off');
 
 % plot mean residual and mean shuffled
 x = 0:conf.max_channels;
@@ -192,14 +194,15 @@ for i = 1:2
         hold on
     end
     y = [100 mean(vertcat(sessions.(['r_nmf' modi{i} '_pro'])))];
-    plot(x, y, 'r', 'LineWidth', 1.5);
-    y = [100 mean(vertcat(sessions.(['r_nmf_s' modi{i} '_pro'])))];
     plot(x, y, 'k', 'LineWidth', 1.5);
+    y = [100 mean(vertcat(sessions.(['r_nmf_s' modi{i} '_pro'])))];
+    plot(x, y, 'r', 'LineWidth', 1.5);
     hold off
 end
+saveas(h, [conf.outpath  'resid_test.' conf.image_format]);
+close(h);
 
-
-%clear x y data map modi
+clear x y data map modi
 
 
 
@@ -209,7 +212,7 @@ end
 
 % TODO nicht nur fuer vega, auch fuer darma haben wir zwei
 
-figure(4)
+figure('Visible', 'off');
 
 % select sessions from vega for which both handpos available
 x       = 0:conf.max_channels;
@@ -230,8 +233,12 @@ hold on
 plot(x, [100 mean(sup)], 'k')
 hold off
 
+saveas(h, [conf.outpath  'rank1_handpos.' conf.image_format]);
+close(h);
+
 % TODO what is the correct test for this
 %ranksum(pro(:,1), sup(:,1))
+clear x index n_index pro sup
 
 
 
@@ -266,6 +273,7 @@ else
     end
     save([conf.outpath 'all_data_syn'], 'sessions');
 end
+clear all_chan c2take data nmf_res data
 
 
 
@@ -280,40 +288,38 @@ end
 
 for i = 1:conf.n_monks
     
-    grouped = group(sessions(idx.(conf.names{i})), 'syn_pro');
-    fin_syns.(['nmf' config.names{i}]) = grouped.center;
-    
-    flat = vertcat(grouped.dat);
+    grouped = group(sessions(idx.(conf.names{i})), 'syn_pro');    
+    flat    = vertcat(grouped.dat);
         
-    h = figure(5);
+    h = figure('Visible', 'off');
     subplot(4,1,1:3);
     imagesc(flat);
-    colormap(conf.map);
+%     colormap(conf.map);
     axis off
     title(['consistency of synergists over sessions ' conf.names{i}]);
     
     subplot(4,1,4);
     imagesc(grouped(1).center);
-    colormap(conf.map);
+%     colormap(conf.map);
     axis off
-    title(['centers ' config.names{i}]);
-%     saveas(h, [config.outpath  'syn_consist_sessions_' config.names{i} '.' config.image_format]);
-%     close(h);
+    title('centers');
+    saveas(h, [conf.outpath  'syn_consist_sessions_' conf.names{i} '.' conf.image_format]);
+    close(h);
     
-    stds(i,:) = grouped(1).idx;   %#ok<SAGROW>
+    stds{i} = grouped(1).idx;   %#ok<SAGROW>
 end
 
-h = figure(6);
-for i = 1:length(conf.names)
-    subplot(3,1,i);
-    hist(stds(i,:));
-    title([conf.names{i} ' std of clustering: ' num2str(std(hist(stds(i,:), conf.dimensions)))]);
+h = figure('Visible', 'off');
+for i = 1:conf.n_monks
+    subplot(conf.n_monks,1,i);
+    hist(stds{i});
+    title([conf.names{i} ' std of clustering: ' num2str(std(hist(stds{i}, conf.dimensions)))]);
 end
-% saveas(h, [config.outpath  'syn_consist_sessions_std.' config.image_format]);
-% close(h);
+saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
+close(h);
 
 
-% clear flat grouped all_names
+clear flat grouped stds
 
 
 
