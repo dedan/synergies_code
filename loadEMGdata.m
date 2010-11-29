@@ -53,12 +53,13 @@ for i=1:length(emgfiles)
             end
         elseif ~isempty(bhvdata.bhvStat)
             bhvStat = bhvdata.bhvStat;
-            % STEPHAN: here we select trials based on some behavioral
-            % criteria of reaction time, {-200-500) Movement time
-            % (500-1500) and some angular deviation (<35). I think we
-            % could relax some of these criteria) especially the last
-            % one
-            itrials =(find(bhvStat(:,1)>=-200 & bhvStat(:,1)<=500 & bhvStat(:,2)<=1500  & bhvStat(:,2)>=500 & abs(bhvStat(:,5))<=35));
+            
+            itrials = bhvStat(:,1) >= config.t_react(1) & ...
+                      bhvStat(:,1) <= config.t_react(2) & ...
+                      bhvStat(:,2) >= config.t_move(1) &  ...
+                      bhvStat(:,2) <= config.t_move(2) &  ...
+                      abs(bhvStat(:,5)) <= config.ang_div;
+                  
             trials  = bhvdata.trials(itrials,1:2);
             if isfield(bhvdata, 'targets'),
                 if config.verbose

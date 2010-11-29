@@ -17,6 +17,12 @@ config.post    = 1000;
 config.win     = [0 500];  % time relative to torque onset TO
 config.bck_win = [-500 0]; % time relative to spatial cue (SC)
 
+% parameters for trial selection (how they are chosen see behav_criteria.m)
+% in the data validation folder
+config.t_react = [-200, 500];
+config.t_move  = [200, 1500];
+config.ang_div = 35;
+
 all = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
 
 vdir = dir([config.path 'data' filesep config.monk(1) '*']);
