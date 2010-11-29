@@ -21,13 +21,14 @@ conf = struct;
 conf.opt                = statset('MaxIter',5);
 conf.outpath            = '~/Documents/uni/yifat_lab/results/natural_mov/';
 conf.res_folder         = '~/Documents/uni/yifat_lab/results/';   
-conf.names              = {'vega', 'chalva', 'darma'};
+conf.names              = {'first_vega','vega', 'chalva', 'darma'};
 conf.n_monks            = length(conf.names);
 conf.significant        = 25;
 conf.max_channels       = 16;
 conf.dimensions         = 3;
 conf.Niter_exploration  = 5;
 conf.n_best             = 5;
+conf.rank1_raw          = true;
 conf.image_format       = 'jpg';
 mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
@@ -48,8 +49,10 @@ addpath('../lib');
 % sort out the first vega sessions because they were recorded from
 % different muscles and have only 8 muscles in common with the later
 % sessions which is I think not enough
-not_first_vega  = ~strcmp('vega', {sessions.monk}) | [sessions.id] > 26;
-sessions        = sessions(not_first_vega);
+not_first_vega     = ~strcmp('vega', {sessions.monk}) | [sessions.id] > 26;
+for i = find(~not_first_vega)
+    sessions(i).monk = 'first_vega'; %#ok<SAGROW>
+end
 clear not_first_vega
 
 
@@ -57,13 +60,13 @@ clear not_first_vega
 % First lets get some statistics on the Data we have available
 
 for i = 1:length(sessions)
-    sessions(i).target1     = size(sessions(i).mats(1).data,1);
-    sessions(i).n_channels  = length(find(sessions(i).channels));
+    sessions(i).target1     = size(sessions(i).mats(1).data,1); %#ok<SAGROW>
+    sessions(i).n_channels  = length(find(sessions(i).channels)); %#ok<SAGROW>
     
     if length(sessions(i).mats) == 2
-        sessions(i).target2    = size(sessions(i).mats(2).data,1);
+        sessions(i).target2    = size(sessions(i).mats(2).data,1); %#ok<SAGROW>
     else
-        sessions(i).target2    = -1;
+        sessions(i).target2    = -1; %#ok<SAGROW>
     end
 end
 
@@ -149,23 +152,47 @@ hold on;
 plot(ones(1,length(rank1)) * conf.significant);
 
 % seperating lines between the monkeys
-for i=1:conf.n_monks-1
-    plot(ones(1,10)*max(idx.(conf.names{i})), 1:10:100, 'r*');
+for i=2:conf.n_monks-1
+    plot(ones(1,10)*find(idx.(conf.names{i}), 1, 'last' ), 1:10:100, 'r*');
 end
 hold off;
 legend('nmf', 'pca', 'Location', 'NorthWest');
-text(min(idx.(conf.names{1}))+2, 70, conf.names{1});
-text(min(idx.(conf.names{2}))+2, 70, conf.names{2});
-text(min(idx.(conf.names{3}))+2, 70, conf.names{3});
+text(find(idx.(conf.names{1}), 1 )+2, 70, conf.names{1});
+text(find(idx.(conf.names{2}), 1 )+2, 70, conf.names{2});
+text(find(idx.(conf.names{3}), 1 )+2, 70, conf.names{3});
+text(find(idx.(conf.names{4}), 1 )+2, 70, conf.names{4});
 
 
 % also calculate the correlation of the two rank1 values
 [r p] = corrcoef(rank1');
 title(['nmf vs. pcaica, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
-saveas(h, [conf.outpath  'rank1.' conf.image_format]);
+if conf.rank1_raw
+    saveas(h, [conf.outpath  'rank1_raw.' conf.image_format]);
+else
+    saveas(h, [conf.outpath  'rank1.' conf.image_format]);
+end
+    
 close(h);
+
+
+% sort out boring sessions
+% we sort out sessions where the rank1 model already has an remaining error
+% lower then 25 %
+disp('')
+disp('rank1 filtering');
+disp(['sorting out: ' num2str(length(find(rank1(1,:) < conf.significant))) ' sessions']);
+for i = 1:conf.n_monks
+    idx.(conf.names{i}) = idx.(conf.names{i}) & rank1(1,:) > conf.significant;
+    disp([conf.names{i} ' remaining: ' num2str(length(find(idx.(conf.names{i})))) ' sessions' ]);
+end
+
+
+
 clear rank1 r p
+
+
+
 
 
 
