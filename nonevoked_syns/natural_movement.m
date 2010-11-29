@@ -269,9 +269,15 @@ hold off
 saveas(h, [conf.outpath  'rank1_handpos.' conf.image_format]);
 close(h);
 
-% TODO what is the correct test for this
-%ranksum(pro(:,1), sup(:,1))
-clear x index n_index pro sup
+[h, p] = kstest2(pro(:,1), sup(:,1));
+disp('similarity of rank 1 distributions for pronation and supination');
+if h == 1
+    disp(['rank 1 distributions not similar, p: ' num2str(p)]);
+else
+    disp(['rank 1 distributions are similar, p: ' num2str(p)]);
+end
+
+clear x index n_index pro sup h p
 
 
 
