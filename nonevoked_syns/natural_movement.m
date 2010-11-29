@@ -74,9 +74,9 @@ h = figure('Visible', 'off');
 disp(['data from in total: ' num2str(length(sessions)) ' sessions']);
 
 for i = 1:conf.n_monks
-    idx.(conf.names{i})    = strmatch(conf.names{i}, {sessions.monk});
+    idx.(conf.names{i})    = strcmp(conf.names{i}, {sessions.monk});
     
-    disp([conf.names{i} ': ' num2str(length(idx.(conf.names{i}))) ' sessions' ]);
+    disp([conf.names{i} ': ' num2str(length(find(idx.(conf.names{i})))) ' sessions' ]);
 
     % distribution of targets
     subplot(3,conf.n_monks,i);
@@ -138,8 +138,13 @@ clear tmp chan
 % first store them in a convenient matrix
 rank1 = NaN(2,length(sessions));
 for i = 1:length(sessions)
-    rank1(1,i)  = sessions(i).r_nmf_pro(1);
-    rank1(2,i)  = sessions(i).r_pca_pro(1);
+    if conf.rank1_raw
+        rank1(1,i)  = sessions(i).r_nmf_raw_pro(1);
+        rank1(2,i)  = sessions(i).r_pca_raw_pro(1);
+    else
+        rank1(1,i)  = sessions(i).r_nmf_pro(1);
+        rank1(2,i)  = sessions(i).r_pca_pro(1);
+    end
 end
 
 h = figure('Visible', 'off');
@@ -216,8 +221,8 @@ for i = 1:2
     subplot(2,1,i);
     for j=1:length(conf.names)
         data = vertcat(sessions(idx.(conf.names{j})).(['r_nmf' modi{i} '_pro']));
-        y    = [ones(length(idx.(conf.names{j})),1)*100 data]';
-        plot(x, y, 'Color', map(j*20,:));
+        y    = [ones(length(find(idx.(conf.names{j}))),1)*100 data]';
+        plot(x, y, 'Color', map(j*15,:));
         hold on
     end
     y = [100 mean(vertcat(sessions.(['r_nmf' modi{i} '_pro'])))];
@@ -238,12 +243,13 @@ clear x y data map modi
 % in the residual?
 
 % TODO nicht nur fuer vega, auch fuer darma haben wir zwei
+% TODO und auch fuer first_vega
 
 figure('Visible', 'off');
 
 % select sessions from vega for which both handpos available
 x       = 0:conf.max_channels;
-index   = [sessions(idx.vega).hands] > 1;
+index   = idx.vega & ([sessions.hands] > 1);
 n_index = length(find(index));
 pro     = vertcat(sessions(index).r_nmf_raw_pro);
 sup     = vertcat(sessions(index).r_nmf_raw_sup);
@@ -284,7 +290,7 @@ else
         all_chan = vertcat(sessions(idx.(conf.names{i})).channels);
         c2take   = all(all_chan);
         
-        for j = idx.(conf.names{i})'
+        for j = find(idx.(conf.names{i}))
             
             disp(['monk: ' conf.names{i} ' session: ' num2str(j)]);
             data    = sessions(j).mats(1).data_raw(:,c2take);
