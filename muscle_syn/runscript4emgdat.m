@@ -1,12 +1,10 @@
 function runscript4emgdat(monk)
 
-
-% path = 'E:\';
 path = '/Volumes/LAB/';
 config.path     = [path monk filesep];
 config.outpath  = [path monk filesep 'EMGdat'];
 config.monk     = monk;
-config.e2add    = 'e';
+config.e2add    = 'ee';
 config.verbose  = 0;
 
 config.df      = 100;
@@ -23,6 +21,9 @@ config.t_react = [-200, 500];       % reaction time
 config.t_move  = [200, 1500];       % movemente time
 config.ang_div = 35;                % angular deviation
 
+config.also_with_stim   = 0;
+config.n_btstrp         = 4000;
+    
 
 vdir = dir([config.path 'data' filesep config.monk(1) '*']);
 vdir = sortdirs( vdir);
@@ -34,7 +35,7 @@ for i= 1:length(vdir),
     
     if ~exist([config.outpath filesep 'EMG' curdir '.mat'], 'file'),
         
-        [chdata,emgpsth] = MuscleSyn(curdir, config);   %#ok<NASGU>
+        [chdata, emgpsth] = get_emg4sess(char(vdir(i)), config); %#ok<NASGU>
         if ~isempty(chdata),
             
             
