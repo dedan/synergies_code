@@ -249,6 +249,15 @@ end
 saveas(h, [conf.outpath  'resid_test.' conf.image_format]);
 close(h);
 
+% std of residual values for different model orders, averaged over all the
+% sessions. This plot serves to see for which dimensionality reduction the
+% nmf is stable
+h = figure('Visible', 'off');
+plot(mean(vertcat(sessions.std_nmf_raw_pro)))
+title('std of resid values for different model orders');
+saveas(h, [conf.outpath  'resid_test_std.' conf.image_format]);
+close(h);
+
 clear x y data map modi
 
 
