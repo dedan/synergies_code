@@ -337,27 +337,30 @@ else
     
     for i = 1:conf.n_monks
         
-        % only use channels which are available for all sessions of a monk
-        all_chan = vertcat(sessions(idx.(conf.names{i})).channels);
-        c2take   = all(all_chan);
-        
         for j = find(idx.(conf.names{i}))
             
             disp(['monk: ' conf.names{i} ' session: ' num2str(j)]);
-            data    = sessions(j).mats(1).data_raw(:,c2take);
+            data    = sessions(j).mats(1).data_raw(:,sessions(j).c2take);
             nmf_res = nmf_explore(data, conf);
-            sessions(j).syn_pro = nmf_res.syns;
+            sessions(j).nmf_pro     = nmf_res.syns; %#ok<SAGROW>
+            sessions(j).nmf_pro_std = nmf_res.std; %#ok<SAGROW>
+            sessions(j).pca_pro     = pcaica(data, conf.dimensions)'; %#ok<SAGROW>
+            
             
             if length(sessions(j).mats) > 1
-                data    = sessions(j).mats(2).data_raw(:,c2take);
+                data    = sessions(j).mats(2).data_raw(:,sessions(j).c2take);
                 nmf_res = nmf_explore(data, conf);
-                sessions(i).syn_sup = nmf_res.syns;
+                sessions(i).nmf_sup     = nmf_res.syns; %#ok<SAGROW>
+                sessions(i).nmf_sup_std = nmf_res.std; %#ok<SAGROW>
+                sessions(j).pca_sup     = pcaica(data, conf.dimensions)'; %#ok<SAGROW>
             end
         end
     end
     save([conf.outpath 'all_data_syn'], 'sessions');
 end
-clear all_chan c2take data nmf_res data
+
+clear all_chan data nmf_res data
+
 
 
 
@@ -366,44 +369,88 @@ clear all_chan c2take data nmf_res data
 
 
 % consistency over sessions
-
-% nmf seems to be quite stable, nevertheless I take the center of the
-% prototypes found in the five runs
-
 for i = 1:conf.n_monks
-    
-    grouped = group(sessions(idx.(conf.names{i})), 'syn_pro');    
-    flat    = vertcat(grouped.dat);
-        
+
     h = figure('Visible', 'off');
-    subplot(4,1,1:3);
-    imagesc(flat);
-%     colormap(conf.map);
-    axis off
-    title(['consistency of synergists over sessions ' conf.names{i}]);
     
-    subplot(4,1,4);
-    imagesc(grouped(1).center);
-%     colormap(conf.map);
+    group_nmf = group(sessions(idx.(conf.names{i})), 'nmf_pro');    
+    subplot(6,4,[1 5 9]);
+    imagesc(vertcat(group_nmf.dat));
     axis off
-    title('centers');
+    title(['consistency over sessions (nmf)' conf.names{i}]);
+    
+    group_pca = group(sessions(idx.(conf.names{i})), 'pca_pro');    
+    subplot(6,4,[13 17 21]);
+    imagesc(vertcat(group_pca.dat));
+    axis off
+    title(['consistency over sessions (pca)' conf.names{i}]);
+    
+    % will the synergies look the same when I compute them on the whole dat
+    all = [];
+    for k = find(idx.(conf.names{i}))
+        all = [all; sessions(k).mats(1).data_raw(:,sessions(k).c2take)]; %#ok<AGROW>
+    end
+    nmf_res = nmf_explore(all, conf);
+    res     = nmf_res.syns;
+    subplot(6,4,2);
+    imagesc(nmf_res.syns);
+    axis off
+    title('all at once');
+    
+    subplot(6,4,8);
+    imagesc(group_nmf(1).center);
+    axis off
+    title('centers (nmf)');
+    stds_n{i} = group_nmf(1).idx;   %#ok<SAGROW>
+    
+    subplot(6,3,11);
+    imagesc(group_pca(1).center);
+    axis off
+    title('centers (pca)');
+    stds_p{i} = group_pca(1).idx;   %#ok<SAGROW>
+
+    
+    syn1 = normr(group_nmf(1).center);
+    syn2 = normr(group_pca(1).center);
+    
+    [scores ind] = matchNscore(syn1', syn2');
+    syn2 = syn2(ind,:);
+    
+    p_pos = {[3 6], [9 12], [15 18]};
+    for j = 1:size(syn1,1)
+        subplot(6,3,p_pos{j})
+        bar( [syn1(j,:)' syn2(j,:)']);
+        axis off
+        title(['synergy #' int2str(j) ' matching score: ' num2str(scores(j))]);
+    end
+
+    [r p] = corrcoef([syn1(:) syn2(:)]);
+
+    disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
+
+    
     saveas(h, [conf.outpath  'syn_consist_sessions_' conf.names{i} '.' conf.image_format]);
     close(h);
-    
-    stds{i} = grouped(1).idx;   %#ok<SAGROW>
 end
 
+
+% stds of clustering
 h = figure('Visible', 'off');
+
 for i = 1:conf.n_monks
-    subplot(conf.n_monks,1,i);
-    hist(stds{i});
-    title([conf.names{i} ' std of clustering: ' num2str(std(hist(stds{i}, conf.dimensions)))]);
+    subplot(conf.n_monks,2,i*2-1);
+    hist(stds_n{i});
+    title([conf.names{i} ' std of clustering (nmf): ' num2str(std(hist(stds_n{i}, conf.dimensions)))]);
+    
+    subplot(conf.n_monks,2,i*2);
+    hist(stds_p{i});
+    title([conf.names{i} ' std of clustering (pca): ' num2str(std(hist(stds_p{i}, conf.dimensions)))]);    
 end
 saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear flat grouped stds
+clear flat grouped stds_n stds_p nmf_res all
 
 
 
