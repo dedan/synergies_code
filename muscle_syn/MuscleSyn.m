@@ -1,73 +1,77 @@
-function [chdata, emgpsth] = MuscleSyn( sessname, f1, f2, chnls, config)
+function [chdata, emgpsth] = MuscleSyn( sessname, config)
 
 emgpsth = struct;
 chdata  = [];
 
-load([config.path config.monk 'session']);
 emgdir = [config.path 'data' filesep sessname filesep 'mat' filesep ];
 eddir  = [config.path 'EDfiles' filesep];
 
 
-indx        = 1;
-point2empty = [];
-edfiles     = cell(0);
+% load the info file
+load([config.path 'data' filesep sessname filesep 'info' filesep sessname '_param.mat']);
 
-emgname = cell(1,length(f1:f2));
-for i=f1:f2,
-    [edname, id] = extract_edname( config.monk(1), subss, sessname,  i, config.e2add );
-    if ~isempty(edname),
-        if i< 10,
-            str2add  = ['00' num2str(i)];
-        elseif i< 100,
-            str2add  = ['0' num2str(i)];
+n_emg_files = SESSparam.SubSess(end).Files(2);
+emgname     = cell(1,n_emg_files);
+edfiles     = cell(1,n_emg_files);
+
+
+for i = 1:n_emg_files
+    
+    % construct the name of the EDfile
+    str1  = sprintf('%02d', DDFparam.ID);
+    str2  = '';
+    found = false;
+    j     = 1;
+    
+    while ~found && j <= length(SESSparam.SubSess)
+        ednum = find(SESSparam.SubSess(j).Files(1):SESSparam.SubSess(j).Files(2) == i);
+        if ~isempty(ednum)
+            str2  = sprintf('%02d', j);
+            found = true;
         end
-        emgname(i-f1+1) = {[emgdir sessname str2add '_emg.mat']};
-        if ~isempty(edname),
-            edfiles(i-f1+1)     = {[eddir edname]};
-        else
-            point2empty(indx)   = i-f1+1; %#ok<AGROW>
-            indx                = indx+1;
-        end
+        j = j + 1;
     end
-end
-
-if isempty(edfiles),
-    chdata  = [];
-    emgpsth = [];
-    return;
-end
-
-if ~isempty(point2empty),
-    for j=1:length(point2empty),
-        curpos = point2empty(j);
-        disp(['For emg files: ' char(emgname(curpos)) '--> no edfiles was found']);
+    
+    % NOTE this can be removed if I never find it in the log
+    if isempty(str2)
+        disp('EDname not found');
     end
-    indx = ones(size(f1:f2));
-    indx(point2empty) = 0;
-    indx = find(indx);
-    edfiles = edfiles(indx);
-    emgname = emgname(indx);
+    
+    edname = [sessname(1) str1 str2 'e' config.e2add '.' num2str(ednum) '.mat'];
+    
+    str2add = sprintf('%03d', i);
+    emgname(i) = {[emgdir sessname str2add '_emg.mat']};
+    edfiles(i) = {[eddir edname]};
 end
 
-Data = loadEMGdata( emgname, edfiles, chnls, config);
+% NOTE this can be removed if I never find it in the log
+if isempty(edfiles)
+    disp('edfiles is empty');
+end
+
+
+Data = loadEMGdata( emgname, edfiles, config);
 if isempty(Data)
     disp('problem in loadEMG');
     return;
 end
+
 Nch  = length(Data.channel);
 if Nch == 0,
     disp('No emg data was found');
     return;
 end
 
-chdata.id = id;
-trg = Data.channel(1).Target;               % target of trial
-Ntr = unique(trg);
-Ntr = Ntr(Ntr > 0);                         % list of targets
-hnd = Data.channel(1).hand_position;        % hand position is the same for all channels
-Nh  = unique(hnd(trg > 0));                 % list of hand positions
+trg       = Data.channel(1).Target;               % target of trial
+Ntr       = unique(trg);
+Ntr       = Ntr(Ntr > 0);                         % list of targets
+hnd       = Data.channel(1).hand_position;        % hand position is the same for all channels
+Nh        = unique(hnd(trg > 0));                 % list of hand positions
 
 for k=1:length(Nh),
+    
+    chdata(k).channels = Data.channels; %#ok<AGROW>
+    chdata(k).id = DDFparam.ID; %#ok<AGROW>
     
     % now computing the mean bckground level per channel
     for i=1:Nch,
@@ -76,7 +80,6 @@ for k=1:length(Nh),
     
     for j=1:length(Ntr),
         jindx = find(trg == Ntr(j) & hnd == Nh(k));
-        chdata(k).N(j) = length(jindx);
         
         tmp_amp = NaN(Nch, length(jindx));
         tmp_bck = NaN(Nch, length(jindx));
@@ -94,7 +97,7 @@ for k=1:length(Nh),
                 end
             end
         end;
-        chdata(k).amp{j}     = tmp_amp;
-        chdata(k).bck_amp{j} = tmp_bck;
+        chdata(k).amp{j}     = tmp_amp; %#ok<AGROW>
+        chdata(k).bck_amp{j} = tmp_bck; %#ok<AGROW>
     end
 end

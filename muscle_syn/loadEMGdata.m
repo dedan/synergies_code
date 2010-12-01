@@ -1,22 +1,42 @@
-function tuning = loadEMGdata( emgfiles, edfiles, channels, config )
+function tuning = loadEMGdata( emgfiles, edfiles, config )
 
 total_trials = 0;
 tuning       = [];
 trials       = [];
-
+all = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
 
 for i=1:length(emgfiles)
+    
+    
+    vrs     = who('-file', emgfiles{1});
+    indx    = 1;
+    for j=1:length(vrs),
+        curvar = char(vrs(j));
+        if ~isempty(findstr(curvar,'EMG')) && isempty(findstr(curvar,'KHz')),
+            em2take(indx)  = sscanf(curvar,'EMG%d'); %#ok<AGROW>
+            indx           = indx+1;
+        end
+    end
+    
+    if isempty(em2take)
+        disp('em2take empty');
+        return
+    end
+    
 
     curfile = '';
     curbhv  = '';
     if ~isempty(emgfiles{i})
         curfile = char(emgfiles(i));
         curbhv  = char(edfiles(i));
+    else
+        % NOTE did this ever occur?
+        disp(['emgfiles ' num2str(i) ' empty'])
     end
     
     % check whether file contains channel data
     try
-        load(curfile,['EMG' num2str(channels(1)) '_KHz']);
+        load(curfile,['EMG' num2str(em2take(1)) '_KHz']);
     catch err
         if config.verbose
             disp(err);
@@ -82,11 +102,18 @@ for i=1:length(emgfiles)
             trials = [];
         end
         
-        if ~isempty(trials),
-            for m=1:length(channels)
+        if ~isempty(trials)
+            
+            channels = zeros(1,length(all));
+            for j = 1:length(em2take)
+                channels(all == em2take(j)) = 1;
+            end
+            tuning.channels = channels;
+
+            for m=1:length(em2take)
                 
                 % load the data
-                chstr   = num2str(channels(m));
+                chstr   = num2str(em2take(m));
                 EMG     = load(curfile, ['EMG' chstr]);
                 EMG     = EMG.(['EMG' chstr]);
                 Fs      = load(curfile, ['EMG' chstr '_KHz']);
