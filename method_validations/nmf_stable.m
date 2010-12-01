@@ -1,18 +1,23 @@
 
 clear
 
-outpath  = '~/Documents/uni/yifat_lab/results/natural_mov/';
+path  = '~/Documents/uni/yifat_lab/synergies_code/test_data/';
 
 conf = struct;
 conf.Niter_exploration = 50;
+conf.n_best            = 20;
 conf.opt               = statset('MaxIter',5);
-conf.dimensions        = 5;
+conf.dimensions        = 3;
 
-load([outpath 'all_data_dummy']);
+
+% this will load a struct called sessions
+load([path 'all_data_syn']);
 addpath('../lib'); 
 
 
 %% susceptibility to outliers
+% how much does an outlier in the data_raw matrix influence the outcome of
+% nmf
 
 n_largest = 10;
 
@@ -48,21 +53,14 @@ subplot 515
 imagesc(nmf_res.syns);
 
 
-% if config.nmf_stab_plots == 1
-%             h = figure('Visible','off');
-%             imagesc(nmf_res.flat);
-%             title(['standard deviation of group size: ' num2str(nmf_res.std)]);
-%             saveas(h, [config.outpath  'nmf_expl_stab' int2str(i) '_' int2str(j) '.' config.image_format]);
-%             close(h);
-%         end
-% 
-%     % show stability
-%     disp(['standard deviation of group size: ' num2str(nmf_res.std)]);
-%     
-%     
-%     can be tested with for example 
-% (2)session id: 46 - monk: vega
-% 
-% how much does an outlier in the data_raw matrix influence the outcome of nmf or pca
 
+%% stability of nmf method
+% because it is a validation of the method and not really data analysis
+% this investigation is moved to this separate script. 
+% quantification of nmf stability is done by looking at the std of indeces
+% which assign synergies from the several runs to protoypes of a kmeans
+% clustering of the synergies from several runs
+
+figure(2)
+hist([sessions.syn_pro_std]);
 
