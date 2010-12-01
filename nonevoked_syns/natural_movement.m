@@ -114,7 +114,9 @@ clear y x
 %% which channels
 % assign muscle mappings
      %(vega_first, vega_later, darma, chalva)
-chan = {'BR-B', 'EDC-E', 'APL-E', 'ECU-E', 'FCR-F', 'APL-E', 'ED45-E', 'ED23-E', ...
+chan = {'FCU-F', 'X', 'PL-F', 'FCR-F', 'BR-B', 'X', 'FDS-F', 'FDP-F', ...
+            'X', 'EDC-E', 'X', 'APL-E', 'EDC-E', 'ECR-E', 'ED45-E', 'ECU-E';
+        'BR-B', 'EDC-E', 'APL-E', 'ECU-E', 'FCR-F', 'APL-E', 'ED45-E', 'ED23-E', ...
             'ECU-E', 'BR-B', 'PL-F', 'FCR-F', 'X', 'X', 'X', 'FDS-F';
         'ECU-E', 'ED45-E', 'EDC-E', 'APL-E', 'ECR-E', 'ED23-E', 'BIC-P', 'BIC-P', ...
             'FDS-F', 'PL-F', 'FCU-F', 'FCR-F', 'PT-F', 'FDP-F', 'TRIC-P', 'BIC-P';
@@ -123,8 +125,21 @@ chan = {'BR-B', 'EDC-E', 'APL-E', 'ECU-E', 'FCR-F', 'APL-E', 'ED45-E', 'ED23-E',
         
 tmp = intersect({chan{1,:}},{chan{2,:}});
 tmp = intersect(tmp,{chan{3,:}});
+disp('');
 disp([num2str(length(tmp)) ' channels in common for all monkeys']);
-clear tmp chan
+
+% which channels are available for all sessions of a monkey
+for i = 1:conf.n_monks
+    
+    % only use channels which are available for all sessions of a monk
+    all_chan = vertcat(sessions(idx.(conf.names{i})).channels);
+    c2take   = all(all_chan);
+    for j = find(idx.(conf.names{i}))
+        sessions(j).c2take = c2take; %#ok<SAGROW>
+    end
+end
+
+clear tmp chan all_chan c2take
 
 
 
