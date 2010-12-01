@@ -293,6 +293,27 @@ hold off
 saveas(h, [conf.outpath  'rank1_handpos.' conf.image_format]);
 close(h);
 
+figure('Visible', 'off');
+subplot 221
+hist(pro(:,1))
+title('pronation rank 1');
+
+subplot 222
+hist(pro(:,2))
+title('pronation rank 2');
+
+subplot 223
+hist(sup(:,1))
+title('supination rank 1');
+
+subplot 224
+hist(sup(:,2))
+title('supination rank 2');
+
+
+saveas(h, [conf.outpath  'rank12_dist.' conf.image_format]);
+close(h);
+
 [h, p] = kstest2(pro(:,1), sup(:,1));
 disp('similarity of rank 1 distributions for pronation and supination');
 if h == 1
