@@ -12,9 +12,6 @@ rc    = 1;      % result counter
 % iterate over all the EMG files
 for i= 1:length(fdat)
     
-    if exist([config.outpath config.monk(1) num2str(i)], 'file')
-        continue;
-    end
     data = load([config.emgdat_path char(fdat(i).name)]);
     display(['processing file: ' num2str(i) ' of ' num2str(length(fdat))]);
     mats = struct;
@@ -126,7 +123,6 @@ for i= 1:length(fdat)
         end
         rc = rc +1;
     end
-    save([config.outpath config.monk(1) num2str(i)], 'res');
 end
 
 
