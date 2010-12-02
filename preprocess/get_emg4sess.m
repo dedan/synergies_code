@@ -16,19 +16,18 @@ if length(edfiles) ~= length(emgfiles)
     return;
 end
 
-% hier muss ich jetzt nen merge aus directionalEMG_batch und loadEMGdata
-% aufrufen
+
 data = load_emg(edfiles, emgfiles, config);
 
-trg       = data.channel(1).Target;               % target of trial
-Ntr       = unique(trg);
-Ntr       = Ntr(Ntr > 0);                         % list of targets
-hnd       = data.channel(1).hand_position;        % hand position is the same for all channels
-Nh        = unique(hnd(trg > 0));                 % list of hand positions
+trg  = data.channel(1).Target;               % target of trial
+Ntr  = unique(trg);
+Ntr  = Ntr(Ntr > 0);                         % list of targets
+hnd  = data.channel(1).hand_position;        % hand position is the same for all channels
+Nh   = unique(hnd(trg > 0));                 % list of hand positions
 
 for k=1:length(Nh),
     
-    chdata(k).channels  = data.channels;  %#ok<*AGROW>
+    chdata(k).channels  = logical(data.channels);  %#ok<*AGROW>
     chdata(k).id        = info.DDFparam.ID; 
     chdata(k).pd        = data.pd(k,:);
     chdata(k).pd_deg    = data.pd_deg(k,:);
@@ -60,8 +59,12 @@ for k=1:length(Nh),
                 end
             end
         end;
-        chdata(k).amp{j}     = tmp_amp; 
-        chdata(k).bck_amp{j} = tmp_bck; 
+        
+        % give all data the same size (as if recorded from all channels)
+        chdata(k).amp{j}     = zeros(length(chdata(k).channels), size(tmp_amp,2));
+        chdata(k).bck_amp{j} = zeros(length(chdata(k).channels), size(tmp_bck,2));
+        chdata(k).amp{j}(chdata(k).channels,:)      = tmp_amp;
+        chdata(k).bck_amp{j}(chdata(k).channels,:)  = tmp_bck;
     end
 end
 
