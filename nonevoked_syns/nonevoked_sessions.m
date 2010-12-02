@@ -52,14 +52,18 @@ for i= 1:length(fdat)
     if isempty(mats(1).data)
         disp(['problem with: ' fdat(i).name]);
     else
-        
+                
         % put in struct what we got so far
         res(rc).mats     = mats;
         res(rc).name     = char(fdat(i).name);
         res(rc).monk     = config.monk;
-        res(rc).id       = data.chdata.id;
         res(rc).hands    = length(data.chdata);
-        res(rc).channels = data.chdata(1).channels;
+        res(rc).id       = data.chdata.id;
+        res(rc).channels = data.chdata.channels;
+        res(rc).pd       = data.chdata.pd;
+        res(rc).pd_deg   = data.chdata.pd_deg;
+        res(rc).p1       = data.chdata.p1;
+        res(rc).p2       = data.chdata.p2;
         
         % initialize test results (to make them all same length)
         vars = {'r_nmf', 'std_nmf', 'r_pca', 'r_nmf_s', ...
