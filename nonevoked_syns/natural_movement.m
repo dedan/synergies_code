@@ -20,8 +20,8 @@ clc;
 conf = struct;
 conf.opt                = statset('MaxIter',5);
 conf.outpath            = '~/Documents/uni/yifat_lab/results/natural_mov/';
-conf.res_folder         = '~/Documents/uni/yifat_lab/results/';   
-conf.names              = {'first_vega','vega', 'chalva', 'darma'};
+conf.inpath             = '~/Documents/uni/yifat_lab/results/data/';   
+conf.names              = {'chalva'};
 conf.n_monks            = length(conf.names);
 conf.significant        = 25;
 conf.max_channels       = 16;
@@ -43,7 +43,7 @@ clear mymap
 
 
 %% load data
-load([conf.outpath 'all_data_dummy']);
+load([conf.inpath 'all_data_dummy']);
 addpath('../lib'); 
 
 % sort out the first vega sessions because they were recorded from
@@ -177,11 +177,9 @@ for i=2:conf.n_monks-1
 end
 hold off;
 legend('nmf', 'pca', 'Location', 'NorthWest');
-text(find(idx.(conf.names{1}), 1 )+2, 70, conf.names{1});
-text(find(idx.(conf.names{2}), 1 )+2, 70, conf.names{2});
-text(find(idx.(conf.names{3}), 1 )+2, 70, conf.names{3});
-text(find(idx.(conf.names{4}), 1 )+2, 70, conf.names{4});
-
+for i = 1:conf.n_monks
+    text(find(idx.(conf.names{i}), 1 )+2, 70, conf.names{i});
+end
 
 % also calculate the correlation of the two rank1 values
 [r p] = corrcoef(rank1');
@@ -269,60 +267,62 @@ clear x y data map modi
 % TODO nicht nur fuer vega, auch fuer darma haben wir zwei
 % TODO und auch fuer first_vega
 
-figure('Visible', 'off');
-
-% select sessions from vega for which both handpos available
-x       = 0:conf.max_channels;
-index   = idx.vega & ([sessions.hands] > 1);
-n_index = length(find(index));
-pro     = vertcat(sessions(index).r_nmf_raw_pro);
-sup     = vertcat(sessions(index).r_nmf_raw_sup);
- 
-subplot 311
-plot(x, [ones(n_index,1)*100 pro]', 'b')
-
-subplot 312
-plot(x, [ones(n_index,1)*100 sup]', 'b')
-
-subplot 313
-plot(x, [100 mean(pro)])
-hold on
-plot(x, [100 mean(sup)], 'k')
-hold off
-
-saveas(h, [conf.outpath  'rank1_handpos.' conf.image_format]);
-close(h);
-
-figure('Visible', 'off');
-subplot 221
-hist(pro(:,1))
-title('pronation rank 1');
-
-subplot 222
-hist(pro(:,2))
-title('pronation rank 2');
-
-subplot 223
-hist(sup(:,1))
-title('supination rank 1');
-
-subplot 224
-hist(sup(:,2))
-title('supination rank 2');
-
-
-saveas(h, [conf.outpath  'rank12_dist.' conf.image_format]);
-close(h);
-
-[h, p] = kstest2(pro(:,1), sup(:,1));
-disp('similarity of rank 1 distributions for pronation and supination');
-if h == 1
-    disp(['rank 1 distributions not similar, p: ' num2str(p)]);
-else
-    disp(['rank 1 distributions are similar, p: ' num2str(p)]);
+if any(strcmp(conf.names, 'vega'))
+    figure('Visible', 'off');
+    
+    % select sessions from vega for which both handpos available
+    x       = 0:conf.max_channels;
+    index   = idx.vega & ([sessions.hands] > 1);
+    n_index = length(find(index));
+    pro     = vertcat(sessions(index).r_nmf_raw_pro);
+    sup     = vertcat(sessions(index).r_nmf_raw_sup);
+    
+    subplot 311
+    plot(x, [ones(n_index,1)*100 pro]', 'b')
+    
+    subplot 312
+    plot(x, [ones(n_index,1)*100 sup]', 'b')
+    
+    subplot 313
+    plot(x, [100 mean(pro)])
+    hold on
+    plot(x, [100 mean(sup)], 'k')
+    hold off
+    
+    saveas(h, [conf.outpath  'rank1_handpos.' conf.image_format]);
+    close(h);
+    
+    figure('Visible', 'off');
+    subplot 221
+    hist(pro(:,1))
+    title('pronation rank 1');
+    
+    subplot 222
+    hist(pro(:,2))
+    title('pronation rank 2');
+    
+    subplot 223
+    hist(sup(:,1))
+    title('supination rank 1');
+    
+    subplot 224
+    hist(sup(:,2))
+    title('supination rank 2');
+    
+    
+    saveas(h, [conf.outpath  'rank12_dist.' conf.image_format]);
+    close(h);
+    
+    [h, p] = kstest2(pro(:,1), sup(:,1));
+    disp('similarity of rank 1 distributions for pronation and supination');
+    if h == 1
+        disp(['rank 1 distributions not similar, p: ' num2str(p)]);
+    else
+        disp(['rank 1 distributions are similar, p: ' num2str(p)]);
+    end
+    
+    clear x index n_index pro sup h p
 end
-
-clear x index n_index pro sup h p
 
 
 
@@ -331,8 +331,8 @@ clear x index n_index pro sup h p
 % all is done only by using nmf. that it leads to the same results as
 % pcaica will be shown elsewhere
 
-if exist([conf.outpath 'all_data_syn.mat'], 'file')
-    load([conf.outpath 'all_data_syn']);
+if exist([conf.inpath 'all_data_syn.mat'], 'file')
+    load([conf.inpath 'all_data_syn']);
 else
     
     for i = 1:conf.n_monks
@@ -356,7 +356,7 @@ else
             end
         end
     end
-    save([conf.outpath 'all_data_syn'], 'sessions');
+    save([conf.inpath 'all_data_syn'], 'sessions');
 end
 
 clear all_chan data nmf_res data
