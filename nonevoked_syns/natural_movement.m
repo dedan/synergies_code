@@ -473,6 +473,53 @@ clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall
 % stability over monkeys 
 
 
+
+%% stability of prefered directions (over sessions)
+
+for i = 1:conf.n_monks
+
+    n_hands = sessions(idx.(conf.names{i})(1)).hands;
+    c2take  = find(sessions(idx.(conf.names{i})(1)).c2take);
+    
+    h = figure('Visible', 'off');
+    for j = 1:n_hands
+        subplot(n_hands,1,j)
+        for k = find(idx.(conf.names{i}))
+            col = [k k k]/length(idx.(conf.names{i}));
+            plot(c2take,sessions(k).pd_deg(j,c2take),'^','MarkerSize',10, 'MarkerFaceColor', col);
+            hold on
+        end
+        grid
+        hold off
+    end
+    saveas(h, [conf.outpath  'pd_consist_' conf.names{i} '.' conf.image_format]);
+    close(h);
+    
+    
+    h = figure('Visible', 'off');
+        
+    all = vertcat(sessions(idx.(conf.names{i})).pd);
+            
+    for k = c2take
+        subplot(length(c2take)/2,2,k);
+        if n_hands == 1
+            [x y] = pol2cart(all(:,k), ones(size(all(:,k))));
+            feather(x, y, 'b');
+        else
+            [x y] = pol2cart(all(1:2:length(c2take)-1,k), ones(size(all(1:2:length(c2take)-1,k))));
+            feather(x, y, 'b');
+            hold on
+            [x y] = pol2cart(all(2:2:length(c2take),k), ones(size(all(2:2:length(c2take),k))));
+            feather(x, y, 'r');
+            hold off
+            legend('pronation', 'supination');
+        end            
+    end
+    saveas(h, [conf.outpath  'pd_consist_feather' conf.names{i} '.' conf.image_format]);
+    close(h);
+end
+
+clear x y all c2take n_hands
         
 
 
