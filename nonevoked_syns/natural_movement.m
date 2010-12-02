@@ -397,38 +397,50 @@ for i = 1:conf.n_monks
     axis off
     title('all at once');
     
-    subplot(6,4,8);
+    subplot(6,4,10);
     imagesc(group_nmf(1).center);
     axis off
     title('centers (nmf)');
     stds_n{i} = group_nmf(1).idx;   %#ok<SAGROW>
     
-    subplot(6,3,11);
+    subplot(6,4,14);
     imagesc(group_pca(1).center);
     axis off
     title('centers (pca)');
     stds_p{i} = group_pca(1).idx;   %#ok<SAGROW>
 
     
-    syn1 = normr(group_nmf(1).center);
-    syn2 = normr(group_pca(1).center);
+    synnmf = normr(group_nmf(1).center);
+    synpca = normr(group_pca(1).center);
+    synall = normr(res);
     
-    [scores ind] = matchNscore(syn1', syn2');
-    syn2 = syn2(ind,:);
+    [scores ind] = matchNscore(synpca', synnmf');
+    synnmf       = synnmf(ind,:);
     
-    p_pos = {[3 6], [9 12], [15 18]};
-    for j = 1:size(syn1,1)
-        subplot(6,3,p_pos{j})
-        bar( [syn1(j,:)' syn2(j,:)']);
+    p_pos = {[3 7], [11 15], [19 23]};
+    for j = 1:size(synnmf,1)
+        subplot(6,4,p_pos{j})
+        bar( [synpca(j,:)' synnmf(j,:)']);
         axis off
-        title(['synergy #' int2str(j) ' matching score: ' num2str(scores(j))]);
+        title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
     end
-
-    [r p] = corrcoef([syn1(:) syn2(:)]);
-
+    [r p] = corrcoef([synpca(:) synnmf(:)]);
     disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
     
+    [scores ind] = matchNscore(synpca', synall');
+    synall       = synall(ind,:);
+    
+    p_pos = {[4 8], [12 16], [20 24]};
+    for j = 1:size(synpca,1)
+        subplot(6,4,p_pos{j})
+        bar( [synpca(j,:)' synall(j,:)']);
+        axis off
+        title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
+    end
+    [r p] = corrcoef([synpca(:) synall(:)]);
+    disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
+  
     saveas(h, [conf.outpath  'syn_consist_sessions_' conf.names{i} '.' conf.image_format]);
     close(h);
 end
@@ -450,7 +462,7 @@ saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear flat grouped stds_n stds_p nmf_res all
+clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall
 
 
 
