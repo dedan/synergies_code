@@ -101,12 +101,11 @@ for i = 1:length(c2take)
             tmp.channel.signal  = data.channel(i).signal(indx,:);
             tmp.channel.hand_position = data.channel(i).hand_position(indx);
             
-            [PD, PDdeg] = get_pd( tmp);
-            p1          = sig_dir_emg(tmp.channel, config);
-            p2          = anova1(tmp.channel.amp, tmp.channel.dir,'off');
+            pd = get_pd( tmp);
+            p1 = sig_dir_emg(tmp.channel, config);
+            p2 = anova1(tmp.channel.amp, tmp.channel.dir,'off');
             
-            data.pd(j,i)     = PD;
-            data.pd_deg(j,i) = PDdeg;
+            data.pd(j,i)     = pd;
             data.p1(j,i)     = p1;
             data.p2(j,i)     = p2;
         end
@@ -195,7 +194,7 @@ for j=1:length(vrs),
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [PD, PDdeg] = get_pd(data )
+function pd = get_pd(data )
 
 u = unique(data.channel.dir);
 x = NaN(1,length(u));
@@ -211,12 +210,7 @@ cx  = cos(x);
 sx  = sin(x);
 mcx = sum(y.*cx)/sum(y);
 msx = sum(y.*sx)/sum(y);
-PD  = atan(msx/mcx)+(mcx<0)*pi;
-if PD < 0,
-	PDdeg = (PD/pi*180)+360;
-else
-	PDdeg = PD/pi*180;
-end
+pd  = atan(msx/mcx)+(mcx<0)*pi;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function p = sig_dir_emg(data, config)
