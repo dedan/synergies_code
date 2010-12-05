@@ -18,7 +18,7 @@ config.bck_win = [-500 0];          % time relative to spatial cue (SC)
 % parameters for trial selection (how they are chosen see behav_criteria.m)
 % in the data validation folder
 config.t_react = [-200, 500];       % reaction time
-config.t_move  = [200, 1500];       % movemente time
+config.t_move  = [0, 1500];       % movemente time
 config.ang_div = 35;                % angular deviation
 
 config.also_with_stim   = 0;
