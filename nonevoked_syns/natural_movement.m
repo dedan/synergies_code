@@ -36,9 +36,7 @@ conf.map = mymap;
 
 diary([conf.outpath 'log.txt']);
 
-if conf.n_best > conf.Niter_exploration
-    disp('n_best has to be smaller than Niter_exploration');
-end
+
 clear mymap
 
 
@@ -327,39 +325,7 @@ end
 
 
 
-%% compute the synergies 
-% all is done only by using nmf. that it leads to the same results as
-% pcaica will be shown elsewhere
 
-if exist([conf.inpath 'all_data_syn.mat'], 'file')
-    load([conf.inpath 'all_data_syn']);
-else
-    
-    for i = 1:conf.n_monks
-        
-        for j = find(idx.(conf.names{i}))
-            
-            disp(['monk: ' conf.names{i} ' session: ' num2str(j)]);
-            data    = sessions(j).mats(1).data_raw(:,sessions(j).c2take);
-            nmf_res = nmf_explore(data, conf);
-            sessions(j).nmf_pro     = nmf_res.syns; %#ok<SAGROW>
-            sessions(j).nmf_pro_std = nmf_res.std; %#ok<SAGROW>
-            sessions(j).pca_pro     = pcaica(data, conf.dimensions)'; %#ok<SAGROW>
-            
-            
-            if length(sessions(j).mats) > 1
-                data    = sessions(j).mats(2).data_raw(:,sessions(j).c2take);
-                nmf_res = nmf_explore(data, conf);
-                sessions(i).nmf_sup     = nmf_res.syns; %#ok<SAGROW>
-                sessions(i).nmf_sup_std = nmf_res.std; %#ok<SAGROW>
-                sessions(j).pca_sup     = pcaica(data, conf.dimensions)'; %#ok<SAGROW>
-            end
-        end
-    end
-    save([conf.inpath 'all_data_syn'], 'sessions');
-end
-
-clear all_chan data nmf_res data
 
 
 
@@ -462,7 +428,7 @@ saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall
+clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall res
 
 
 
