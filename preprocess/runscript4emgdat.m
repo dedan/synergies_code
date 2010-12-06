@@ -4,6 +4,8 @@
 
 function runscript4emgdat(path, monks)
 
+addpath('../lib');
+
 config.e2add    = 'ee';
 config.verbose  = 0;
 

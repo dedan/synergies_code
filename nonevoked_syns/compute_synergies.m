@@ -12,10 +12,9 @@ addpath('../lib'); %#ok<MCAP>
 
 % general settings
 config = struct;
-config.Niter_exploration= 3;
-config.n_best           = 3;
-config.n_iter_stab      = 3;
-config.Niter_res_test   = 3;
+config.Niter_exploration= 50;
+config.n_best           = 20;
+config.Niter_res_test   = 20;
 config.opt              = statset('MaxIter',5);
 config.max_channels     = 16;
 config.modi             = {'_pro','_sup'};
@@ -130,7 +129,6 @@ for i= 1:length(fdat)
         res(rc).id       = data.chdata.id;
         res(rc).channels = data.chdata.channels;
         res(rc).pd       = data.chdata.pd;
-        res(rc).pd_deg   = data.chdata.pd_deg;
         res(rc).p1       = data.chdata.p1;
         res(rc).p2       = data.chdata.p2;
         

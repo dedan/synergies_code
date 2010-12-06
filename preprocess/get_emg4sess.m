@@ -30,7 +30,6 @@ for k=1:length(Nh),
     chdata(k).channels  = logical(data.channels);  %#ok<*AGROW>
     chdata(k).id        = info.DDFparam.ID; 
     chdata(k).pd        = data.pd(k,:);
-    chdata(k).pd_deg    = data.pd_deg(k,:);
     chdata(k).p1        = data.p1(k,:);
     chdata(k).p2        = data.p2(k,:);
 
