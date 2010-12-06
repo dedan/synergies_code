@@ -27,6 +27,10 @@ end
 diary([outpath 'log.txt']);
 sessions = struct([]);
 
+% chalva sessions 54 the connector was switched. 
+% channels 1-8 were switched with 9-16
+fix_chalva_54(data_path)
+
 for monk = monks
     config.monk             = char(monk);
     config.emgdat_path      = [data_path config.monk filesep 'EMGdat' filesep];
