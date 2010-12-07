@@ -59,11 +59,11 @@ c2take = all(vertcat(sessions.channels));
 for i = 1:length(sessions)
     for j = 1:length(sessions(1).hands)
         
-        data    = sessions(j).mats(j).data_raw(:,c2take);
+        data    = sessions(i).mats(j).data_raw(:,c2take);
         nmf_res = nmf_explore(data, conf);
-        sessions(j).(['nmf' conf.modi{j}])          = nmf_res.syns;
-        sessions(j).(['nmf' conf.modi{j} '_std'])	= nmf_res.std;
-        sessions(j).(['pca' conf.modi{j}])          = pcaica(data, conf.dimensions)';
+        sessions(i).(['nmf' conf.modi{j}])          = nmf_res.syns;
+        sessions(i).(['nmf' conf.modi{j} '_std'])	= nmf_res.std;
+        sessions(i).(['pca' conf.modi{j}])          = pcaica(data, conf.dimensions)';
     end
 end
 
