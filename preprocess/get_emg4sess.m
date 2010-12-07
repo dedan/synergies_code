@@ -26,6 +26,7 @@ Ntr  = unique(trg);
 Ntr  = Ntr(Ntr > 0);                         % list of targets
 hnd  = data.channel(1).hand_position;        % hand position is the same for all channels
 Nh   = unique(hnd(trg > 0));                 % list of hand positions
+Nh   = Nh(Nh ~= 0);
 
 for k=1:length(Nh),
     
@@ -98,7 +99,7 @@ function stimflag = test4stim( subs )
 
 stimflag = 0;
 for i=1:length(subs.Electrode)
-    if subs.Electrode(i).Stim.Flag,
+    if isfield(subs.Electrode(i).Stim, 'Flag') && subs.Electrode(i).Stim.Flag
         stimflag = 1;
         return;
     end
@@ -111,7 +112,9 @@ function configflag = test4other(fileConfig, files)
 configflag = 0;
 
 for i=files,
-    if fileConfig(i).SCPStim || fileConfig(i).PRB || fileConfig(i).DBS,
+    if (isfield(fileConfig, 'SCPStim')  && fileConfig(i).SCPStim) || ...
+       (isfield(fileConfig, 'PRB')      && fileConfig(i).PRB) || ...
+       (isfield(fileConfig, 'DBS')      && fileConfig(i).DBS)
         configflag = 1;
         return
     end
