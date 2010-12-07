@@ -26,24 +26,26 @@ for dati = 1:length(filtered_data)
         disp('have to connect');
     end
     for file_number = dat.file(1):dat.file(end)
-        file = [config.dat_folder dat.session '/MAT/' dat.session lead_zeros(file_number,3) int2str(file_number)];
+        file = [config.dat_folder dat.session filesep 'MAT' filesep ...
+            dat.session sprintf('%03d',file_number) int2str(file_number)];
         
         stim_check = whos('-file',[file '_bhv'],'StimTime');
         if(stim_check.size(1) > 4)
             
             
             load([file '_bhv.mat'], 'StimTime');
-            load([file '_emg.mat'], 'EMG*');
+            emg = load([file '_emg.mat'], 'EMG*');
             first_good = find(config.channels2take,1);
-            f_orig = eval(['EMG' int2str(config.channels(first_good)) '_KHz']);
+            f_orig = emg.(['EMG' int2str(config.channels(first_good)) '_KHz']);
             
             %NOTE beim aneinanderhängen darauf achten zur zweiten stimmtime
             %einen offset in länge der vorigen session draufzurechnen
             
-            tmp = NaN(length(find(config.channels2take)), length(eval(['EMG' int2str(config.channels(first_good))])));
+            tmp = NaN(length(find(config.channels2take)), ...
+                length(emg.(['EMG' int2str(config.channels(first_good))])));
             c = 1;
             for i = find(config.channels2take)
-                tmp(c,:) = eval(['EMG' int2str(config.channels(i))]);
+                tmp(c,:) = emg.(['EMG' int2str(config.channels(i))]);
                 c = c+1;
             end
             
@@ -67,7 +69,7 @@ for dati = 1:length(filtered_data)
         resp(j).connected   = length(dat.file(1):dat.file(end)) > 1;
         
         % NOTE continue to skip the non pronation or supination sessions
-        if(resp(j).hand ~= 1 && resp(j).hand ~= 2)
+        if(resp(j).hand == 3)
             if config.inflag
                 display('hand in midposition, skip this session..');
             end

@@ -22,11 +22,11 @@ try
     
     
     % the values have to be computed to fit the original sampling rate
-    StimTime_ms = StimTime * 1000;
-    stim_time_up  = StimTime_ms * f_orig;
-    win_start_up  = config.window(1) * f_orig;
-    win_end_up    = config.window(2)   * f_orig;
-    window_size_up = abs(win_end_up - win_start_up)+1;
+    StimTime_ms     = StimTime * 1000;
+    stim_time_up    = StimTime_ms * f_orig;
+    win_start_up    = config.window(1) * f_orig;
+    win_end_up      = config.window(2)   * f_orig;
+    window_size_up  = abs(win_end_up - win_start_up)+1;
     aggregation_matrix   = zeros(length(StimTime), window_size_up);
     
     
@@ -42,11 +42,6 @@ try
         
         % DC removal, rectification
         cur_chan = abs(cur_chan - mean(cur_chan));
-        
-        % apply the artefact filter if flag is set
-        if(config.apply_filter)
-            cur_chan = artefact_filter(f_orig, StimTime_ms, cur_chan);
-        end
         
         % create window for all stimulations
         for j = 1:length(StimTime)
@@ -64,16 +59,8 @@ try
         res.post_r  = floor(size(aggregation_matrix,2)/2) + config.int_window(1) * f_orig:size(aggregation_matrix,2);
         res.p(i)    = ranksum(mean(aggregation_matrix(:,res.pre_r),2), mean(aggregation_matrix(:,res.post_r),2));
         
-        % compute the mean in the pre stimulation part of the window to
-        % remove the individual dc component of a channel. Also std for
-        % this part is computed for normalization
-        pre_stim = aggregation_matrix(:,res.pre_r);
-        res.m_pre(i) = mean(pre_stim(:));
-        res.s_pre(i) = std(pre_stim(:));
-        
         % average over responses
         res.windows(i,:) = mean(aggregation_matrix);
-        
         
     end
     
