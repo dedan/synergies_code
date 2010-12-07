@@ -7,7 +7,9 @@ chdata  = [];
 % set the data folders and load info file
 emgdir = [config.path 'data' filesep sessname filesep 'mat' filesep ];
 eddir  = [config.path 'EDfiles' filesep];
-info = load([config.path 'data' filesep sessname filesep 'info' filesep sessname '_param.mat']);
+%info = load([config.path 'data' filesep sessname filesep 'info' filesep sessname '_param.mat']);
+info = load([config.path 'info_files' filesep sessname '_param.mat']);
+
 
 [edfiles, emgfiles] = get_files2run(info, eddir, emgdir, sessname, config);
 
