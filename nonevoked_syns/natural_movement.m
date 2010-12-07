@@ -35,13 +35,13 @@ mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' lins
 conf.map = mymap;
 
 diary([conf.outpath 'log.txt']);
-
-
 clear mymap
+
+res = struct;
 
 
 %% load data
-load([conf.inpath 'all_data_dummy']);
+load([conf.inpath 'all_data']);
 addpath('../lib'); 
 
 % sort out the first vega sessions because they were recorded from
@@ -126,18 +126,14 @@ tmp = intersect(tmp,{chan{3,:}});
 disp('');
 disp([num2str(length(tmp)) ' channels in common for all monkeys']);
 
-% which channels are available for all sessions of a monkey
+% only use channels which are available for all sessions of a monk
 for i = 1:conf.n_monks
     
-    % only use channels which are available for all sessions of a monk
-    all_chan = vertcat(sessions(idx.(conf.names{i})).channels);
-    c2take   = all(all_chan);
-    for j = find(idx.(conf.names{i}))
-        sessions(j).c2take = c2take; %#ok<SAGROW>
-    end
+    all_chan                     = vertcat(sessions(idx.(conf.names{i})).channels);
+    res.(conf.names{i}).c2take   = all(all_chan);
 end
 
-clear tmp chan all_chan c2take
+clear tmp chan all_chan
 
 
 
@@ -326,10 +322,6 @@ end
 
 
 
-
-
-
-
 %% synergy analysis
 
 
@@ -354,10 +346,10 @@ for i = 1:conf.n_monks
     % will the synergies look the same when I compute them on the whole dat
     all = [];
     for k = find(idx.(conf.names{i}))
-        all = [all; sessions(k).mats(1).data_raw(:,sessions(k).c2take)]; %#ok<AGROW>
+        all = [all; sessions(k).mats(1).data_raw(:,res.(conf.names{i}).c2take)]; %#ok<AGROW>
     end
     nmf_res = nmf_explore(all, conf);
-    res     = nmf_res.syns;
+    tmp     = nmf_res.syns;
     subplot(6,4,2);
     imagesc(nmf_res.syns);
     axis off
@@ -378,10 +370,11 @@ for i = 1:conf.n_monks
     
     synnmf = normr(group_nmf(1).center);
     synpca = normr(group_pca(1).center);
-    synall = normr(res);
+    synall = normr(tmp);
     
-    [scores ind] = matchNscore(synpca', synnmf');
-    synnmf       = synnmf(ind,:);
+    [scores ind]             = matchNscore(synpca', synnmf');
+    synnmf                   = synnmf(ind,:);
+    res.(conf.names{i}).syns = synnmf;
     
     p_pos = {[3 7], [11 15], [19 23]};
     for j = 1:size(synnmf,1)
@@ -428,7 +421,7 @@ saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall res
+clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall
 
 
 
@@ -441,51 +434,64 @@ clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall res
 
 
 %% stability of prefered directions (over sessions)
-
 for i = 1:conf.n_monks
 
-    n_hands = sessions(idx.(conf.names{i})(1)).hands;
-    c2take  = find(sessions(idx.(conf.names{i})(1)).c2take);
+    monk_first  = find(idx.(conf.names{i}), 1, 'first');
+    n_hands     = sessions(monk_first).hands;
+    c2take_idx  = find(res.(conf.names{i}).c2take);
+    
+    
+    h = figure('Visible', 'off');    
+    all = vertcat(sessions(idx.(conf.names{i})).pd);            
+    for k = c2take_idx
+        subplot(length(c2take_idx)/2,2,k);
+        if n_hands == 1
+            [x y] = pol2cart(all(:,k), ones(size(all(:,k))));
+            feather(x, y, 'b');
+            [~, res.(conf.names{i}).cstd]  = circ_std(all);
+            res.(conf.names{i}).pds        = circ_mean(all);
+        else
+            [x y] = pol2cart(all(1:2:length(c2take_idx)-1,k), ones(size(all(1:2:length(c2take_idx)-1,k))));
+            feather(x, y, 'b');
+            hold on
+            [x y] = pol2cart(all(2:2:length(c2take_idx),k), ones(size(all(2:2:length(c2take_idx),k))));
+            feather(x, y, 'r');
+            hold off
+            legend('pronation', 'supination');
+            [~, res.(conf.names{i}).cstd(1,:)] = circ_std(all(1:2:length(c2take_idx)-1,:));
+            [~, res.(conf.names{i}).cstd(2,:)] = circ_std(all(2:2:length(c2take_idx),:));
+            res.(conf.names{i}).pds(1,:)       = circ_mean(all(1:2:length(c2take_idx)-1,:));
+            res.(conf.names{i}).pds(2,:)       = circ_mean(all(2:2:length(c2take_idx),:));
+        end            
+    end
+    saveas(h, [conf.outpath  'pd_consist_feather' conf.names{i} '.' conf.image_format]);
+    close(h);
+    
     
     h = figure('Visible', 'off');
     for j = 1:n_hands
         subplot(n_hands,1,j)
         for k = find(idx.(conf.names{i}))
             col = [k k k]/length(idx.(conf.names{i}));
-            plot(c2take,sessions(k).pd_deg(j,c2take),'^','MarkerSize',10, 'MarkerFaceColor', col);
+            in_deg = rad2deg(sessions(k).pd(j,c2take_idx));
+            in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
+            plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
+            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), res.(conf.names{i}).cstd, 'UniformOutput', false))
+            set(gca,'XTick', c2take_idx);
             hold on
         end
         grid
+        xlabel('circular stds');
+        ylabel('pds (deg)');
         hold off
     end
     saveas(h, [conf.outpath  'pd_consist_' conf.names{i} '.' conf.image_format]);
     close(h);
-    
-    
-    h = figure('Visible', 'off');
         
-    all = vertcat(sessions(idx.(conf.names{i})).pd);
-            
-    for k = c2take
-        subplot(length(c2take)/2,2,k);
-        if n_hands == 1
-            [x y] = pol2cart(all(:,k), ones(size(all(:,k))));
-            feather(x, y, 'b');
-        else
-            [x y] = pol2cart(all(1:2:length(c2take)-1,k), ones(size(all(1:2:length(c2take)-1,k))));
-            feather(x, y, 'b');
-            hold on
-            [x y] = pol2cart(all(2:2:length(c2take),k), ones(size(all(2:2:length(c2take),k))));
-            feather(x, y, 'r');
-            hold off
-            legend('pronation', 'supination');
-        end            
-    end
-    saveas(h, [conf.outpath  'pd_consist_feather' conf.names{i} '.' conf.image_format]);
-    close(h);
 end
 
-clear x y all c2take n_hands
+
+clear x y all c2take_idx n_hands
         
 
 
@@ -493,9 +499,35 @@ clear x y all c2take n_hands
 
 
 
+%% synergies in PD space
 
+for i = 1:conf.n_monks
+    
 
+    % roseplot 
+    h = figure('Visible', 'off');
+    syn      = res.(conf.names{i}).syns;
+    pds      = res.(conf.names{i}).pds;
 
+    for j = 1:conf.dimensions
+        
+        subplot(2,2,j);
+        rose_agg = [];
+        for k = find(res.(conf.names{i}).c2take)
+            rose_agg = [rose_agg ones(1, floor(syn(j,k) * 100)) * pds(1,k)]; %#ok<AGROW>
+        end
+        h_fake = rose(ones(1,100));
+        hold on;
+        rose(rose_agg,30);
+        set(h_fake, 'Visible', 'Off');
+        title(['# ' num2str(j)]);
+    end
+    subplot(2,2,4)
+    rose(pds, 360);
+    title('pd distribution');
+    saveas(h, [conf.outpath  'syn_rose_' conf.names{i} '.' conf.image_format]);
+    close(h);
+end
 
 
 
