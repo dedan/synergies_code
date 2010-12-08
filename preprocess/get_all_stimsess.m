@@ -6,7 +6,7 @@ function res = get_all_stimsess(config)
 
 rec = 1;
 res = struct('hand', [],'id', {}, 'session', {}, 'subsession', {}, ...
-             'file', [], 'amp', [], 'electrode', [], 'location', struct);
+    'file', [], 'amp', [], 'electrode', [], 'location', struct);
 
 
 dir_list = dir(config.dat_folder);
@@ -19,74 +19,35 @@ for i = 1:length(dir_list)
     if( strcmp(file.name(1), '.')), continue; end;
     
     % load the file
-    try
-        load([config.dat_folder file.name filesep 'Info' filesep file.name '_param.mat']);
+    load([config.dat_folder file.name filesep 'Info' filesep file.name '_param.mat']);
+    
+    for j=1:length(SESSparam.SubSess)
         
-        for j=1:length(SESSparam.SubSess)
-            
-            subs = SESSparam.SubSess(j);
-            ok = 0;
-            
-            % only if values for stimulation, depth and so on can be found
-            if( isfield(subs, 'CT') && ~isempty(subs.CT) && ...
-             ~isempty(subs.CT.Stim) && ~isempty(subs.CT.Depth) && ...
-             ~isempty(subs.CT.StimAmp))
+        subs = SESSparam.SubSess(j);
                 
-                res(rec).electrode         = 1;
-                res(rec).amp               = SESSparam.SubSess(j).CT.StimAmp;
-                res(rec).location.depth    = SESSparam.SubSess(j).CT.Depth;
-                if(isfield(DDFparam, 'Cortex'))
-                    res(rec).location.x      = DDFparam.Cortex.X;
-                    res(rec).location.y      = DDFparam.Cortex.Y;
-                    res(rec).location.quad   = DDFparam.Cortex.Quad;
-                    ok = 1;
-                elseif(isfield(DDFparam, 'Cortex1'))
-                    res(rec).location.x      = DDFparam.Cortex1.X;
-                    res(rec).location.y      = DDFparam.Cortex1.Y;
-                    res(rec).location.quad   = DDFparam.Cortex1.Quad;
-                    ok = 1;
-                end
-            elseif(isfield(subs, 'CT1') && ~isempty(subs.CT1) && ...
-             ~isempty(subs.CT1.Stim) && ~isempty(subs.CT1.Depth) && ...
-             ~isempty(subs.CT1.StimAmp))
+        % which electrodes were used
+        % TODO in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
+        used_electrodes = find([DDFparam.Electrode.InUse]);
+        for used = used_electrodes
+            if subs.Electrode(used).Stim.Flag
+                res(rec).electrode      = used;
+                res(rec).amp            = subs.Electrode(used).Stim.Amp;
+                res(rec).location.depth = subs.Electrode(used).Depth;
+                res(rec).location.x     = DDFparam.Electrode(used).X;
+                res(rec).location.y     = DDFparam.Electrode(used).Y;
                 
-                res(rec).electrode       = 2;
-                res(rec).amp             = SESSparam.SubSess(j).CT1.StimAmp;
-                res(rec).location.depth  = SESSparam.SubSess(j).CT1.Depth;
-                res(rec).location.x      = DDFparam.Cortex2.X;
-                res(rec).location.y      = DDFparam.Cortex2.Y;
-                res(rec).location.quad   = DDFparam.Cortex2.Quad;
-                ok = 1;
-            end
-            
-            % if there is a valid stimulus -> save it
-            if(ok)
                 res(rec).hand            = SESSparam.hand;
                 res(rec).id              = DDFparam.ID;
                 res(rec).session         = file.name;
                 res(rec).subsession      = j;
                 res(rec).file            = SESSparam.SubSess(j).Files;
-                res(rec).location.thr    = DDFparam.CTXmap.Thr;
-                res(rec).location.res    = DDFparam.CTXmap.Resp;
+                res(rec).location.thr    = DDFparam.Electrode(used).Threshold;
+                res(rec).location.res    = DDFparam.Electrode(used).Active;
                 
                 rec = rec +1;
             end
-            
         end
         
-    catch fehler
-        if config.erflag
-            switch fehler.identifier
-                case {'MATLAB:nonStrucReference'}
-                    display([file.name '_param.mat' ' -- SubSess Struct Empty']);
-                case {'MATLAB:load:couldNotReadFile'}
-                    display(['no Info File for: ' file.name ' available !']);
-                otherwise
-                    display([file.name ': ' fehler.identifier]);
-            end
-        end
     end
-    
-    
 end
 

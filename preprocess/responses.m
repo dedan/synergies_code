@@ -27,30 +27,30 @@ for dati = 1:length(filtered_data)
     end
     for file_number = dat.file(1):dat.file(end)
         file = [config.dat_folder dat.session filesep 'MAT' filesep ...
-            dat.session sprintf('%03d',file_number) int2str(file_number)];
+            dat.session sprintf('%03d',file_number)];
         
-        stim_check = whos('-file',[file '_bhv'],'StimTime');
+        stim_check = whos('-file',[file '_bhv'],'AMstim_on');
         if(stim_check.size(1) > 4)
             
             
-            load([file '_bhv.mat'], 'StimTime');
+            load([file '_bhv.mat'], 'AMstim_on');
             emg = load([file '_emg.mat'], 'EMG*');
-            first_good = find(config.channels2take,1);
+            first_good = find(config.c2take,1);
             f_orig = emg.(['EMG' int2str(config.channels(first_good)) '_KHz']);
             
             %NOTE beim aneinanderhängen darauf achten zur zweiten stimmtime
             %einen offset in länge der vorigen session draufzurechnen
             
-            tmp = NaN(length(find(config.channels2take)), ...
+            tmp = NaN(length(find(config.c2take)), ...
                 length(emg.(['EMG' int2str(config.channels(first_good))])));
             c = 1;
-            for i = find(config.channels2take)
+            for i = find(config.c2take)
                 tmp(c,:) = emg.(['EMG' int2str(config.channels(i))]);
                 c = c+1;
             end
             
-            StimTime = StimTime +(size(emg_data,2) / (f_orig*1000));
-            StimTime_agg = [StimTime_agg; StimTime]; %#ok<AGROW>
+            AMstim_on = AMstim_on +(size(emg_data,2) / (f_orig*1000));
+            StimTime_agg = [StimTime_agg; AMstim_on]; %#ok<AGROW>
             emg_data = [emg_data tmp]; %#ok<AGROW>
             
             
@@ -88,11 +88,7 @@ for dati = 1:length(filtered_data)
         for i = 1:size(wins.windows,1)
             
             % response computation as described by yuval
-            resp(j).response_y(i) = (mean(resp(j).windows(i,wins.post_r)) / mean(resp(j).windows(i,wins.pre_r))) * 100;
-                        
-            % my response computation (integral of average windows and normalization )
-            resp(j).response(i)  = sum(abs((resp(j).windows(i,wins.post_r) - wins.m_pre(i)) ./ wins.s_pre(i) ));
-            
+            resp(j).response(i) = (mean(resp(j).windows(i,wins.post_r)) / mean(resp(j).windows(i,wins.pre_r))) * 100;
         end
         
         j = j+1;

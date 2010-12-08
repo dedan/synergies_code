@@ -71,11 +71,9 @@ try
     
     % error handling
 catch fehler
-    if config.erflag
-        disp('average windows error handling: ');
-        display(['Error: ' fehler.identifier]);
-        error('error in average window');
-    end
+    disp('average windows error handling: ');
+    display(['Error: ' fehler.identifier]);
+    error('error in average window');
 end
 
 
