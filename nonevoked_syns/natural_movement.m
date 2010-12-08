@@ -529,9 +529,8 @@ for i = 1:conf.n_monks
     close(h);
 end
 
-
-
-
+nat_mov_res = res;
+save([conf.inpath 'nat_mov_res.mat'], 'nat_mov_res');
 
 
 
