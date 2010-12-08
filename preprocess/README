@@ -1,6 +1,8 @@
-this is a old programmed that I just cleaned up and made work
 
-the problem was that we had thousand versions of it and all
-were somehow buggy. Now this will become the one and only version
-of the program which is used to create the emg files that look
-like for example EMGv010407.mat
+This folder contains all the files which are used to do preprocessing, to make the data available for analysis. 
+
+preprocessing of nonevoked data (synergies during normal movement)
+    runscript4emgdat
+    
+preprocessing of evoked data (synergies during stimulation)
+    runscript4evoked
