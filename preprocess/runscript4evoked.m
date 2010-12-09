@@ -37,7 +37,8 @@ for monk = monks
     filtered_data = stimulations_at(data, conf.stim_value);
     
     for i = 1:length(resps)
-        resps(i).monk = char(monk);
+        resps(i).monk   = char(monk);
+        resps(i).c2take = conf.c2take;
     end
     
     % collect results
