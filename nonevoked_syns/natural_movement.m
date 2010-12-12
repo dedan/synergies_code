@@ -254,7 +254,7 @@ if length(conf.names) > 1
     end
 end
 h = figure('Visible', 'off');
-hist(data(:,conf.dimensions));
+hist(data(:,conf.dimensions),50);
 title(['distribution of rank ' num2str(conf.dimensions) ' resid values']);
 saveas(h, [conf.outpath  'resid_dist.' conf.image_format]);
 close(h);
@@ -484,9 +484,10 @@ for i = 1:conf.n_monks
     h = figure('Visible', 'off');
     for j = 1:n_hands
         subplot(n_hands,1,j)
-        for k = find(idx.(conf.names{i}))
-            col = [k k k]/length(idx.(conf.names{i}));
-            in_deg = rad2deg(sessions(k).pd(j,c2take_idx));
+        inds = find(idx.(conf.names{i}));
+        for k = 1:length(inds)
+            col = [k k k]/length(inds);
+            in_deg = rad2deg(sessions(inds(k)).pd(j,c2take_idx));
             in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
             plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
             set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), res.(conf.names{i}).cstd, 'UniformOutput', false))
