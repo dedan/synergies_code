@@ -13,15 +13,14 @@ for i = 1:length(resp)
    switch(resp(i).hand)
       case{1}
          sep_results(1).dat(pro_count,:)    = resp(i).response;
-         sep_results(1).dat_y(pro_count,:)  = resp(i).response_y;
          sep_results(1).resp(pro_count)     = resp(i);
          pro_count = pro_count +1;
       case{2}
          sep_results(2).dat(sup_count,:)    = resp(i).response;
-         sep_results(2).dat_y(sup_count,:)  = resp(i).response_y;
          sep_results(2).resp(sup_count)     = resp(i);
          sup_count = sup_count +1;
       otherwise
-         disp(['now valid handpos, disregard: ' int2str(resp(i).info.ses.id) ' -- ' int2str(resp(i).info.ses.subsession) ' for further analysis']);
+         disp(['now valid handpos, disregard: ' int2str(resp(i).info.ses.id) ...
+             ' -- ' int2str(resp(i).info.ses.subsession) ' for further analysis']);
    end
 end
