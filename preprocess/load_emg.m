@@ -88,29 +88,29 @@ for i = 1:length(emgfiles)
     total_trials = total_trials + size(trials,1);
 end
 
-for i = 1:length(c2take)
-    if isfield(bhvdata, 'hand_position')
-        u = unique(data.channel(i).hand_position);
-        u = u(u ~= 0);
-        for j = 1:length(u)
-            tmp                 = data;
-            tmp.channel         = data.channel(i);
-            indx                = find(data.channel(i).hand_position == u(j));
-            tmp.channel.dir     = data.channel(i).dir(indx);
-            tmp.channel.amp     = data.channel(i).amp(indx);
-            tmp.channel.signal  = data.channel(i).signal(indx,:);
-            tmp.channel.hand_position = data.channel(i).hand_position(indx);
-            
-            pd = get_pd( tmp);
-            p1 = sig_dir_emg(tmp.channel, config);
-            p2 = anova1(tmp.channel.amp, tmp.channel.dir,'off');
-            
-            data.pd(j,i)     = pd;
-            data.p1(j,i)     = p1;
-            data.p2(j,i)     = p2;
-        end
-    else
-        disp('error: no hand information was provided');
+u = unique(data.channel(i).hand_position);
+u = u(u ~= 0);
+for j = 1:length(u)
+    data.pd = zeros(length(u), length(all));
+    data.p1 = zeros(length(u), length(all));
+    data.p2 = zeros(length(u), length(all));
+    
+    for i = 1:length(c2take)
+        tmp                 = data;
+        tmp.channel         = data.channel(i);
+        indx                = find(data.channel(i).hand_position == u(j));
+        tmp.channel.dir     = data.channel(i).dir(indx);
+        tmp.channel.amp     = data.channel(i).amp(indx);
+        tmp.channel.signal  = data.channel(i).signal(indx,:);
+        tmp.channel.hand_position = data.channel(i).hand_position(indx);
+        
+        pd = get_pd( tmp);
+        p1 = sig_dir_emg(tmp.channel, config);
+        p2 = anova1(tmp.channel.amp, tmp.channel.dir,'off');
+        
+        data.pd(j,i)     = pd;
+        data.p1(j,i)     = p1;
+        data.p2(j,i)     = p2;
     end
 end
 
