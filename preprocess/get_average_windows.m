@@ -13,7 +13,7 @@ function res = get_average_windows(emg_data, StimTime, f_orig, config)
 res = struct;
 
 % variable calculation and initialization
-sample_dist_ms       = (1 / config.sampling_rate) * 1000;
+sample_dist_ms       = 1 / f_orig;
 res.x_axis           = config.window(1)  : sample_dist_ms : config.window(2);
 res.windows          = zeros(size(emg_data,1), length(res.x_axis));
 
