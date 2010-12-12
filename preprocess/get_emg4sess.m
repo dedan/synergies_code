@@ -18,8 +18,18 @@ if length(edfiles) ~= length(emgfiles)
     return;
 end
 
+if isempty(emgfiles)
+    disp('no valid subsessions found, stop working this session');
+    return
+end
+
 
 data = load_emg(edfiles, emgfiles, config);
+
+if isempty(data)
+    disp('data empty, stop working this session');
+    return
+end
 
 trg  = data.channel(1).Target;               % target of trial
 Ntr  = unique(trg);
