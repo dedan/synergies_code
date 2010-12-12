@@ -36,7 +36,7 @@ for monk = monks
     conf.c2take             = nat_mov_res.(char(monk)).c2take;
     
     % get all subessions in which a stimulation took place
-    data = get_all_stimsess(conf);
+    data = get_all_stimsess(conf, char(monk));
     
     % filter subessions according to StimAmp
     filtered_data = stimulations_at(data, conf.stim_value);
@@ -54,7 +54,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function res = get_all_stimsess(config)
+function res = get_all_stimsess(config, monk)
 
 % use this function on a folder to get all data about files of sessions in
 % which stimulation took place. The resulting list can afterwards be sorted
@@ -82,8 +82,12 @@ for i = 1:length(dir_list)
         subs = SESSparam.SubSess(j);
                 
         % which electrodes were used
-        % TODO in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
+        % in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
         used_electrodes = find([DDFparam.Electrode.InUse]);
+        if strcmp(monk, 'vega') || strcmp(monk, 'vega_first')
+            used_electrodes = used_electrodes(used_electrodes ~= 1);
+        end
+        
         for used = used_electrodes
             if subs.Electrode(used).Stim.Flag
                 res(rec).electrode      = used;
