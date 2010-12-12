@@ -42,16 +42,12 @@ res = struct;
 
 %% load data
 load([conf.inpath 'all_data']);
+
+% load also last data, maybe the current monkey is missing and will be
+% appended now
+load([conf.inpath 'nat_mov_res.mat']);
 addpath('../lib'); 
 
-% sort out the first vega sessions because they were recorded from
-% different muscles and have only 8 muscles in common with the later
-% sessions which is I think not enough
-not_first_vega     = ~strcmp('vega', {sessions.monk}) | [sessions.id] > 26;
-for i = find(~not_first_vega)
-    sessions(i).monk = 'first_vega'; %#ok<SAGROW>
-end
-clear not_first_vega
 
 
 %% statistics
@@ -214,9 +210,6 @@ clear rank1 r p
 % remaining error is plotted only for pronation handposition because this
 % is the only position which is available for all monkeys
 
-% make all test fields the same length (easier access later on)
-
-
 h = figure('Visible', 'off');
 
 % plot mean residual and mean shuffled
@@ -251,6 +244,26 @@ saveas(h, [conf.outpath  'resid_test_std.' conf.image_format]);
 close(h);
 
 clear x y data map modi
+
+
+%% what is the remaining error for rank 3 model?
+data = vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro);
+if length(conf.names) > 1
+    for j=2:length(conf.names)
+        data = vertcat(data, vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro)); %#ok<AGROW>
+    end
+end
+h = figure('Visible', 'off');
+hist(data(:,conf.dimensions));
+title(['distribution of rank ' num2str(conf.dimensions) ' resid values']);
+saveas(h, [conf.outpath  'resid_dist.' conf.image_format]);
+close(h);
+disp('');
+disp(['mean of rank ' num2str(conf.dimensions) ' resid values: '  ...
+    num2str(mean(data(:,conf.dimensions)))]);
+
+
+
 
 
 

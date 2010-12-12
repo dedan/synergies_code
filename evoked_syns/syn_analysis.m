@@ -36,7 +36,7 @@ config.dimensions          = 3;                                                 
 config.Niter_res_test      = 10;                                           % number of iterations for the residual test
 config.Niter_exploration   = 50;                                          % number of iterations for nmf exploration
 config.n_best              = 20;
-config.opt                 = statset('MaxIter',5);
+config.opt                 = statset('MaxIter',50);
 
 
 % files and folders
