@@ -2,22 +2,27 @@
 % path: path to volume which contains all data
 % monks: cell array of names, also cell if only one. example {'chalva'}
 
-function runscript4evoked(path, monks)
+function runscript4evoked(path, monks, conf)
 
 addpath('../lib');
 
-conf.sampling_rate  = 10000;    % downsampling to this rate (acts as lowpass)
-conf.stim_value     = 150;      % look only at stimulations around this value
-conf.window         = [-20 20]; % start and end of average window
-conf.int_window     = [6 20];   % integrate window only in this part (final response)
-conf.inflag         = true;
-conf.errflag        = true;
-conf.channels       = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
+
+if nargin == 2
+    disp('no config struct given, standard values used');
+    disp('');
+    conf.stim_value     = 150;      % look only at stimulations around this value
+    conf.window         = [-20 20]; % start and end of average window
+    conf.int_window     = [6 20];   % integrate window only in this part (final response)
+    conf.inflag         = true;
+    conf.errflag        = true;
+    conf.channels       = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
+    disp(conf)
+end
 
 
 conf.inpath         = '~/Documents/uni/yifat_lab/results/data/';
 
-resps = struct([]);
+
 
 % load the natural movement results
 load([conf.inpath 'nat_mov_res.mat'])
@@ -36,19 +41,14 @@ for monk = monks
     % filter subessions according to StimAmp
     filtered_data = stimulations_at(data, conf.stim_value);
     
-    for i = 1:length(resps)
-        resps(i).monk   = char(monk);
-        resps(i).c2take = conf.c2take;
-    end
+    resps = responses(filtered_data, conf);
     
-    % collect results
-    if isempty(resps)
-        resps = responses(filtered_data, conf);
-    else
-        resps = [resps responses(filtered_data, conf)]; %#ok<AGROW>
+    % add information about session
+    for i = 1:length(resps)
+        resps(i).c2take = conf.c2take; 
     end
+    save([conf.inpath filesep 'evoked_data_' char(monk)], 'resps');
 end
-save([conf.inpath filesep 'evoked_data'], 'resps');
 
 
 
