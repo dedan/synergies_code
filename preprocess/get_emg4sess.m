@@ -18,6 +18,11 @@ if length(edfiles) ~= length(emgfiles)
     return;
 end
 
+if isempty(emgfiles)
+    disp('no valid subsessions found, stop working this session');
+    return
+end
+
 
 data = load_emg(edfiles, emgfiles, config);
 
