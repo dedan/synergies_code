@@ -210,9 +210,6 @@ clear rank1 r p
 % remaining error is plotted only for pronation handposition because this
 % is the only position which is available for all monkeys
 
-% make all test fields the same length (easier access later on)
-
-
 h = figure('Visible', 'off');
 
 % plot mean residual and mean shuffled
@@ -247,6 +244,26 @@ saveas(h, [conf.outpath  'resid_test_std.' conf.image_format]);
 close(h);
 
 clear x y data map modi
+
+
+%% what is the remaining error for rank 3 model?
+data = vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro);
+if length(conf.names) > 1
+    for j=2:length(conf.names)
+        data = vertcat(data, vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro)); %#ok<AGROW>
+    end
+end
+h = figure('Visible', 'off');
+hist(data(:,conf.dimensions));
+title(['distribution of rank ' num2str(conf.dimensions) ' resid values']);
+saveas(h, [conf.outpath  'resid_dist.' conf.image_format]);
+close(h);
+disp('');
+disp(['mean of rank ' num2str(conf.dimensions) ' resid values: '  ...
+    num2str(mean(data(:,conf.dimensions)))]);
+
+
+
 
 
 
