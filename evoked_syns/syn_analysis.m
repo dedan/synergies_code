@@ -204,26 +204,23 @@ clear resid_res resid_resr
 disp(' ');
 disp('start the search for synergists..');
 
-    for i = 1:length(fin_res)
-
-        % TODO brauche ich die nmf exploration überhaupt noch, ist das
-        % nicht schon sehr stabil?
-        nmf_res     = nmf_explore(fin_res(i).dat, config);
-        nmf_res_r   = nmf_explore(shuffle_inc(fin_res(i).dat), config);
-        
-        h = figure('Visible','off');
-        imagesc(nmf_res.flat);
-        colormap(config.mymap);
-        title(['standard deviation of group size: ' num2str(nmf_res.std)]);
-        saveas(h, [config.cur_res_fold  'nmf_expl_stab' int2str(i) '.' config.image_format]);
-        close(h);
-        disp(['standard deviation of group size: ' num2str(nmf_res.std)]);
-        
-        fin_res(i).nmf_syns = nmf_res.syns;
-        fin_res(i).nmf_res  = nmf_res;
-        fin_res(i).nmf_res_r = nmf_res_r;
-    end
+for i = 1:length(fin_res)
     
+    nmf_res     = nmf_explore(fin_res(i).dat, config);
+    nmf_res_r   = nmf_explore(shuffle_inc(fin_res(i).dat), config);
+    
+    h = figure('Visible','off');
+    imagesc(nmf_res.flat);
+    title(['standard deviation of group size: ' num2str(nmf_res.std)]);
+    saveas(h, [config.cur_res_fold  'nmf_expl_stab' int2str(i) '.' config.image_format]);
+    close(h);
+    disp(['standard deviation of group size: ' num2str(nmf_res.std)]);
+    
+    fin_res(i).nmf_syns  = nmf_res.syns;
+    fin_res(i).nmf_res   = nmf_res;
+    fin_res(i).nmf_res_r = nmf_res_r;
+end
+
 disp(' ');
 %clear nmf_res
 
