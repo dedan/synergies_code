@@ -13,7 +13,7 @@ index   = zeros(1,s);
 cors    = corrcoef([W1 W2]);
 
 % omit the comparisons with itself
-cors    = cors(s+1:end, 1:s);
+cors    = cors(1:s,s+1:end);
 
 
 for i=1:s
