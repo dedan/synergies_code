@@ -42,16 +42,12 @@ res = struct;
 
 %% load data
 load([conf.inpath 'all_data']);
+
+% load also last data, maybe the current monkey is missing and will be
+% appended now
+load([conf.inpath 'nat_mov_res.mat']);
 addpath('../lib'); 
 
-% sort out the first vega sessions because they were recorded from
-% different muscles and have only 8 muscles in common with the later
-% sessions which is I think not enough
-not_first_vega     = ~strcmp('vega', {sessions.monk}) | [sessions.id] > 26;
-for i = find(~not_first_vega)
-    sessions(i).monk = 'first_vega'; %#ok<SAGROW>
-end
-clear not_first_vega
 
 
 %% statistics
