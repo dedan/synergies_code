@@ -88,6 +88,12 @@ for i = 1:length(emgfiles)
     total_trials = total_trials + size(trials,1);
 end
 
+if total_trials == 0
+    disp('all trials empty');
+    data = [];
+    return
+end
+
 for i = 1:length(c2take)
     if isfield(bhvdata, 'hand_position')
         u = unique(data.channel(i).hand_position);

@@ -26,6 +26,11 @@ end
 
 data = load_emg(edfiles, emgfiles, config);
 
+if isempty(data)
+    disp('data empty, stop working this session');
+    return
+end
+
 trg  = data.channel(1).Target;               % target of trial
 Ntr  = unique(trg);
 Ntr  = Ntr(Ntr > 0);                         % list of targets
