@@ -81,61 +81,13 @@ diary([config.cur_res_fold 'out.txt']);
 
 %% get responses
 
-
-disp('calculate responses .. ');
-
 if config.skip_window_computation
     disp('skip window calculation, take data from previous session..');
-    load([config.result_folder 'data' filesep 'last_run']);
 else
-    
-    % get all subessions in which a stimulation took place
-    data = get_all_stimulations(config);
-    
-    % filter subessions according to StimAmp
-    filtered_data = stimulations_at(data, config.stim_value);
-    
-    % get all the responses for a monkey
-    resp = responses(filtered_data, config);
-    save([config.result_folder 'data' filesep 'last_run'], 'resp');
-    
+    disp('calculate responses .. ');
+    runscript4evoked('/Volumes/LAB/', {config.monk})
 end
-
-
-%% debug window plots
-% plot all the average windows, this can be used with the
-% ../response/sort_files.
-
-if config.debug_images
-    
-    % create subfolder for the debug images and iterate over sessions
-    mkdir([config.cur_res_fold 'sep']);
-    for i = 1:length(resp)
-        
-        % cut of extreme values (artifact) and plot response and a vertical
-        % line to indicate average window size
-        h = figure('Visible','off');
-        tmp = resp(i).windows;
-        tmp(tmp > 20) = 0;
-        plot(resp(i).x, tmp);
-        hold on
-        plot(6*ones(1,10), 1:10, '.');
-        
-        % indicate whether it is a session that was stored in several files
-        if resp(i).connected
-            title('connected');
-        end
-        legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'); 
-        front = lead_zeros(i,3);
-        saveas(h, [config.cur_res_fold  'sep' filesep front int2str(i) '.' config.image_format]);
-        close(h);
-    end
-end
-
-length(find([resp.connected]))
-
-
-
+load([config.result_folder 'data' filesep 'evoked_data_' config.monk]);
 
 
 
