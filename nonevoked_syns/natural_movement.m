@@ -161,9 +161,9 @@ plot(rank1','.');
 hold on;
 plot(ones(1,length(rank1)) * conf.significant);
 
-% seperating lines between the monkeys
-for i=2:conf.n_monks-1
-    plot(ones(1,10)*find(idx.(conf.names{i}), 1, 'last' ), 1:10:100, 'r*');
+% separating lines between the monkeys
+for i=1:conf.n_monks
+    plot(ones(1,10)*find(idx.(conf.names{i}), 1, 'last' ), 1:10:100, 'r--');
 end
 hold off;
 legend('nmf', 'pca', 'Location', 'NorthWest');
@@ -477,7 +477,7 @@ for i = 1:conf.n_monks
             res.(conf.names{i}).pds(2,:)       = circ_mean(all(2:2:length(c2take_idx),:));
         end            
     end
-    saveas(h, [conf.outpath  'pd_consist_feather' conf.names{i} '.' conf.image_format]);
+    saveas(h, [conf.outpath  'pd_consist_feather_' conf.names{i} '.' conf.image_format]);
     close(h);
     
     
