@@ -32,7 +32,8 @@ for monk = monks
     
     disp(['calculate responses for ' char(monk) '..']);
     
-    conf.dat_folder         = [path char(monk) filesep 'data' filesep];
+    conf.monk               = char(monk);
+    conf.dat_folder         = [path char(monk) filesep];
     conf.c2take             = nat_mov_res.(char(monk)).c2take;
     
     % get all subessions in which a stimulation took place
@@ -65,7 +66,7 @@ res = struct('hand', [],'id', {}, 'session', {}, 'subsession', {}, ...
     'file', [], 'amp', [], 'electrode', [], 'location', struct);
 
 
-dir_list = dir(config.dat_folder);
+dir_list = dir([config.dat_folder 'data' filesep]);
 
 for i = 1:length(dir_list)
     
@@ -73,9 +74,9 @@ for i = 1:length(dir_list)
     
     % skip hidden and system folders
     if( strcmp(file.name(1), '.')), continue; end;
-    
+        
     % load the file
-    load([config.dat_folder file.name filesep 'Info' filesep file.name '_param.mat']);
+    load([config.dat_folder 'info_files' filesep file.name '_param.mat']);
     
     for j=1:length(SESSparam.SubSess)
         
@@ -89,7 +90,7 @@ for i = 1:length(dir_list)
         end
         
         for used = used_electrodes
-            if subs.Electrode(used).Stim.Flag
+            if isfield(subs.Electrode(used).Stim, 'Flag') && subs.Electrode(used).Stim.Flag
                 res(rec).electrode      = used;
                 res(rec).amp            = subs.Electrode(used).Stim.Amp;
                 res(rec).location.depth = subs.Electrode(used).Depth;
