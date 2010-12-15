@@ -45,8 +45,7 @@ for i = 1:length(resps)
         title('connected');
     end
     
-    saveas(h, [folder_path filesep resps(i).info.session '_' ...
-        num2str(resps(i).info.subsession) '.' format]);
+    saveas(h, [folder_path filesep monk(1) sprintf('%03d', i) '.' format]);
     close(h);
 end
 
