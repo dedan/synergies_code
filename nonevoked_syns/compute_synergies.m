@@ -9,6 +9,7 @@
 function compute_synergies(data_path, outpath, monks)
 
 addpath('../lib'); %#ok<MCAP>
+addpath('../data_validation/');
 
 % general settings
 config = struct;
