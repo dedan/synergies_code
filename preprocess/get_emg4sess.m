@@ -105,13 +105,15 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function stimflag = test4stim( subs )
+function stimflag = test4stim(subs)
 
 stimflag = 0;
-for i=1:length(subs.Electrode)
-    if isfield(subs.Electrode(i).Stim, 'Flag') && subs.Electrode(i).Stim.Flag
-        stimflag = 1;
-        return;
+if isfield(subs, 'Electrode')
+    for i=1:length(subs.Electrode)
+        if isfield(subs.Electrode(i).Stim, 'Flag') && subs.Electrode(i).Stim.Flag
+            stimflag = 1;
+            return;
+        end
     end
 end
 
