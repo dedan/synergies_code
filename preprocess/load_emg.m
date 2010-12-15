@@ -88,6 +88,7 @@ for i = 1:length(emgfiles)
     total_trials = total_trials + size(trials,1);
 end
 
+data.trials = total_trials;
 
 if total_trials == 0
     disp('all trials empty');
