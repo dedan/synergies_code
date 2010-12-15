@@ -161,9 +161,9 @@ plot(rank1','.');
 hold on;
 plot(ones(1,length(rank1)) * conf.significant);
 
-% seperating lines between the monkeys
-for i=2:conf.n_monks-1
-    plot(ones(1,10)*find(idx.(conf.names{i}), 1, 'last' ), 1:10:100, 'r*');
+% separating lines between the monkeys
+for i=1:conf.n_monks
+    plot(ones(1,10)*find(idx.(conf.names{i}), 1, 'last' ), 1:10:100, 'r--');
 end
 hold off;
 legend('nmf', 'pca', 'Location', 'NorthWest');
@@ -254,13 +254,13 @@ if length(conf.names) > 1
     end
 end
 h = figure('Visible', 'off');
-hist(data(:,conf.dimensions),50);
-title(['distribution of rank ' num2str(conf.dimensions) ' resid values']);
+hist(data(:,conf.dim),50);
+title(['distribution of rank ' num2str(conf.dim) ' resid values']);
 saveas(h, [conf.outpath  'resid_dist.' conf.image_format]);
 close(h);
 disp('');
-disp(['mean of rank ' num2str(conf.dimensions) ' resid values: '  ...
-    num2str(mean(data(:,conf.dimensions)))]);
+disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
+    num2str(mean(data(:,conf.dim)))]);
 
 
 
@@ -385,8 +385,7 @@ for i = 1:conf.n_monks
     synpca = normr(group_pca(1).center);
     synall = normr(tmp);
     
-    [scores ind]             = matchNscore(synpca', synnmf');
-    synnmf                   = synnmf(ind,:);
+    [synpca, synnmf, scores] = match_syns(synpca, synnmf);
     res.(conf.names{i}).syns = synnmf;
     
     p_pos = {[3 7], [11 15], [19 23]};
@@ -399,9 +398,7 @@ for i = 1:conf.n_monks
     [r p] = corrcoef([synpca(:) synnmf(:)]);
     disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
-    
-    [scores ind] = matchNscore(synpca', synall');
-    synall       = synall(ind,:);
+    [synpca, synall, scores] = match_syns(synpca, synall);    
     
     p_pos = {[4 8], [12 16], [20 24]};
     for j = 1:size(synpca,1)
@@ -424,11 +421,11 @@ h = figure('Visible', 'off');
 for i = 1:conf.n_monks
     subplot(conf.n_monks,2,i*2-1);
     hist(stds_n{i});
-    title([conf.names{i} ' std of clustering (nmf): ' num2str(std(hist(stds_n{i}, conf.dimensions)))]);
+    title([conf.names{i} ' std of clustering (nmf): ' num2str(std(hist(stds_n{i}, conf.dim)))]);
     
     subplot(conf.n_monks,2,i*2);
     hist(stds_p{i});
-    title([conf.names{i} ' std of clustering (pca): ' num2str(std(hist(stds_p{i}, conf.dimensions)))]);    
+    title([conf.names{i} ' std of clustering (pca): ' num2str(std(hist(stds_p{i}, conf.dim)))]);    
 end
 saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
@@ -457,7 +454,7 @@ for i = 1:conf.n_monks
     h = figure('Visible', 'off');    
     all = vertcat(sessions(idx.(conf.names{i})).pd);            
     for k = c2take_idx
-        subplot(length(c2take_idx)/2,2,k);
+        subplot(ceil(length(c2take_idx)/2),2,k);
         if n_hands == 1
             [x y] = pol2cart(all(:,k), ones(size(all(:,k))));
             feather(x, y, 'b');
@@ -477,7 +474,7 @@ for i = 1:conf.n_monks
             res.(conf.names{i}).pds(2,:)       = circ_mean(all(2:2:length(c2take_idx),:));
         end            
     end
-    saveas(h, [conf.outpath  'pd_consist_feather' conf.names{i} '.' conf.image_format]);
+    saveas(h, [conf.outpath  'pd_consist_feather_' conf.names{i} '.' conf.image_format]);
     close(h);
     
     
@@ -523,7 +520,7 @@ for i = 1:conf.n_monks
     syn      = res.(conf.names{i}).syns;
     pds      = res.(conf.names{i}).pds;
 
-    for j = 1:conf.dimensions
+    for j = 1:conf.dim
         
         subplot(2,2,j);
         rose_agg = [];

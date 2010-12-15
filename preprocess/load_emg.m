@@ -32,10 +32,10 @@ for i = 1:length(emgfiles)
         continue;
     end        
     
-    for j = 1:length(c2take)
+    for j = find(data.channels)
         
         % load the data
-        chstr   = num2str(c2take(j));
+        chstr   = num2str(all(j));
         EMG     = load(emgfiles{i}, ['EMG' chstr]);
         EMG     = EMG.(['EMG' chstr]);
         Fs      = load(emgfiles{i}, ['EMG' chstr '_KHz']);
@@ -95,14 +95,16 @@ if total_trials == 0
     return
 end
 
-u = unique(data.channel(i).hand_position);
+take = find(data.channels);
+u = unique(data.channel(take(1)).hand_position);
 u = u(u ~= 0);
+data.pd = zeros(length(u), length(all));
+data.p1 = zeros(length(u), length(all));
+data.p2 = zeros(length(u), length(all));
+
 for j = 1:length(u)
-    data.pd = zeros(length(u), length(all));
-    data.p1 = zeros(length(u), length(all));
-    data.p2 = zeros(length(u), length(all));
-    
-    for i = 1:length(c2take)
+
+    for i = find(data.channels)
         tmp                 = data;
         tmp.channel         = data.channel(i);
         indx                = find(data.channel(i).hand_position == u(j));
@@ -120,6 +122,8 @@ for j = 1:length(u)
         data.p2(j,i)     = p2;
     end
 end
+assert(~any(data.pd), 'pd problem');
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

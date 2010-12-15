@@ -18,15 +18,20 @@
 % 2 is with an artefact
 % 3 is no response
 
-path = '~/Documents/uni/yifat_lab/results/data_validation/';
+path = '~/Documents/uni/yifat_lab/results/data_validation/average_wins/';
+monk = 'vega';
 
-pics = dir([path '*.tiff']);
+pics = dir([path monk(1) '*.tiff']);
+
+
+flags = NaN(1,length(pics));
 
 for i = 1:length(pics)
-    im = imread(pics(i).name);
+    im = imread([path pics(i).name]);
+    disp(pics(i).name);
     figure(1);
     image(im);
     flags(i) = input('wenn ja dann 1: ');
 end
 
-save([path 'handsorted.mat'], flags);
+save([path 'sort_' monk '.mat'], 'flags');

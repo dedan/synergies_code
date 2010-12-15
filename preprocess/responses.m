@@ -26,14 +26,15 @@ for dati = 1:length(filtered_data)
         disp('have to connect');
     end
     for file_number = dat.file(1):dat.file(end)
-        file = [config.dat_folder dat.session filesep 'MAT' filesep ...
+        file = [config.dat_folder 'data' filesep dat.session filesep 'MAT' filesep ...
             dat.session sprintf('%03d',file_number)];
         
-        stim_check = whos('-file',[file '_bhv'],'AMstim_on');
+        stim_check = whos('-file',[file '_bhv'],'AMstim_on', 'StimTime');
         if(stim_check.size(1) > 4)
             
             
-            load([file '_bhv.mat'], 'AMstim_on');
+            s_times = load([file '_bhv.mat'], stim_check.name);
+            s_times = s_times.(stim_check.name);
             emg = load([file '_emg.mat'], 'EMG*');
             first_good = find(config.c2take,1);
             f_orig = emg.(['EMG' int2str(config.channels(first_good)) '_KHz']);
@@ -49,8 +50,8 @@ for dati = 1:length(filtered_data)
                 c = c+1;
             end
             
-            AMstim_on = AMstim_on +(size(emg_data,2) / (f_orig*1000));
-            StimTime_agg = [StimTime_agg; AMstim_on]; %#ok<AGROW>
+            s_times = s_times +(size(emg_data,2) / (f_orig*1000));
+            StimTime_agg = [StimTime_agg; s_times]; %#ok<AGROW>
             emg_data = [emg_data tmp]; %#ok<AGROW>
             
             
@@ -62,9 +63,18 @@ for dati = 1:length(filtered_data)
         
         disp('take this session');
         
+        % get hand information from ed file
+        ed_name = [config.monk(1) sprintf('%02d', dat.id) sprintf('%02d', dat.subsession) ...
+                    'ee.1.mat'];
+        hand    = load([config.dat_folder 'EDfiles' filesep ed_name], 'hand_position');
+        resp(j).hand        = hand.hand_position;
         resp(j).f_orig      = f_orig;
-        resp(j).info        = dat;
-        resp(j).hand        = find(dat.hand(:,dat.file(1)));
+        resp(j).id          = dat.id;
+        resp(j).session     = dat.session;
+        resp(j).subsession  = dat.subsession;
+        resp(j).amp         = dat.amp;
+        resp(j).electrode   = dat.electrode;
+        resp(j).location    = dat.location;
         resp(j).file        = file;
         resp(j).connected   = length(dat.file(1):dat.file(end)) > 1;
         
