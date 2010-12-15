@@ -69,7 +69,12 @@ for dati = 1:length(filtered_data)
         hand    = load([config.dat_folder 'EDfiles' filesep ed_name], 'hand_position');
         resp(j).hand        = hand.hand_position;
         resp(j).f_orig      = f_orig;
-        resp(j).info        = dat;
+        resp(j).id          = dat.id;
+        resp(j).session     = dat.session;
+        resp(j).subsession  = dat.subsession;
+        resp(j).amp         = dat.amp;
+        resp(j).electrode   = dat.electrode;
+        resp(j).location    = dat.location;
         resp(j).file        = file;
         resp(j).connected   = length(dat.file(1):dat.file(end)) > 1;
         

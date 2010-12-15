@@ -47,6 +47,7 @@ for monk = monks
     % add information about session
     for i = 1:length(resps)
         resps(i).c2take = conf.c2take; 
+        resps(i).monk   = char(monk);
     end
     save([conf.inpath filesep 'evoked_data_' char(monk)], 'resps');
 end
