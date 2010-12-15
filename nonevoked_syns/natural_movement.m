@@ -261,7 +261,7 @@ close(h);
 disp('');
 disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
     num2str(mean(data(:,conf.dim)))]);
-
+clear data
 
 
 
@@ -398,7 +398,8 @@ for i = 1:conf.n_monks
     [r p] = corrcoef([synpca(:) synnmf(:)]);
     disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
-    [synpca, synall, scores] = match_syns(synpca, synall);    
+    [synpca, synall, scores]    = match_syns(synpca, synall);
+    res.(conf.names{i}).synall  = synall;
     
     p_pos = {[4 8], [12 16], [20 24]};
     for j = 1:size(synpca,1)
@@ -431,7 +432,8 @@ saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall
+clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall group_nmf ...
+    group_pca p p_pos r scores tmp
 
 
 
@@ -502,7 +504,7 @@ for i = 1:conf.n_monks
 end
 
 
-clear x y all c2take_idx n_hands
+clear x y all c2take_idx n_hands monk_first col in_deg inds
         
 
 
@@ -543,7 +545,7 @@ end
 nat_mov_res = res;
 save([conf.inpath 'nat_mov_res.mat'], 'nat_mov_res');
 
-
+clear h_fake pds rose_agg syn
 
 
 

@@ -14,6 +14,8 @@ function res = project(dat, basis, n_iter, noise_value)             % takes alre
 % the upper limit of the ratio, when different amounts of gaussian noise
 % are added on the test data
 
+dat = dat';
+basis = basis';
 
 n_rand      = 10000;
 test_data   = 0;
