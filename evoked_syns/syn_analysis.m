@@ -55,6 +55,8 @@ conf.handsorted          = '';
 
 resps = struct([]);
 for monk = conf.monks
+    
+    disp(['loading data for: ' char(monk)]);
     if conf.skip_window_computation
         disp('skip window calculation, take data from previous session..');
     else
@@ -62,7 +64,7 @@ for monk = conf.monks
         runscript4evoked('/Volumes/LAB/', monk)
     end
     
-    if isemtpy(resps)
+    if isempty(resps)
         load([conf.result_folder 'data' filesep 'evoked_data_' char(monk)]);
     else
         tmp     = load([conf.result_folder 'data' filesep 'evoked_data_' char(monk)]);
@@ -74,54 +76,76 @@ clear tmp;
 
 %% separate and filter responses
 
-
 disp(' ');
-disp(['subsessions with stimulation: ' int2str(length(resps))]);
+disp(['total subsessions with stimulation: ' int2str(length(resps))]);
 
-% sort out the sessions which contain artefacts
-load([conf.result_folder 'data' filesep conf.handsorted 'sort_' conf.monk]);
-resps = resps(flags ~= 2); 
-disp(['sorted out ' int2str(length(find(flags == 2))) ...
-    ' subsessions because of artefacts (handsorted)']);
-disp([int2str(length(resps)) ' subsessions remaining']);
-
-
-% plot the field size histogram
-h = figure('Visible','off');
-hist([resps.field],12);
-saveas(h, [conf.cur_res_fold  'resp_field_' conf.monk '.' conf.image_format]);
-close(h);
-
-% sort out the sessions with fieldsize 0
-disp(' ');
-disp(['sorted out ' int2str(length(find([resps.field] == 0))) ' subsessions because of fieldsize was 0']);
-resps = resps([resps.field] ~= 0); 
-disp([int2str(length(resps)) ' subsessions remaining']);
-
-% check the stimulation amps for the remaining files
-amps = NaN(1,length(resps));
-for i = 1:length(resps)
-    amps(i) = abs(resps(i).info.amp);
-end
-% plot the stim amp distribution
-h = figure('Visible','off');
-hist(amps);
-saveas(h, [conf.cur_res_fold  'stim_amp_dist.' conf.image_format]);
-close(h);
-
-
-% sort the resulting vectors according to the hand position of the subsession
-fin_res = sep_results_handposition(resps);
-
-for i = 1:length(fin_res)
+h1 = figure('Visible','off');
+h2 = figure('Visible','off');
+for m = 1:length(conf.monks)
+    monk = char(conf.monks(m));
     
+    % get the indeces of subsessions
+    idx.(monk) = strcmp(monk, {resps.monk});
+    disp([monk ' -- number of sessions: ' num2str(length(find(idx.(monk))))]);
+
+    
+    % sort out the sessions which contain artefacts
+    load([conf.result_folder 'data' filesep conf.handsorted 'sort_' monk]);
+    
+    % wow, what a line. I do this weird indexing to make it the same length
+    % as flags
+    idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & (flags ~= 2);
+    disp(['sorted out ' int2str(length(find(flags == 2))) ...
+        ' subsessions because of artefacts (handsorted)']);
+    disp([int2str(length(find(idx.(monk)))) ' subsessions remaining']);
+
+
+    % plot the field size histogram
+    figure(h1)
+    subplot(length(conf.monks), 1, m)
+    hist([resps(idx.(monk)).field],0:length(conf.channels));
+    title(monk)
+
+    % sort out the sessions with fieldsize 0
     disp(' ');
-    disp(conf.modi{i});
-    disp(['number of recordings: ' int2str(length(fin_res(i).dat))]);
+    disp(['sorted out ' int2str(length(find([resps(idx.(monk)).field] == 0))) ...
+        ' subsessions because of fieldsize was 0']);
+    
+    % same indexing magic as above
+    idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & [resps(idx.(monk)).field] ~= 0;
+
+    disp([int2str(length(find(idx.(monk)))) ' subsessions remaining']);
+
+    % check the stimulation amps for the remaining files
+    figure(h2);
+    amps = abs([resps(idx.(monk)).amp]);
+    subplot(length(conf.monks), 1, m)
+    hist(amps);
+    title(monk);
+    
+
+
+    % sort the resulting vectors according to the hand position of the subsession
+    idx.pro = ([resps.hand] == 1);
+    idx.sup = ([resps.hand] == 2);
+    
+    res.(monk).pro.flat = vertcat(resps(idx.(monk) & idx.pro).response);
+    res.(monk).sup.flat = vertcat(resps(idx.(monk) & idx.sup).response);
+    res.(monk).all.flat = vertcat(res.(monk).pro.flat, res.(monk).sup.flat);
+    
+    disp(['pronation - number of recordings: ' num2str(length(find(idx.(monk) & idx.pro)))]);
+    disp(['supination - number of recordings: ' num2str(length(find(idx.(monk) & idx.sup)))]);
+    
 end
 
+saveas(h1, [conf.cur_res_fold  'resp_fields.' conf.image_format]);
+close(h1);
+saveas(h2, [conf.cur_res_fold  'stim_amp_dist.' conf.image_format]);
+close(h2);
+
+disp(' ');
 disp('calculated and separated responses');
-clear data filtered_data resp flags sep_results 
+clear flags monk h1 h2
 
 
 
@@ -132,14 +156,24 @@ clear data filtered_data resp flags sep_results
 
 % plot distribution
 h = figure('Visible','off');
-for i = 1:length(fin_res)
-    subplot(length(fin_res),1,i)
-    hist(fin_res(i).dat(:),100);
-    title(['handposition: ' int2str(i)]);
-end
+
+for m = 1:length(conf.monks)
+    monk = char(conf.monks{m});
+    
+    subplot(2, length(conf.monks), m)
+    [n,xout] = hist([resps(idx.(monk) & idx.pro).response], 100);
+    n        = (n / max(n)) *100;
+    bar(xout,n)
+    title([monk ' pronation']);
+    
+    subplot(2, length(conf.monks), m + length(conf.monks))
+    [n,xout] = hist([resps(idx.(monk) & idx.sup).response], 100);
+    n        = (n / max(n)) *100;
+    bar(xout,n)
+    title([monk ' supination']);
+end    
 saveas(h, [conf.cur_res_fold 'response_dist' '.' conf.image_format]);
 close(h);
-
 
 
 
@@ -150,41 +184,58 @@ if conf.do_resid_test
     
     disp(' ');
     disp('doing resid test ..');
-        
-    % doing the residual test for nmf
-    for i = 1:length(fin_res)
-        resid_res(i,:)  = test_resid_nmf(fin_res(i).dat, conf); 
-        
-        %repeat for shuffled data as only one random shuffling might not be representative
-        tmp = zeros(conf.Niter_res_test, min(size(fin_res(i).dat)));
-        for j = 1:conf.Niter_res_test
-            tmp(j,:)    = test_resid_nmf(shuffle_inc(fin_res(i).dat), conf);
-        end
-        resid_resr(i,:) = mean(tmp); %;
-        
-    end
     
-    % add a line to show 10 %
-    resid_res(i+1,:)    = ones(1,size(resid_res,2)) * 10;
-    resid_resr(i+1,:)   = ones(1,size(resid_resr,2)) * 10;
-    
-    % residual test for pcaica
-    for i = 1:length(fin_res)
-        resid_res = [resid_res; test_resid_pcaica(fin_res(i).dat, conf)]; %#ok<AGROW>
+    for m = 1:length(conf.monks)
+        
+        monk = char(conf.monks{m});
+        clear resid_res;
+                
+        
+        tmp_pro             = res.(monk).pro.flat;
+        resid_res(1,:)      = test_resid_nmf(tmp_pro, conf); 
 
         %repeat for shuffled data as only one random shuffling might not be representative
-        tmp = zeros(conf.Niter_res_test, min(size(fin_res(i).dat)));
+        tmp = zeros(conf.Niter_res_test, min(size(tmp_pro)));
         for j = 1:conf.Niter_res_test
-            tmp(j,:)    = test_resid_pcaica(shuffle_inc(fin_res(i).dat), conf);
+            tmp(j,:)    = test_resid_nmf(shuffle_inc(tmp_pro), conf);
         end
-        resid_resr      = [resid_resr; mean(tmp)]; %#ok<AGROW>
+        resid_res(2,:) = mean(tmp); 
+        l = {'resid pro', 'shuffled resid pro'};
+
+        % if supination data available
+        tmp_sup             = res.(monk).sup.flat;
+        if ~isempty(tmp_sup)
+            resid_res(3,:)  = test_resid_nmf(tmp_sup, conf); 
+            tmp = zeros(conf.Niter_res_test, min(size(tmp_sup)));        
+            for j = 1:conf.Niter_res_test
+                tmp(j,:)    = test_resid_nmf(shuffle_inc(tmp_sup), conf);
+            end
+            resid_res(4,:)  = mean(tmp);
+            
+            tmp_all         = res.(monk).all.flat;
+            resid_res(5,:)  = test_resid_nmf(tmp_all, conf);
+            tmp = zeros(conf.Niter_res_test, min(size(tmp_all)));
+            for j = 1:conf.Niter_res_test
+                tmp(j,:)    = test_resid_nmf(shuffle_inc(tmp_all), conf);
+            end
+            resid_res(6,:) = mean(tmp);
+
+            l = {'resid pro', 'shuffled resid pro', 'resid sup', ...
+                'shuffled resid sup', 'resid all', 'shuffled resid all'};
+        end
+        
+        % add a line to show 10 %
+        resid_res(size(resid_res,1)+1,:)    = ones(1,size(resid_res,2)) * 10; %#ok<SAGROW>
+        first                               = ones(size(resid_res,1),1)*100;
+        first(size(resid_res,1))            = 10;
+        resid_res                           = [first resid_res]; %#ok<AGROW>
+        
+        h = figure('Visible','off');
+        plot(0:size(resid_res,2)-1, resid_res');
+        legend(l);
+        saveas(h, [conf.cur_res_fold 'resid_' monk '.' conf.image_format]);
+        close(h);        
     end
-    
-    first = ones( (length(fin_res)*2) +1,1)*100; 
-    first(length(fin_res)+1) = 10;    
-    h = createfigure1([first resid_res]', [first resid_resr]',conf);
-    saveas(h, [conf.cur_res_fold 'resid.' conf.image_format]);
-    close(h);
     
     disp(' ');
     disp('finished resid test !');
@@ -192,80 +243,60 @@ if conf.do_resid_test
 else
     disp('resid test skipped');
 end
-clear resid_res resid_resr
+clear resid_res tmp_pro tmp_sup tmpp tmps first
 
 
 
-%% nmf stuff
+%% matrix factorizations
 
 disp(' ');
 disp('start the search for synergists..');
 
-for i = 1:length(fin_res)
-    
-    nmf_res     = nmf_explore(fin_res(i).dat, conf);
-    nmf_res_r   = nmf_explore(shuffle_inc(fin_res(i).dat), conf);
-    
+pos = {'pro', 'sup', 'all'};
+
+for m = 1:length(conf.monks)    
+    monk = char(conf.monks{m});
     h = figure('Visible','off');
-    imagesc(nmf_res.flat);
-    title(['standard deviation of group size: ' num2str(nmf_res.std)]);
-    saveas(h, [conf.cur_res_fold  'nmf_expl_stab' int2str(i) '.' conf.image_format]);
-    close(h);
-    disp(['standard deviation of group size: ' num2str(nmf_res.std)]);
     
-    fin_res(i).nmf_syns  = nmf_res.syns;
-    fin_res(i).nmf_res   = nmf_res;
-    fin_res(i).nmf_res_r = nmf_res_r;
+    for mo = 1:length(pos)
+        mod = char(pos{mo});
+        
+        if isempty(res.(monk).(mod).flat)
+            res.(monk).(mod).nmf = [];
+            res.(monk).(mod).pca = [];
+            continue;
+        end
+        % compute synergies
+        nmf_res      = nmf_explore(res.(monk).(mod).flat, conf);
+        disp(['standard deviation of group size: ' num2str(nmf_res.std)]);
+        pca_res      = pcaica(res.(monk).(mod).flat, conf.dim)';
+        
+        % norm, match and sort them
+        [pca_res, nmf_res.syns, scores] = match_syns(pca_res, nmf_res.syns);
+        
+        % plot
+        for i = 1:conf.dim
+            subplot(length(pos), conf.dim, conf.dim*(mo-1) + i)
+            bar( [pca_res(i,:)' nmf_res.syns(i,:)']);
+            axis off
+            title(['#' int2str(i) ' sc: ' num2str(scores(i))]);
+        end
+
+        % save results
+        res.(monk).(mod).nmf = nmf_res.syns;    
+        res.(monk).(mod).pca = pca_res;    
+    end
+    saveas(h, [conf.cur_res_fold  'synergies_' monk '.' conf.image_format]);
+    close(h);
 end
 
 disp(' ');
-%clear nmf_res
+clear nmf_res pca_res monk mod scores ind
 
 
 
-%% syn analysis with pcaica
-
-for i = 1:length(fin_res)
-    Wpi                  = pcaica(fin_res(i).dat, conf.dimensions);
-    fin_res(i).pca_syns  = Wpi';
-end;
-disp('finished the search for synergists !');
-clear Wpi
-
-
-%% compare the three best nmf synergies with the three best pcaica
-
-for i = 1:length(fin_res)
-    
-    h = figure('Visible','off');
-    nmf_sorting = syn_compare(fin_res(i).pca_syns, fin_res(i).nmf_syns, 'pca', 'nmf');
-    saveas(h, [conf.cur_res_fold  'best_syn_relation' int2str(i) '.' conf.image_format]);
-    close(h);
-    
-    % sort the nmf synergies according to the pca synergies
-    fin_res(i).nmf_syns = fin_res(i).nmf_syns(nmf_sorting,:);
-    
-end
-clear nmf_sorting
-
-
-%% compare the three nmf synergists for pronation and supination
-
-if length(fin_res) > 1
-    h = figure('Visible','off');
-    syn_compare(fin_res(1).nmf_syns, fin_res(2).nmf_syns, 'pronation', 'supination');
-    saveas(h, [conf.cur_res_fold  'between_pos_syn_relation.' conf.image_format]);
-    close(h);
-    
-    h = figure('Visible','off');
-    syn_compare(fin_res(1).pca_syns, fin_res(2).pca_syns, 'pronation', 'supination');
-    saveas(h, [conf.cur_res_fold  'between_pos_syn_relation_pca.' conf.image_format]);
-    close(h);
-end
-
-%% save confuration
-save([conf.cur_res_fold 'fin_res'], 'fin_res');
-save([conf.cur_res_fold 'conf'], 'conf' );
-diary('off');
+%% save configuration
+evoked_res = res;
+save([conf.cur_res_fold 'evoked_res'], 'evoked_res');
 
 disp('finished !');
