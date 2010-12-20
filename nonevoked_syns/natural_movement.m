@@ -34,6 +34,7 @@ mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(21
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
 conf.map = mymap;
 
+delete([conf.outpath 'log.txt']);
 diary([conf.outpath 'log.txt']);
 clear mymap
 
@@ -509,15 +510,16 @@ for i = 1:conf.n_monks
     
     
     h = figure('Visible', 'off');
-    for j = 1:n_hands
-        subplot(n_hands,1,j)
-        inds = find(idx.(conf.names{i}));
+    for j = 1:max_hands
+        subplot(max_hands,1,j)
+        inds = find(ses2take);
         for k = 1:length(inds)
             col = [k k k]/length(inds);
             in_deg = rad2deg(sessions(inds(k)).pd(j,c2take_idx));
             in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
             plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
-            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), res.(conf.names{i}).cstd, 'UniformOutput', false))
+            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), ...
+                res.(conf.names{i}).cstd(j,c2take_idx), 'UniformOutput', false))
             set(gca,'XTick', c2take_idx);
             hold on
         end
@@ -554,7 +556,7 @@ for i = 1:conf.n_monks
         
         subplot(2,2,j);
         rose_agg = [];
-        for k = find(res.(conf.names{i}).c2take)
+        for k = 1:length(find(res.(conf.names{i}).c2take))
             rose_agg = [rose_agg ones(1, floor(syn(j,k) * 100)) * pds(1,k)]; %#ok<AGROW>
         end
         h_fake = rose(ones(1,100));
@@ -564,7 +566,7 @@ for i = 1:conf.n_monks
         title(['# ' num2str(j)]);
     end
     subplot(2,2,4)
-    rose(pds, 360);
+    rose(pds(1,:), 360);
     title('pd distribution');
     saveas(h, [conf.outpath  'syn_rose_' conf.names{i} '.' conf.image_format]);
     close(h);
