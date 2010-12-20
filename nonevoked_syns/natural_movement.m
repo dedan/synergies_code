@@ -41,26 +41,35 @@ res = struct;
 
 
 %% load data
-load([conf.inpath 'all_data']);
+sessions = struct([]);
+for i = 1:conf.n_monks
+    if isempty(sessions)
+        load([conf.inpath 'all_data_' conf.names{i}]);
+    else
+        tmp         = load([conf.inpath 'all_data_' conf.names{i}]);
+        sessions    = [sessions tmp.sessions]; %#ok<AGROW>
+    end        
+end
 
 % load also last data, maybe the current monkey is missing and will be
 % appended now
 load([conf.inpath 'nat_mov_res.mat']);
 addpath('../lib'); 
-
+clear tmp
+ 
 
 
 %% statistics
 % First lets get some statistics on the Data we have available
 
 for i = 1:length(sessions)
-    sessions(i).target1     = size(sessions(i).mats(1).data,1); %#ok<SAGROW>
-    sessions(i).n_channels  = length(find(sessions(i).channels)); %#ok<SAGROW>
+    sessions(i).target1     = size(sessions(i).mats(1).data,1); 
+    sessions(i).n_channels  = length(find(sessions(i).channels)); 
     
     if length(sessions(i).mats) == 2
-        sessions(i).target2    = size(sessions(i).mats(2).data,1); %#ok<SAGROW>
+        sessions(i).target2    = size(sessions(i).mats(2).data,1); 
     else
-        sessions(i).target2    = -1; %#ok<SAGROW>
+        sessions(i).target2    = -1; 
     end
 end
 
@@ -247,20 +256,17 @@ clear x y data map modi
 
 
 %% what is the remaining error for rank 3 model?
-data = vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro);
-if length(conf.names) > 1
-    for j=2:length(conf.names)
-        data = vertcat(data, vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro)); %#ok<AGROW>
-    end
+for i = 1:conf.n_monks
+    data = vertcat(sessions(idx.(conf.names{i})).r_nmf_raw_pro);
+    h = figure('Visible', 'off');
+    hist(data(:,conf.dim),50);
+    title(['distribution of rank ' num2str(conf.dim) ' resid values']);
+    saveas(h, [conf.outpath  'resid_dist_' conf.names{i} '.' conf.image_format]);
+    close(h);
+    disp('');
+    disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
+        num2str(mean(data(:,conf.dim)))]);
 end
-h = figure('Visible', 'off');
-hist(data(:,conf.dim),50);
-title(['distribution of rank ' num2str(conf.dim) ' resid values']);
-saveas(h, [conf.outpath  'resid_dist.' conf.image_format]);
-close(h);
-disp('');
-disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
-    num2str(mean(data(:,conf.dim)))]);
 clear data
 
 
