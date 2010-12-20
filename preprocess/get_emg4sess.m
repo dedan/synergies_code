@@ -45,6 +45,7 @@ for k=1:length(Nh),
     chdata(k).pd        = data.pd(k,:);
     chdata(k).p1        = data.p1(k,:);
     chdata(k).p2        = data.p2(k,:);
+    chdata(k).trials    = data.trials;
 
     
     % now computing the mean bckground level per channel

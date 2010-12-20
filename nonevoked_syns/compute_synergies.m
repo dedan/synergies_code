@@ -133,9 +133,10 @@ for i= 1:length(fdat)
         res(rc).hands    = length(data.chdata);
         res(rc).id       = data.chdata.id;
         res(rc).channels = data.chdata.channels;
-        res(rc).pd       = data.chdata.pd;
-        res(rc).p1       = data.chdata.p1;
-        res(rc).p2       = data.chdata.p2;
+        res(rc).pd       = vertcat(data.chdata.pd);
+        res(rc).p1       = vertcat(data.chdata.p1);
+        res(rc).p2       = vertcat(data.chdata.p2);
+        res(rc).trials   = data.chdata.trials;
         
         % initialize test results (to make them all same length)
         vars = {'r_nmf', 'std_nmf', 'r_pca', 'r_nmf_s', ...
