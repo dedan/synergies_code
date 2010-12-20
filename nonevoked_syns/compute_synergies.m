@@ -37,15 +37,17 @@ for monk = monks
     config.emgdat_path      = [data_path config.monk filesep 'EMGdat' filesep];
 
     tmp_sess = nonevoked_sessions(config); 
+    
+    disp('computing synergies..');
     if isempty(sessions)
         sessions = comp_syns(tmp_sess, config);
     else    
         sessions = [sessions comp_syns(tmp_sess, config)]; %#ok<AGROW>
     end
+    save([outpath 'all_data_' char(monk)], 'sessions');
 end
 
 
-save([outpath 'all_data'], 'sessions');
 diary('off');
 disp('finished');
 
@@ -58,13 +60,25 @@ function sessions = comp_syns(sessions, conf)
 c2take = all(vertcat(sessions.channels));
 
 for i = 1:length(sessions)
-    for j = 1:length(sessions(1).hands)
-        
-        data    = sessions(i).mats(j).data_raw(:,c2take);
+    
+    disp(['session ' num2str(i)]);
+
+    data    = sessions(i).mats(1).data_raw(:,c2take);
+    nmf_res = nmf_explore(data, conf);
+    sessions(i).nmf_pro     = nmf_res.syns;
+    sessions(i).nmf_pro_std = nmf_res.std;
+    sessions(i).pca_pro     = pcaica(data, conf.dim)';
+    
+    if sessions(i).hands > 1
+        data    = sessions(i).mats(2).data_raw(:,c2take);
         nmf_res = nmf_explore(data, conf);
-        sessions(i).(['nmf' conf.modi{j}])          = nmf_res.syns;
-        sessions(i).(['nmf' conf.modi{j} '_std'])	= nmf_res.std;
-        sessions(i).(['pca' conf.modi{j}])          = pcaica(data, conf.dimensions)';
+        sessions(i).nmf_sup     = nmf_res.syns;
+        sessions(i).nmf_sup_std	= nmf_res.std;
+        sessions(i).pca_sup     = pcaica(data, conf.dim)';
+    else
+        sessions(i).nmf_sup     = [];
+        sessions(i).nmf_sup_std	= [];
+        sessions(i).pca_sup     = [];        
     end
 end
 
