@@ -94,6 +94,7 @@ for dati = 1:length(filtered_data)
         % determine fieldsize (fieldsize is the number of
         % significantly responding channels)
         resp(j).field   = length(find(wins.p < 0.05 & wins.p > 0));
+        resp(j).fields  = find(wins.p < 0.05 & wins.p > 0);
         
         for i = 1:size(wins.windows,1)
             
