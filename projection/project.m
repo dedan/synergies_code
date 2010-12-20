@@ -62,7 +62,7 @@ for i = 1:n_iter
         res.test_ratios(i)   = 0;
     end
     
-    % random with same overall mean and veriance
+    % random with same overall mean and variance
     dat_rand    = normrnd(mean(dat(:)), std(dat(:)), size(dat,1), size(dat,2));
     res.rand_ratios(i)  = sum(sum((p * dat_rand).^2)) / sum(sum((p2 * dat_rand).^2));
 
