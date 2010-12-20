@@ -34,6 +34,7 @@ mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(21
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
 conf.map = mymap;
 
+delete([conf.outpath 'log.txt']);
 diary([conf.outpath 'log.txt']);
 clear mymap
 
@@ -41,26 +42,35 @@ res = struct;
 
 
 %% load data
-load([conf.inpath 'all_data']);
+sessions = struct([]);
+for i = 1:conf.n_monks
+    if isempty(sessions)
+        load([conf.inpath 'all_data_' conf.names{i}]);
+    else
+        tmp         = load([conf.inpath 'all_data_' conf.names{i}]);
+        sessions    = [sessions tmp.sessions]; %#ok<AGROW>
+    end        
+end
 
 % load also last data, maybe the current monkey is missing and will be
 % appended now
 load([conf.inpath 'nat_mov_res.mat']);
 addpath('../lib'); 
-
+clear tmp
+ 
 
 
 %% statistics
 % First lets get some statistics on the Data we have available
 
 for i = 1:length(sessions)
-    sessions(i).target1     = size(sessions(i).mats(1).data,1); %#ok<SAGROW>
-    sessions(i).n_channels  = length(find(sessions(i).channels)); %#ok<SAGROW>
+    sessions(i).target1     = size(sessions(i).mats(1).data,1); 
+    sessions(i).n_channels  = length(find(sessions(i).channels)); 
     
     if length(sessions(i).mats) == 2
-        sessions(i).target2    = size(sessions(i).mats(2).data,1); %#ok<SAGROW>
+        sessions(i).target2    = size(sessions(i).mats(2).data,1); 
     else
-        sessions(i).target2    = -1; %#ok<SAGROW>
+        sessions(i).target2    = -1; 
     end
 end
 
@@ -247,21 +257,18 @@ clear x y data map modi
 
 
 %% what is the remaining error for rank 3 model?
-data = vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro);
-if length(conf.names) > 1
-    for j=2:length(conf.names)
-        data = vertcat(data, vertcat(sessions(idx.(conf.names{1})).r_nmf_raw_pro)); %#ok<AGROW>
-    end
+for i = 1:conf.n_monks
+    data = vertcat(sessions(idx.(conf.names{i})).r_nmf_raw_pro);
+    h = figure('Visible', 'off');
+    hist(data(:,conf.dim),50);
+    title(['distribution of rank ' num2str(conf.dim) ' resid values']);
+    saveas(h, [conf.outpath  'resid_dist_' conf.names{i} '.' conf.image_format]);
+    close(h);
+    disp('');
+    disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
+        num2str(mean(data(:,conf.dim)))]);
 end
-h = figure('Visible', 'off');
-hist(data(:,conf.dim),50);
-title(['distribution of rank ' num2str(conf.dim) ' resid values']);
-saveas(h, [conf.outpath  'resid_dist.' conf.image_format]);
-close(h);
-disp('');
-disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
-    num2str(mean(data(:,conf.dim)))]);
-
+clear data
 
 
 
@@ -271,66 +278,59 @@ disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
 %% for vega (where both handpositions are available) is there a difference
 % in the residual?
 
-% TODO nicht nur fuer vega, auch fuer darma haben wir zwei
-% TODO und auch fuer first_vega
-
-if any(strcmp(conf.names, 'vega'))
-    figure('Visible', 'off');
+for i= 1:conf.n_monks
     
-    % select sessions from vega for which both handpos available
-    x       = 0:conf.max_channels;
-    index   = idx.vega & ([sessions.hands] > 1);
-    n_index = length(find(index));
-    pro     = vertcat(sessions(index).r_nmf_raw_pro);
-    sup     = vertcat(sessions(index).r_nmf_raw_sup);
-    
-    subplot 311
-    plot(x, [ones(n_index,1)*100 pro]', 'b')
-    
-    subplot 312
-    plot(x, [ones(n_index,1)*100 sup]', 'b')
-    
-    subplot 313
-    plot(x, [100 mean(pro)])
-    hold on
-    plot(x, [100 mean(sup)], 'k')
-    hold off
-    
-    saveas(h, [conf.outpath  'rank1_handpos.' conf.image_format]);
-    close(h);
-    
-    figure('Visible', 'off');
-    subplot 221
-    hist(pro(:,1))
-    title('pronation rank 1');
-    
-    subplot 222
-    hist(pro(:,2))
-    title('pronation rank 2');
-    
-    subplot 223
-    hist(sup(:,1))
-    title('supination rank 1');
-    
-    subplot 224
-    hist(sup(:,2))
-    title('supination rank 2');
-    
-    
-    saveas(h, [conf.outpath  'rank12_dist.' conf.image_format]);
-    close(h);
-    
-    [h, p] = kstest2(pro(:,1), sup(:,1));
-    disp('similarity of rank 1 distributions for pronation and supination');
-    if h == 1
-        disp(['rank 1 distributions not similar, p: ' num2str(p)]);
-    else
-        disp(['rank 1 distributions are similar, p: ' num2str(p)]);
+    if max([sessions(idx.(conf.names{i})).hands] >1)
+        figure('Visible', 'off');
+        
+        % select sessions from vega for which both handpos available
+        x       = 0:conf.max_channels;
+        index   = idx.(conf.names{i}) & ([sessions.hands] > 1);
+        n_index = length(find(index));
+        pro     = vertcat(sessions(index).r_nmf_raw_pro);
+        sup     = vertcat(sessions(index).r_nmf_raw_sup);
+        
+        subplot 311
+        plot(x, [ones(n_index,1)*100 pro]', 'b')
+        title('pronation');
+        
+        subplot 312
+        plot(x, [ones(n_index,1)*100 sup]', 'b')
+        title('supination');
+        
+        subplot 313
+        plot(x, [100 mean(pro)])
+        hold on
+        plot(x, [100 mean(sup)], 'k')
+        hold off
+        
+        saveas(h, [conf.outpath  'rank1_handpos_' conf.names{i} '.' conf.image_format]);
+        close(h);
+        
+        figure('Visible', 'off');
+        subplot 221
+        hist(pro(:,1), 1:100)
+        title('pronation rank 1');
+        
+        subplot 222
+        hist(pro(:,2), 1:100)
+        title('pronation rank 2');
+        
+        subplot 223
+        hist(sup(:,1), 1:100)
+        title('supination rank 1');
+        
+        subplot 224
+        hist(sup(:,2), 1:100)
+        title('supination rank 2');
+        
+        
+        saveas(h, [conf.outpath  'rank1_dist_' conf.names{i} '.' conf.image_format]);
+        close(h);
+                
+        clear x index n_index pro sup 
     end
-    
-    clear x index n_index pro sup h p
 end
-
 
 
 
@@ -362,7 +362,7 @@ for i = 1:conf.n_monks
         all = [all; sessions(k).mats(1).data_raw(:,res.(conf.names{i}).c2take)]; %#ok<AGROW>
     end
     nmf_res = nmf_explore(all, conf);
-    tmp     = nmf_res.syns;
+    synall = nmf_res.syns;
     subplot(6,4,2);
     imagesc(nmf_res.syns);
     axis off
@@ -379,11 +379,9 @@ for i = 1:conf.n_monks
     axis off
     title('centers (pca)');
     stds_p{i} = group_pca(1).idx;   %#ok<SAGROW>
-
     
-    synnmf = normr(group_nmf(1).center);
-    synpca = normr(group_pca(1).center);
-    synall = normr(tmp);
+    synnmf  = group_nmf(1).center;
+    synpca  = group_pca(1).center;
     
     [synpca, synnmf, scores] = match_syns(synpca, synnmf);
     res.(conf.names{i}).syns = synnmf;
@@ -398,7 +396,8 @@ for i = 1:conf.n_monks
     [r p] = corrcoef([synpca(:) synnmf(:)]);
     disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
-    [synpca, synall, scores] = match_syns(synpca, synall);    
+    [synpca, synall, scores]    = match_syns(synpca, synall);
+    res.(conf.names{i}).synall  = synall;
     
     p_pos = {[4 8], [12 16], [20 24]};
     for j = 1:size(synpca,1)
@@ -431,47 +430,79 @@ saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall
+clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall group_nmf ...
+    group_pca p p_pos r scores tmp
 
 
 
 
 
 
-% stability over posture (when available)
-% stability over monkeys 
+
+%% stability over posture (when available)
+
+for i= 1:conf.n_monks
+    
+    if max([sessions(idx.(conf.names{i})).hands] >1)
+        
+        h = figure('Visible', 'off');    
+        
+        max_hands   = max([sessions(idx.(conf.names{i})).hands]);
+        ses2take    = idx.(conf.names{i}) & [sessions.hands] == max_hands;
+        g_pro       = group(sessions(ses2take), 'nmf_pro');
+        g_sup       = group(sessions(ses2take), 'nmf_sup');
+        
+        pro_syns    = g_pro(1).center;
+        sup_syns    = g_sup(1).center;
+        
+        [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns);
+        
+        for j = 1:size(pro_syns,1)
+            subplot(3,1,j)
+            bar( [pro_syns(j,:)' sup_syns(j,:)']);
+            axis off
+            title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
+        end
+        saveas(h, [conf.outpath  'post_consist_' conf.names{i} '.' conf.image_format]);
+    end
+end
+
+
+
+
 
 
 
 %% stability of prefered directions (over sessions)
 for i = 1:conf.n_monks
 
-    monk_first  = find(idx.(conf.names{i}), 1, 'first');
-    n_hands     = sessions(monk_first).hands;
+    max_hands   = max([sessions(idx.(conf.names{i})).hands]);
+    ses2take    = idx.(conf.names{i}) & [sessions.hands] == max_hands;
+    n2take      = length(find(ses2take));
     c2take_idx  = find(res.(conf.names{i}).c2take);
     
     
     h = figure('Visible', 'off');    
-    all = vertcat(sessions(idx.(conf.names{i})).pd);            
+    all = vertcat(sessions(ses2take).pd);            
     for k = c2take_idx
+        
         subplot(ceil(length(c2take_idx)/2),2,k);
-        if n_hands == 1
+        if max_hands == 1
             [x y] = pol2cart(all(:,k), ones(size(all(:,k))));
             feather(x, y, 'b');
             [~, res.(conf.names{i}).cstd]  = circ_std(all);
             res.(conf.names{i}).pds        = circ_mean(all);
         else
-            [x y] = pol2cart(all(1:2:length(c2take_idx)-1,k), ones(size(all(1:2:length(c2take_idx)-1,k))));
+            [x y] = pol2cart(all(1:2:n2take-1,k), ones(size(all(1:2:n2take-1,k))));
             feather(x, y, 'b');
             hold on
-            [x y] = pol2cart(all(2:2:length(c2take_idx),k), ones(size(all(2:2:length(c2take_idx),k))));
+            [x y] = pol2cart(all(2:2:n2take,k), ones(size(all(2:2:n2take,k))));
             feather(x, y, 'r');
             hold off
-            legend('pronation', 'supination');
-            [~, res.(conf.names{i}).cstd(1,:)] = circ_std(all(1:2:length(c2take_idx)-1,:));
-            [~, res.(conf.names{i}).cstd(2,:)] = circ_std(all(2:2:length(c2take_idx),:));
-            res.(conf.names{i}).pds(1,:)       = circ_mean(all(1:2:length(c2take_idx)-1,:));
-            res.(conf.names{i}).pds(2,:)       = circ_mean(all(2:2:length(c2take_idx),:));
+            [~, res.(conf.names{i}).cstd(1,:)] = circ_std(all(1:2:n2take-1,:));
+            [~, res.(conf.names{i}).cstd(2,:)] = circ_std(all(2:2:n2take,:));
+            res.(conf.names{i}).pds(1,:)       = circ_mean(all(1:2:n2take-1,:));
+            res.(conf.names{i}).pds(2,:)       = circ_mean(all(2:2:n2take,:));
         end            
     end
     saveas(h, [conf.outpath  'pd_consist_feather_' conf.names{i} '.' conf.image_format]);
@@ -479,15 +510,16 @@ for i = 1:conf.n_monks
     
     
     h = figure('Visible', 'off');
-    for j = 1:n_hands
-        subplot(n_hands,1,j)
-        inds = find(idx.(conf.names{i}));
+    for j = 1:max_hands
+        subplot(max_hands,1,j)
+        inds = find(ses2take);
         for k = 1:length(inds)
             col = [k k k]/length(inds);
             in_deg = rad2deg(sessions(inds(k)).pd(j,c2take_idx));
             in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
             plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
-            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), res.(conf.names{i}).cstd, 'UniformOutput', false))
+            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), ...
+                res.(conf.names{i}).cstd(j,c2take_idx), 'UniformOutput', false))
             set(gca,'XTick', c2take_idx);
             hold on
         end
@@ -502,7 +534,7 @@ for i = 1:conf.n_monks
 end
 
 
-clear x y all c2take_idx n_hands
+clear x y all c2take_idx n_hands monk_first col in_deg inds
         
 
 
@@ -524,7 +556,7 @@ for i = 1:conf.n_monks
         
         subplot(2,2,j);
         rose_agg = [];
-        for k = find(res.(conf.names{i}).c2take)
+        for k = 1:length(find(res.(conf.names{i}).c2take))
             rose_agg = [rose_agg ones(1, floor(syn(j,k) * 100)) * pds(1,k)]; %#ok<AGROW>
         end
         h_fake = rose(ones(1,100));
@@ -534,7 +566,7 @@ for i = 1:conf.n_monks
         title(['# ' num2str(j)]);
     end
     subplot(2,2,4)
-    rose(pds, 360);
+    rose(pds(1,:), 360);
     title('pd distribution');
     saveas(h, [conf.outpath  'syn_rose_' conf.names{i} '.' conf.image_format]);
     close(h);
@@ -543,7 +575,7 @@ end
 nat_mov_res = res;
 save([conf.inpath 'nat_mov_res.mat'], 'nat_mov_res');
 
-
+clear h_fake pds rose_agg syn
 
 
 

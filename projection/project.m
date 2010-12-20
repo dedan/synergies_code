@@ -14,6 +14,8 @@ function res = project(dat, basis, n_iter, noise_value)             % takes alre
 % the upper limit of the ratio, when different amounts of gaussian noise
 % are added on the test data
 
+dat = dat';
+basis = basis';
 
 n_rand      = 10000;
 test_data   = 0;
@@ -60,7 +62,7 @@ for i = 1:n_iter
         res.test_ratios(i)   = 0;
     end
     
-    % random with same overall mean and veriance
+    % random with same overall mean and variance
     dat_rand    = normrnd(mean(dat(:)), std(dat(:)), size(dat,1), size(dat,2));
     res.rand_ratios(i)  = sum(sum((p * dat_rand).^2)) / sum(sum((p2 * dat_rand).^2));
 

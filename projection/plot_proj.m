@@ -1,8 +1,10 @@
-function plot_proj(in)
+function h = plot_proj(in)
 
 % a function to plot the results of a projection anaylisis and labels it.
 % labelling has to be changed when for example test data is switched on in
 % './project.m'
+
+h = figure('Visible', 'off');
 
 bins = 100;
 

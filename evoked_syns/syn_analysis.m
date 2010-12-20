@@ -297,6 +297,6 @@ clear nmf_res pca_res monk mod scores ind
 
 %% save configuration
 evoked_res = res;
-save([conf.cur_res_fold 'evoked_res'], 'evoked_res');
+save([conf.result_folder 'data' filesep 'evoked_res'], 'evoked_res');
 
 disp('finished !');
