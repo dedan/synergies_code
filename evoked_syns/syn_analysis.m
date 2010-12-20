@@ -86,6 +86,7 @@ for m = 1:length(conf.monks)
     
     % get the indeces of subsessions
     idx.(monk) = strcmp(monk, {resps.monk});
+    disp(' ');
     disp([monk ' -- number of sessions: ' num2str(length(find(idx.(monk))))]);
 
     
@@ -107,9 +108,11 @@ for m = 1:length(conf.monks)
     title(monk)
 
     % sort out the sessions with fieldsize 0
-    disp(' ');
     disp(['sorted out ' int2str(length(find([resps(idx.(monk)).field] == 0))) ...
         ' subsessions because of fieldsize was 0']);
+    
+    disp(['0-field to non-0-field ratio: ' ...
+        num2str( length(find([resps(idx.(monk)).field] == 0)) / length(find(idx.(monk))))]);
     
     % same indexing magic as above
     idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & [resps(idx.(monk)).field] ~= 0;
@@ -123,7 +126,6 @@ for m = 1:length(conf.monks)
     hist(amps);
     title(monk);
     
-
 
     % sort the resulting vectors according to the hand position of the subsession
     idx.pro = ([resps.hand] == 1);

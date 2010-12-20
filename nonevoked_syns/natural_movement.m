@@ -546,30 +546,25 @@ clear x y all c2take_idx n_hands monk_first col in_deg inds
 
 for i = 1:conf.n_monks
     
-
+    
     % roseplot 
     h = figure('Visible', 'off');
     syn      = res.(conf.names{i}).syns;
-    pds      = res.(conf.names{i}).pds;
-
-    for j = 1:conf.dim
-        
-        subplot(2,2,j);
-        rose_agg = [];
-        for k = 1:length(find(res.(conf.names{i}).c2take))
-            rose_agg = [rose_agg ones(1, floor(syn(j,k) * 100)) * pds(1,k)]; %#ok<AGROW>
-        end
-        h_fake = rose(ones(1,100));
-        hold on;
-        rose(rose_agg,30);
-        set(h_fake, 'Visible', 'Off');
-        title(['# ' num2str(j)]);
-    end
-    subplot(2,2,4)
-    rose(pds(1,:), 360);
-    title('pd distribution');
-    saveas(h, [conf.outpath  'syn_rose_' conf.names{i} '.' conf.image_format]);
+    pds      = res.(conf.names{i}).pds(1,:);
+    
+    plot_rose(h, syn, pds);
+    saveas(h, [conf.outpath  'syn_rose_pro_' conf.names{i} '.' conf.image_format]);
     close(h);
+    
+    if max([sessions(idx.(conf.names{i})).hands] >1)
+        h = figure('Visible', 'off');
+        syn      = res.(conf.names{i}).syns;
+        pds      = res.(conf.names{i}).pds(1,:);
+        
+        plot_rose(h, syn, pds);
+        saveas(h, [conf.outpath  'syn_rose_sup_' conf.names{i} '.' conf.image_format]);
+        close(h);
+    end
 end
 
 nat_mov_res = res;
