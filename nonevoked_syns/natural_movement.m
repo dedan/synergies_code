@@ -277,66 +277,59 @@ clear data
 %% for vega (where both handpositions are available) is there a difference
 % in the residual?
 
-% TODO nicht nur fuer vega, auch fuer darma haben wir zwei
-% TODO und auch fuer first_vega
-
-if any(strcmp(conf.names, 'vega'))
-    figure('Visible', 'off');
+for i= 1:conf.n_monks
     
-    % select sessions from vega for which both handpos available
-    x       = 0:conf.max_channels;
-    index   = idx.vega & ([sessions.hands] > 1);
-    n_index = length(find(index));
-    pro     = vertcat(sessions(index).r_nmf_raw_pro);
-    sup     = vertcat(sessions(index).r_nmf_raw_sup);
-    
-    subplot 311
-    plot(x, [ones(n_index,1)*100 pro]', 'b')
-    
-    subplot 312
-    plot(x, [ones(n_index,1)*100 sup]', 'b')
-    
-    subplot 313
-    plot(x, [100 mean(pro)])
-    hold on
-    plot(x, [100 mean(sup)], 'k')
-    hold off
-    
-    saveas(h, [conf.outpath  'rank1_handpos.' conf.image_format]);
-    close(h);
-    
-    figure('Visible', 'off');
-    subplot 221
-    hist(pro(:,1))
-    title('pronation rank 1');
-    
-    subplot 222
-    hist(pro(:,2))
-    title('pronation rank 2');
-    
-    subplot 223
-    hist(sup(:,1))
-    title('supination rank 1');
-    
-    subplot 224
-    hist(sup(:,2))
-    title('supination rank 2');
-    
-    
-    saveas(h, [conf.outpath  'rank12_dist.' conf.image_format]);
-    close(h);
-    
-    [h, p] = kstest2(pro(:,1), sup(:,1));
-    disp('similarity of rank 1 distributions for pronation and supination');
-    if h == 1
-        disp(['rank 1 distributions not similar, p: ' num2str(p)]);
-    else
-        disp(['rank 1 distributions are similar, p: ' num2str(p)]);
+    if max([sessions(idx.(conf.names{i})).hands] >1)
+        figure('Visible', 'off');
+        
+        % select sessions from vega for which both handpos available
+        x       = 0:conf.max_channels;
+        index   = idx.(conf.names{i}) & ([sessions.hands] > 1);
+        n_index = length(find(index));
+        pro     = vertcat(sessions(index).r_nmf_raw_pro);
+        sup     = vertcat(sessions(index).r_nmf_raw_sup);
+        
+        subplot 311
+        plot(x, [ones(n_index,1)*100 pro]', 'b')
+        title('pronation');
+        
+        subplot 312
+        plot(x, [ones(n_index,1)*100 sup]', 'b')
+        title('supination');
+        
+        subplot 313
+        plot(x, [100 mean(pro)])
+        hold on
+        plot(x, [100 mean(sup)], 'k')
+        hold off
+        
+        saveas(h, [conf.outpath  'rank1_handpos_' conf.names{i} '.' conf.image_format]);
+        close(h);
+        
+        figure('Visible', 'off');
+        subplot 221
+        hist(pro(:,1), 1:100)
+        title('pronation rank 1');
+        
+        subplot 222
+        hist(pro(:,2), 1:100)
+        title('pronation rank 2');
+        
+        subplot 223
+        hist(sup(:,1), 1:100)
+        title('supination rank 1');
+        
+        subplot 224
+        hist(sup(:,2), 1:100)
+        title('supination rank 2');
+        
+        
+        saveas(h, [conf.outpath  'rank1_dist_' conf.names{i} '.' conf.image_format]);
+        close(h);
+                
+        clear x index n_index pro sup 
     end
-    
-    clear x index n_index pro sup h p
 end
-
 
 
 
@@ -368,7 +361,7 @@ for i = 1:conf.n_monks
         all = [all; sessions(k).mats(1).data_raw(:,res.(conf.names{i}).c2take)]; %#ok<AGROW>
     end
     nmf_res = nmf_explore(all, conf);
-    tmp     = nmf_res.syns;
+    synall = nmf_res.syns;
     subplot(6,4,2);
     imagesc(nmf_res.syns);
     axis off
@@ -385,11 +378,9 @@ for i = 1:conf.n_monks
     axis off
     title('centers (pca)');
     stds_p{i} = group_pca(1).idx;   %#ok<SAGROW>
-
     
-    synnmf = normr(group_nmf(1).center);
-    synpca = normr(group_pca(1).center);
-    synall = normr(tmp);
+    synnmf  = group_nmf(1).center;
+    synpca  = group_pca(1).center;
     
     [synpca, synnmf, scores] = match_syns(synpca, synnmf);
     res.(conf.names{i}).syns = synnmf;
