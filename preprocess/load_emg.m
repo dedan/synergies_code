@@ -15,6 +15,11 @@ data.channels = channels;
 
 for i = 1:length(emgfiles)
     bhvdata = load(edfiles{i});
+    
+    if ~isfield(bhvdata, 'bhvStat')
+        disp(edfiles{i});
+        continue
+    end
 
     % select trials with certain properties
     if isempty(bhvdata.bhvStat)
@@ -123,7 +128,7 @@ for j = 1:length(u)
         data.p2(j,i)     = p2;
     end
 end
-assert(~any(data.pd), 'pd problem');
+assert(any(data.pd(:)), 'pd problem');
 
 
 

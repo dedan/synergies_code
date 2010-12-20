@@ -31,10 +31,11 @@ if isempty(data)
     return
 end
 
-trg  = data.channel(1).Target;               % target of trial
+take = find(data.channels);
+trg  = data.channel(take(1)).Target;         % target of trial
 Ntr  = unique(trg);
 Ntr  = Ntr(Ntr > 0);                         % list of targets
-hnd  = data.channel(1).hand_position;        % hand position is the same for all channels
+hnd  = data.channel(take(1)).hand_position;  % hand position is the same for all channels
 Nh   = unique(hnd(trg > 0));                 % list of hand positions
 Nh   = Nh(Nh ~= 0);
 
@@ -48,26 +49,28 @@ for k=1:length(Nh),
 
     
     % now computing the mean bckground level per channel
-    for i=1:length(data.channel)
+    for i=find(data.channels)
         emgpsth(i).hand(k).bck_amp = mean(data.channel(i).bck_amp);
     end
     
     for j=1:length(Ntr),
         jindx = find(trg == Ntr(j) & hnd == Nh(k));
         
-        tmp_amp = NaN(length(data.channel), length(jindx));
-        tmp_bck = NaN(length(data.channel), length(jindx));
-        for i=1:length(data.channel)
+        tmp_amp = NaN(length(find(data.channels)), length(jindx));
+        tmp_bck = NaN(length(find(data.channels)), length(jindx));
+        
+        c_inds = find(data.channels); 
+        for i = 1:length(c_inds)
             if length(jindx) >= 1,
                 
                 % this is the relevant data for further investigation
-                tmp_amp(i,:) = data.channel(i).amp(jindx);
-                tmp_bck(i,:) = data.channel(i).bck_amp(jindx);
+                tmp_amp(i,:) = data.channel(c_inds(i)).amp(jindx);
+                tmp_bck(i,:) = data.channel(c_inds(i)).bck_amp(jindx);
                 
                 if length(jindx)> 1,
-                    emgpsth(i).hand(k).target(j,:) = mean(data.channel(i).signal(jindx,:));
+                    emgpsth(c_inds(i)).hand(k).target(j,:) = mean(data.channel(c_inds(i)).signal(jindx,:));
                 else
-                    emgpsth(i).hand(k).target(j,:) = (data.channel(i).signal(jindx,:));
+                    emgpsth(c_inds(i)).hand(k).target(j,:) = (data.channel(c_inds(i)).signal(jindx,:));
                 end
             end
         end;
