@@ -50,5 +50,12 @@ for monk = monks
             disp(['EMGdat' filesep 'EMG' curdir '.mat skipped because already exists']);
         end
     end
+    
+    if strcmp(char(monk), 'chalva')
+        % chalva sessions 54 the connector was switched. 
+        % channels 1-8 were switched with 9-16
+        fix_chalva_54(path)
+    end
 end
+
 
