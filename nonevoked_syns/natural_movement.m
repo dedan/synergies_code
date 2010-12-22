@@ -56,6 +56,7 @@ end
 % appended now
 load([conf.inpath 'nat_mov_res.mat']);
 addpath('../lib'); 
+addpath('../plots');
 clear tmp
  
 
@@ -364,80 +365,109 @@ end
 
 
 
+%% synergy computation stuff
 
-%% synergy analysis
+modi = {'_pro', '_sup'};
 
-
-
-% consistency over sessions
 for i = 1:conf.n_monks
+    
+    monk = conf.names{i};
+    
+    if max([sessions(idx.(conf.names{i})).hands]) == 1
+        res.(monk).nmf_sup         = [];
+        res.(monk).synall_sup      = [];
+        res.(monk).score_sup       = [];
+        res.(monk).scoreall_sup    = [];
+    end
+        
+    for j = 1:max([sessions(idx.(monk)).hands])
+        
+        if j == 2
+            ses2take = idx.(monk) & [sessions.hands] == 2;
+        else
+            ses2take = idx.(monk);
+        end
+        
+        group_nmf           = group(sessions(ses2take), ['nmf' modi{j}]);
+        group_pca           = group(sessions(ses2take), ['pca' modi{j}]);
+        synnmf              = group_nmf(1).center;
+        synpca              = group_pca(1).center;
+        res.(monk).nmfdat   = vertcat(group_nmf.dat);
+        res.(monk).pcadat   = vertcat(group_pca.dat);
+        
+        [synpca, synnmf, score_group]       = match_syns(synpca, synnmf);
+        res.(monk).(['synnmf' modi{j}])     = synnmf;
+        res.(monk).(['nmfpca_sc' modi{j}])  = score_group;
+        res.(monk).(['synpca' modi{j}])     = synpca;
+        
+        % will the synergies look the same when I compute them on the whole dat
+        all = [];
+        for k = find(ses2take)
+            all = [all; sessions(k).mats(j).data_raw(:,res.(monk).c2take)]; %#ok<AGROW>
+        end
+        nmf_res = nmf_explore(all, conf);
+        synall  = nmf_res.syns;
+        
+        [~, synall, score_all]              = match_syns(synpca, synall);
+        res.(monk).(['synall' modi{j}])     = synall;
+        res.(monk).(['allpca_sc' modi{j}])  = score_all;
+    end
+end
+clear synnmf synpca score_group all
+    
+
+
+
+%% consistency over sessions
+
+for i = 1:conf.n_monks
+    monk = conf.names{i};
 
     h = figure('Visible', 'off');
-    
-    group_nmf = group(sessions(idx.(conf.names{i})), 'nmf_pro');    
+   
     subplot(6,4,[1 5 9]);
-    imagesc(vertcat(group_nmf.dat));
+    imagesc(res.(monk).nmfdat);
     axis off
     title(['consistency over sessions (nmf)' conf.names{i}]);
     
-    group_pca = group(sessions(idx.(conf.names{i})), 'pca_pro');    
     subplot(6,4,[13 17 21]);
-    imagesc(vertcat(group_pca.dat));
+    imagesc(res.(monk).pcadat);
     axis off
     title(['consistency over sessions (pca)' conf.names{i}]);
     
-    % will the synergies look the same when I compute them on the whole dat
-    all = [];
-    for k = find(idx.(conf.names{i}))
-        all = [all; sessions(k).mats(1).data_raw(:,res.(conf.names{i}).c2take)]; %#ok<AGROW>
-    end
-    nmf_res = nmf_explore(all, conf);
-    synall = nmf_res.syns;
     subplot(6,4,2);
-    imagesc(nmf_res.syns);
+    imagesc(res.(monk).synall_pro);
     axis off
     title('all at once');
     
     subplot(6,4,10);
-    imagesc(group_nmf(1).center);
+    imagesc(res.(monk).synnmf_pro);
     axis off
     title('centers (nmf)');
     stds_n{i} = group_nmf(1).idx;   %#ok<SAGROW>
     
     subplot(6,4,14);
-    imagesc(group_pca(1).center);
+    imagesc(res.(monk).synpca_pro);
     axis off
     title('centers (pca)');
     stds_p{i} = group_pca(1).idx;   %#ok<SAGROW>
     
-    synnmf  = group_nmf(1).center;
-    synpca  = group_pca(1).center;
-    
-    [synpca, synnmf, scores] = match_syns(synpca, synnmf);
-    res.(conf.names{i}).syns = synnmf;
-    
     p_pos = {[3 7], [11 15], [19 23]};
-    for j = 1:size(synnmf,1)
+    for j = 1:size(res.(monk).synnmf_pro,1)
         subplot(6,4,p_pos{j})
-        bar( [synpca(j,:)' synnmf(j,:)']);
+        bar( [res.(monk).synpca_pro(j,:)' res.(monk).synnmf_pro(j,:)']);
         axis off
-        title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
+        title(['#' int2str(j) ' sc: ' num2str(res.(monk).nmfpca_sc_pro(j))]);
     end
-    [r p] = corrcoef([synpca(:) synnmf(:)]);
-    disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
-
-    [synpca, synall, scores]    = match_syns(synpca, synall);
-    res.(conf.names{i}).synall  = synall;
     
     p_pos = {[4 8], [12 16], [20 24]};
-    for j = 1:size(synpca,1)
+    for j = 1:size(res.(monk).synpca_pro,1)
         subplot(6,4,p_pos{j})
-        bar( [synpca(j,:)' synall(j,:)']);
+        bar( [res.(monk).synpca_pro(j,:)' res.(monk).synall_pro(j,:)']);
         axis off
-        title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
+        title(['#' int2str(j) ' sc: ' num2str(res.(monk).allpca_sc_pro(j))]);
     end
-    [r p] = corrcoef([synpca(:) synall(:)]);
-    disp(['nmf vs. pca, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
+
   
     saveas(h, [conf.outpath  'syn_consist_sessions_' conf.names{i} '.' conf.image_format]);
     close(h);
@@ -460,8 +490,7 @@ saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall group_nmf ...
-    group_pca p p_pos r scores tmp
+clear p_pos
 
 
 
@@ -473,7 +502,7 @@ clear flat grouped stds_n stds_p nmf_res all synnmf synpca synall group_nmf ...
 
 for i= 1:conf.n_monks
     
-    if max([sessions(idx.(conf.names{i})).hands] >1)
+    if max([sessions(idx.(conf.names{i})).hands]) >1
         
         h = figure('Visible', 'off');    
         
@@ -579,7 +608,7 @@ for i = 1:conf.n_monks
     
     % roseplot 
     h = figure('Visible', 'off');
-    syn      = res.(conf.names{i}).syns;
+    syn      = res.(conf.names{i}).synnmf_pro;
     pds      = res.(conf.names{i}).pds(1,:);
     
     plot_rose(h, syn, pds);
@@ -588,7 +617,7 @@ for i = 1:conf.n_monks
     
     if max([sessions(idx.(conf.names{i})).hands] >1)
         h = figure('Visible', 'off');
-        syn      = res.(conf.names{i}).syns;
+        syn      = res.(conf.names{i}).synnmf_sup;
         pds      = res.(conf.names{i}).pds(1,:);
         
         plot_rose(h, syn, pds);
