@@ -1,4 +1,4 @@
-function plot_rose(h, syn, pds)
+function plot_rose(h, syns, pds)
 
 
 if size(syns, 1) ~= 3
@@ -15,7 +15,7 @@ for j = 1:3
     rose_agg = [];
     
     for k = 1:size(syns,2)
-        rose_agg = [rose_agg ones(1, floor(syn(j,k) * 100)) * pds(k)]; %#ok<AGROW>
+        rose_agg = [rose_agg ones(1, floor(syns(j,k) * 100)) * pds(k)]; %#ok<AGROW>
     end
     
     h_fake = rose(ones(1,100));
