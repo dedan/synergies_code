@@ -83,11 +83,9 @@ for i = 1:conf.n_monks
     disp([conf.names{i} ': ' num2str(length(find(idx.(conf.names{i})))) ' sessions' ]);
 
     % distribution of targets
-    subplot(3,conf.n_monks,i);
-    
+    subplot(4,conf.n_monks,i);
     [y x] = hist([sessions(idx.(conf.names{i})).target1],-1:8);
     bar(x,y,'r');
-    
     hold on
     [y x] = hist([sessions(idx.(conf.names{i})).target2],-1:8);
     bar(x+0.2,y,'b');
@@ -95,16 +93,19 @@ for i = 1:conf.n_monks
     title(conf.names{i});
     xlabel('targets');
 
-    
     % distribution of used channels
-    subplot(3, conf.n_monks, conf.n_monks +i);
-    
+    subplot(4, conf.n_monks, conf.n_monks +i);
     [y x] = hist([sessions(idx.(conf.names{i})).n_channels],1:16);
     bar(x,y,'b');
     xlabel('channels');
+    
+    % distribution of trials
+    subplot(4, conf.n_monks, 2*conf.n_monks +i);
+    hist([sessions(idx.(conf.names{i})).trials], 100);
+    xlabel('trials');
 end
 
-subplot(3,conf.n_monks, conf.n_monks*2+1);
+subplot(4,conf.n_monks, conf.n_monks*3+1);
 hist([sessions.hands]);
 title('handpositions');
 
@@ -113,6 +114,34 @@ close(h);
 clear y x
 
 
+%% sorting
+
+for i = 1:conf.n_monks
+    monk = conf.names{i};
+    
+    % sort out channels with less then 50 trials
+    disp([monk ': sort out ' num2str(length(find([sessions(idx.(monk)).trials] < 50))) ... 
+        ' sessions because less then 50 trials']);
+    idx.(monk) = idx.(monk) & [sessions.trials] > 50;
+
+    % sort out sessions with unstable pds
+    % pronation pds because for all available
+    data = zeros(length(find(idx.(monk))), conf.max_channels);
+    inds = find(idx.(monk));
+    for j = 1:length(inds)
+        data(j,:) = sessions(inds(j)).pd(1,:); 
+    end
+    data(data > pi)  = data(data > pi) - 2* pi;
+    
+    all_mean = repmat(circ_mean(data), size(data,1), 1);
+    all_std  = repmat(circ_std(data) * 2, size(data,1), 1);
+    out      = sum(abs(data - all_mean) > all_std, 2)';
+    
+    disp([monk ': sort out ' num2str(length(find(out > 4))) ...
+        ' sessions because unstable pds']);
+    idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & out < 4;
+end
+clear data
 
 
 %% which channels
@@ -261,7 +290,8 @@ for i = 1:conf.n_monks
     data = vertcat(sessions(idx.(conf.names{i})).r_nmf_raw_pro);
     h = figure('Visible', 'off');
     hist(data(:,conf.dim),50);
-    title(['distribution of rank ' num2str(conf.dim) ' resid values']);
+    title(['dist of rank ' num2str(conf.dim) ' resid values -- mean ' ...
+        num2str(mean(data(:, conf.dim)))]);
     saveas(h, [conf.outpath  'resid_dist_' conf.names{i} '.' conf.image_format]);
     close(h);
     disp('');
