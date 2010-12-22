@@ -65,13 +65,14 @@ for i = 1:length(sessions)
     sessions(i).nmf_pro_std = nmf_res.std;
     sessions(i).pca_pro     = pcaica(data, conf.dim)';
     
-    if sessions(i).hands > 1
+    if sessions(i).hands > 1 && size(sessions(i).mats(2).data_raw, 1) > 10
         data    = sessions(i).mats(2).data_raw(:,c2take);
         nmf_res = nmf_explore(data, conf);
         sessions(i).nmf_sup     = nmf_res.syns;
         sessions(i).nmf_sup_std	= nmf_res.std;
         sessions(i).pca_sup     = pcaica(data, conf.dim)';
     else
+        sessions(i).hands       = 1;
         sessions(i).nmf_sup     = [];
         sessions(i).nmf_sup_std	= [];
         sessions(i).pca_sup     = [];        
