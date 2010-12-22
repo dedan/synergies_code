@@ -40,6 +40,7 @@ conf.opt                 = statset('MaxIter',50);     % number of early explorat
 
 % files and folders
 conf.result_folder       = '~/Documents/uni/yifat_lab/results/';
+conf.inpath              = '/Volumes/LAB/results/';
 conf.cur_res_fold        = [conf.result_folder 'evoked_syns' filesep];
 mkdir(conf.cur_res_fold)
 
@@ -65,9 +66,9 @@ for monk = conf.monks
     end
     
     if isempty(resps)
-        load([conf.result_folder 'data' filesep 'evoked_data_' char(monk)]);
+        load([conf.inpath 'data' filesep 'evoked_data_' char(monk)]);
     else
-        tmp     = load([conf.result_folder 'data' filesep 'evoked_data_' char(monk)]);
+        tmp     = load([conf.inpath 'data' filesep 'evoked_data_' char(monk)]);
         resps   = [resps tmp.resps]; %#ok<AGROW>
     end
 end
@@ -133,7 +134,11 @@ for m = 1:length(conf.monks)
     
     res.(monk).pro.flat = vertcat(resps(idx.(monk) & idx.pro).response);
     res.(monk).sup.flat = vertcat(resps(idx.(monk) & idx.sup).response);
-    res.(monk).all.flat = vertcat(res.(monk).pro.flat, res.(monk).sup.flat);
+    if ~isempty(res.(monk).sup.flat)
+        res.(monk).all.flat = vertcat(res.(monk).pro.flat, res.(monk).sup.flat);
+    else
+        res.(monk).all.flat = [];
+    end
     
     disp(['pronation - number of recordings: ' num2str(length(find(idx.(monk) & idx.pro)))]);
     disp(['supination - number of recordings: ' num2str(length(find(idx.(monk) & idx.sup)))]);
@@ -149,6 +154,32 @@ disp(' ');
 disp('calculated and separated responses');
 clear flags monk h1 h2
 
+
+
+
+
+%% fieldsize plot
+
+h = figure('Visible','off');
+for i = 1:length(conf.monks)
+    
+    monk = char(conf.monks(i));
+    subplot(length(conf.monks),1,i);
+    
+    fields = cell(1, length(conf.channels));
+    for j = find(idx.(monk))
+        fields{resps(j).field} = [fields{resps(j).field} resps(j).response(resps(j).fields)];
+    end
+    
+    for j = 1:length(conf.channels);
+        hold on
+        plot(ones(1, length(fields{j})) * j, fields{j}, '.b');
+        plot(j, mean(fields{j}), '.r', 'MarkerSize', 20);
+    end
+    title(monk);
+end
+saveas(h, [conf.cur_res_fold  'resp_field_size.' conf.image_format]);
+close(h);
 
 
 
@@ -278,11 +309,15 @@ for m = 1:length(conf.monks)
         
         % plot
         for i = 1:conf.dim
-            subplot(length(pos), conf.dim, conf.dim*(mo-1) + i)
+            subplot(length(pos), conf.dim+1, (conf.dim+1)*(mo-1) + i)
             bar( [pca_res(i,:)' nmf_res.syns(i,:)']);
             axis off
             title(['#' int2str(i) ' sc: ' num2str(scores(i))]);
         end
+        subplot(length(pos), conf.dim+1, conf.dim*mo +1)
+        plot(pca_res(:), nmf_res.syns(:), '.');
+        [p, r] = corrcoef(pca_res(:), nmf_res.syns(:));
+        title([num2str(p(2,1)) ' -- ' num2str(r(2,1))]);
 
         % save results
         res.(monk).(mod).nmf = nmf_res.syns;    
@@ -299,6 +334,6 @@ clear nmf_res pca_res monk mod scores ind
 
 %% save configuration
 evoked_res = res;
-save([conf.result_folder 'data' filesep 'evoked_res'], 'evoked_res');
+save([conf.inpath 'data' filesep 'evoked_res'], 'evoked_res');
 
 disp('finished !');

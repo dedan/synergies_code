@@ -48,7 +48,7 @@ for j = 1:length(data)
       dif = big_number;
       pos = -1;
       
-      % look for the most closest to prototype entry in this group which is
+      % look for the closest to prototype entry in this group which is
       % not already taken
       for k = find(add_info(j).not_taken)
          cmp_dif = pdist([c(i,:); data(j).(fieldname)(k,:)]);
