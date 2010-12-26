@@ -6,7 +6,7 @@
 
 
 config.res_folder  = '~/Documents/uni/yifat_lab/results/';
-config.directory   = '/Volumes/DEDAN_DISK/vega/data/';
+config.directory   = '/Volumes/LAB/vega/data/';
 config.background  = 'mapgrid1bw.bmp';
 config.plot_connections = 0;
 config.plot_with_noise = 0;
