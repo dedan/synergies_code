@@ -29,6 +29,7 @@ conf.dimensions         = 3;
 conf.Niter_exploration  = 5;
 conf.n_best             = 5;
 conf.rank1_raw          = true;
+conf.n_trials           = 50;
 conf.image_format       = 'jpg';
 mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
@@ -121,9 +122,9 @@ for i = 1:conf.n_monks
     monk = conf.names{i};
     
     % sort out channels with less then 50 trials
-    disp([monk ': sort out ' num2str(length(find([sessions(idx.(monk)).trials] < 50))) ... 
+    disp([monk ': sort out ' num2str(length(find([sessions(idx.(monk)).trials] <= conf.n_trials ))) ... 
         ' sessions because less then 50 trials']);
-    idx.(monk) = idx.(monk) & [sessions.trials] > 50;
+    idx.(monk) = idx.(monk) & [sessions.trials] > conf.n_trials;
 
     % sort out sessions with unstable pds
     % pronation pds because for all available
@@ -138,7 +139,7 @@ for i = 1:conf.n_monks
     all_std  = repmat(circ_std(data) * 2, size(data,1), 1);
     out      = sum(abs(data - all_mean) > all_std, 2)';
     
-    disp([monk ': sort out ' num2str(length(find(out > 4))) ...
+    disp([monk ': sort out ' num2str(length(find(out >= 4))) ...
         ' sessions because unstable pds']);
     idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & out < 4;
 end
