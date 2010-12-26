@@ -30,7 +30,7 @@ for dati = 1:length(filtered_data)
             dat.session sprintf('%03d',file_number)];
         
         stim_check = whos('-file',[file '_bhv'],'AMstim_on', 'StimTime');
-        if(stim_check.size(1) > 4)
+        if(stim_check.size(1) > 4) && exist([file '_emg.mat'], 'file')
             
             
             s_times = load([file '_bhv.mat'], stim_check.name);
