@@ -544,25 +544,27 @@ for i = 1:conf.n_monks
     
     h = figure('Visible', 'off');    
     all = vertcat(sessions(ses2take).pd);            
-    for k = c2take_idx
+    for k = 1:length(c2take_idx)
         
         subplot(ceil(length(c2take_idx)/2),2,k);
         if max_hands == 1
-            [x y] = pol2cart(all(:,k), ones(size(all(:,k))));
+            [x y] = pol2cart(all(:,c2take_idx(k)), ones(size(all(:,c2take_idx(k)))));
             feather(x, y, 'b');
             [~, res.(conf.names{i}).cstd]  = circ_std(all);
             res.(conf.names{i}).pds        = circ_mean(all);
         else
-            [x y] = pol2cart(all(1:2:n2take-1,k), ones(size(all(1:2:n2take-1,k))));
+            id_pro = 1:2:2*n2take-1;
+            id_sup = 2:2:2*n2take;
+            [x y] = pol2cart(all(id_pro,c2take_idx(k)), ones(size(all(id_pro,c2take_idx(k)))));
             feather(x, y, 'b');
             hold on
-            [x y] = pol2cart(all(2:2:n2take,k), ones(size(all(2:2:n2take,k))));
+            [x y] = pol2cart(all(id_sup,c2take_idx(k)), ones(size(all(id_sup,c2take_idx(k)))));
             feather(x, y, 'r');
             hold off
-            [~, res.(conf.names{i}).cstd(1,:)] = circ_std(all(1:2:n2take-1,:));
-            [~, res.(conf.names{i}).cstd(2,:)] = circ_std(all(2:2:n2take,:));
-            res.(conf.names{i}).pds(1,:)       = circ_mean(all(1:2:n2take-1,:));
-            res.(conf.names{i}).pds(2,:)       = circ_mean(all(2:2:n2take,:));
+            [~, res.(conf.names{i}).cstd(1,:)] = circ_std(all(id_pro,:));
+            [~, res.(conf.names{i}).cstd(2,:)] = circ_std(all(id_sup,:));
+            res.(conf.names{i}).pds(1,:)       = circ_mean(all(id_pro,:));
+            res.(conf.names{i}).pds(2,:)       = circ_mean(all(id_sup,:));
         end            
     end
     saveas(h, [conf.outpath  'pd_consist_feather_' conf.names{i} '.' conf.image_format]);
@@ -594,7 +596,7 @@ for i = 1:conf.n_monks
 end
 
 
-clear x y all c2take_idx n_hands monk_first col in_deg inds
+clear x y all c2take_idx n_hands monk_first col in_deg inds id_pro id_sup
         
 
 
@@ -625,10 +627,13 @@ for i = 1:conf.n_monks
         saveas(h, [conf.outpath  'syn_rose_sup_' conf.names{i} '.' conf.image_format]);
         close(h);
     end
+    
+    nat_mov_res = res.(conf.names{i});
+    save([conf.inpath 'nat_mov_res_' conf.names{i} '.mat'], 'nat_mov_res');
+    
 end
 
-nat_mov_res = res;
-save([conf.inpath 'nat_mov_res.mat'], 'nat_mov_res');
+
 
 clear h_fake pds rose_agg syn
 

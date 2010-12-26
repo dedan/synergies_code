@@ -20,21 +20,19 @@ if nargin == 2
 end
 
 
-conf.inpath         = '~/Documents/uni/yifat_lab/results/data/';
+conf.inpath         = '/Volumes/LAB/results/data/';
 
-
-
-% load the natural movement results
-load([conf.inpath 'nat_mov_res.mat'])
 
 
 for monk = monks
+    % load the natural movement results
+    load([conf.inpath 'nat_mov_res_' char(monk) '.mat'])    
     
     disp(['calculate responses for ' char(monk) '..']);
     
     conf.monk               = char(monk);
     conf.dat_folder         = [path char(monk) filesep];
-    conf.c2take             = nat_mov_res.(char(monk)).c2take;
+    conf.c2take             = nat_mov_res.c2take;
     
     % get all subessions in which a stimulation took place
     data = get_all_stimsess(conf, char(monk));
@@ -92,20 +90,22 @@ for i = 1:length(dir_list)
         
         for used = used_electrodes
             if isfield(subs.Electrode(used).Stim, 'Flag') && subs.Electrode(used).Stim.Flag
-                res(rec).electrode      = used;
-                res(rec).amp            = subs.Electrode(used).Stim.Amp;
                 res(rec).location.depth = subs.Electrode(used).Depth;
                 res(rec).location.x     = DDFparam.Electrode(used).X;
                 res(rec).location.y     = DDFparam.Electrode(used).Y;
+                res(rec).location.quad  = DDFparam.Electrode(used).Quad;
+                res(rec).location.thr   = DDFparam.Electrode(used).Threshold;
+                res(rec).location.res   = DDFparam.Electrode(used).Active;
+                res(rec).location.posi  = DDFparam.Positioner;
+                res(rec).id             = DDFparam.ID;
                 
-                res(rec).hand            = SESSparam.hand;
-                res(rec).id              = DDFparam.ID;
-                res(rec).session         = file.name;
-                res(rec).subsession      = j;
-                res(rec).file            = SESSparam.SubSess(j).Files;
-                res(rec).location.thr    = DDFparam.Electrode(used).Threshold;
-                res(rec).location.res    = DDFparam.Electrode(used).Active;
-                
+                res(rec).electrode      = used;
+                res(rec).amp            = subs.Electrode(used).Stim.Amp;
+                res(rec).hand           = SESSparam.hand;
+                res(rec).session        = file.name;
+                res(rec).subsession     = j;
+                res(rec).file           = SESSparam.SubSess(j).Files;
+
                 rec = rec +1;
             end
         end
