@@ -61,7 +61,8 @@ for i=1:length(resps),
         % data.
     else
         load(fname);
-                % TODO in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
+                
+        % TODO in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
 
         ctx_coord = read_cortical_data( DDFparam);
         totel = 0;
@@ -102,12 +103,10 @@ for i=1:length(resps),
                 sessdir(i).xy = [x y];
                 
                 if conf.coloring == 1
-                    cmnd = ['h=plot(x,y,''' 'o' conf.pro_sup_color{sessdir(i).hand} ''');'];
-                    eval(cmnd);
+                    h = plot(x,y, ['o' conf.pro_sup_color{sessdir(i).hand}]);
                     set(h,'MarkerFaceColor',  conf.pro_sup_color{sessdir(i).hand});
                 else
-                    cmnd = ['h=plot(x,y,''' 'o' ctx_coord(indx).eff ''');'];
-                    eval(cmnd);
+                    h = plot(x,y, ['o' ctx_coord(indx).eff]);
                     set(h,'MarkerFaceColor',  ctx_coord(indx).eff);
                 end
                 
