@@ -20,21 +20,19 @@ if nargin == 2
 end
 
 
-conf.inpath         = '~/Documents/uni/yifat_lab/results/data/';
+conf.inpath         = '/Volumes/LAB/results/data/';
 
-
-
-% load the natural movement results
-load([conf.inpath 'nat_mov_res.mat'])
 
 
 for monk = monks
+    % load the natural movement results
+    load([conf.inpath 'nat_mov_res_' char(monk) '.mat'])    
     
     disp(['calculate responses for ' char(monk) '..']);
     
     conf.monk               = char(monk);
     conf.dat_folder         = [path char(monk) filesep];
-    conf.c2take             = nat_mov_res.(char(monk)).c2take;
+    conf.c2take             = nat_mov_res.c2take;
     
     % get all subessions in which a stimulation took place
     data = get_all_stimsess(conf, char(monk));

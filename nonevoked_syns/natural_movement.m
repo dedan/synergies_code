@@ -625,10 +625,13 @@ for i = 1:conf.n_monks
         saveas(h, [conf.outpath  'syn_rose_sup_' conf.names{i} '.' conf.image_format]);
         close(h);
     end
+    
+    nat_mov_res = res.(conf.names{i});
+    save([conf.inpath 'nat_mov_res_' conf.names{i} '.mat'], 'nat_mov_res');
+    
 end
 
-nat_mov_res = res;
-save([conf.inpath 'nat_mov_res.mat'], 'nat_mov_res');
+
 
 clear h_fake pds rose_agg syn
 
