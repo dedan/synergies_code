@@ -392,6 +392,8 @@ for i = 1:conf.n_monks
         synpca              = group_pca(1).center;
         res.(monk).nmfdat   = vertcat(group_nmf.dat);
         res.(monk).pcadat   = vertcat(group_pca.dat);
+        res.(monk).nmf_std  = group_nmf(1).idx;
+        res.(monk).pca_std  = group_pca(1).idx;
         
         [synpca, synnmf, score_group]       = match_syns(synpca, synnmf);
         res.(monk).(['synnmf' modi{j}])     = synnmf;
@@ -424,12 +426,12 @@ for i = 1:conf.n_monks
     h = figure('Visible', 'off');
    
     subplot(6,4,[1 5 9]);
-    imagesc(res.(monk).nmfdat);
+    imagesc(normr(res.(monk).nmfdat));
     axis off
     title(['consistency over sessions (nmf)' conf.names{i}]);
     
     subplot(6,4,[13 17 21]);
-    imagesc(res.(monk).pcadat);
+    imagesc(normr(res.(monk).pcadat));
     axis off
     title(['consistency over sessions (pca)' conf.names{i}]);
     
@@ -442,29 +444,31 @@ for i = 1:conf.n_monks
     imagesc(res.(monk).synnmf_pro);
     axis off
     title('centers (nmf)');
-    stds_n{i} = group_nmf(1).idx;   %#ok<SAGROW>
     
     subplot(6,4,14);
     imagesc(res.(monk).synpca_pro);
     axis off
     title('centers (pca)');
-    stds_p{i} = group_pca(1).idx;   %#ok<SAGROW>
     
     p_pos = {[3 7], [11 15], [19 23]};
     for j = 1:size(res.(monk).synnmf_pro,1)
         subplot(6,4,p_pos{j})
         bar( [res.(monk).synpca_pro(j,:)' res.(monk).synnmf_pro(j,:)']);
         axis off
-        title(['#' int2str(j) ' sc: ' num2str(res.(monk).nmfpca_sc_pro(j))]);
+        text(10, 0.8, ['#' int2str(j) ' sc: ' num2str(res.(monk).nmfpca_sc_pro(j))]);
     end
+    subplot(6,4,p_pos{1})
+    title('pca vs. means');
     
     p_pos = {[4 8], [12 16], [20 24]};
     for j = 1:size(res.(monk).synpca_pro,1)
         subplot(6,4,p_pos{j})
         bar( [res.(monk).synpca_pro(j,:)' res.(monk).synall_pro(j,:)']);
         axis off
-        title(['#' int2str(j) ' sc: ' num2str(res.(monk).allpca_sc_pro(j))]);
+        text(10, 0.8, ['#' int2str(j) ' sc: ' num2str(res.(monk).allpca_sc_pro(j))]);
     end
+    subplot(6,4,p_pos{1})
+    title('pca vs. at once');
 
   
     saveas(h, [conf.outpath  'syn_consist_sessions_' conf.names{i} '.' conf.image_format]);
@@ -477,12 +481,14 @@ h = figure('Visible', 'off');
 
 for i = 1:conf.n_monks
     subplot(conf.n_monks,2,i*2-1);
-    hist(stds_n{i});
-    title([conf.names{i} ' std of clustering (nmf): ' num2str(std(hist(stds_n{i}, conf.dim)))]);
+    hist(res.(conf.names{i}).nmf_std);
+    title([conf.names{i} ' std of clustering (nmf): ' ...
+        num2str(std(hist(res.(conf.names{i}).nmf_std, conf.dim)))]);
     
     subplot(conf.n_monks,2,i*2);
-    hist(stds_p{i});
-    title([conf.names{i} ' std of clustering (pca): ' num2str(std(hist(stds_p{i}, conf.dim)))]);    
+    hist(res.(conf.names{i}).pca_std);
+    title([conf.names{i} ' std of clustering (pca): ' ...
+        num2str(std(hist(res.(conf.names{i}).pca_std, conf.dim)))]);    
 end
 saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
@@ -515,14 +521,19 @@ for i= 1:conf.n_monks
         [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns);
         
         for j = 1:size(pro_syns,1)
-            subplot(3,1,j)
+            subplot(4,1,j)
             bar( [pro_syns(j,:)' sup_syns(j,:)']);
             axis off
             title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
         end
+        subplot(4,1,4)
+        plot(pro_syns(:), sup_syns(:), '.');
+        [r, p] = corrcoef(pro_syns(:), sup_syns(:));
+        title(['r: ' num2str(r(2,1)) ' -- p: ' num2str(p(2,1))]);
         saveas(h, [conf.outpath  'post_consist_' conf.names{i} '.' conf.image_format]);
     end
 end
+clear max_hands ses2take g_pro g_sup pro_syns sup_syns p r
 
 
 
