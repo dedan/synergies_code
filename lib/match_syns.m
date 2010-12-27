@@ -3,7 +3,7 @@
 %scores gives the correlation coefficient between columns of W1 and their
 %matched columns in W2. 
 
-function [w1, w2, scores] = match_syns(w1,w2)
+function [w1, w2, scores] = match_syns(w1,w2, baseline)
 
 
 
@@ -41,6 +41,9 @@ for i = 1:s
     c           = corrcoef(w1(i,:), w2(i,:));
     scores(i)   = c(2,1);
 end
+
+% normalize scores with estimated baseline
+scores = (scores - baseline) / (1 - baseline);
 
 
 

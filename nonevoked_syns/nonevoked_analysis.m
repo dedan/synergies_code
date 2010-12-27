@@ -47,9 +47,11 @@ sessions = struct([]);
 for i = 1:conf.n_monks
     if isempty(sessions)
         load([conf.inpath 'all_data_' conf.names{i}]);
+        res.(conf.names{i}).stats = stats;
     else
         tmp         = load([conf.inpath 'all_data_' conf.names{i}]);
         sessions    = [sessions tmp.sessions]; %#ok<AGROW>
+        res.(conf.names{i}).stats = tmp.stats;        
     end        
 end
 
@@ -395,7 +397,8 @@ for i = 1:conf.n_monks
         res.(monk).nmf_std  = group_nmf(1).idx;
         res.(monk).pca_std  = group_pca(1).idx;
         
-        [synpca, synnmf, score_group]       = match_syns(synpca, synnmf);
+        baseline                            = res.(monk).stats.m_base;
+        [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, baseline);
         res.(monk).(['synnmf' modi{j}])     = synnmf;
         res.(monk).(['nmfpca_sc' modi{j}])  = score_group;
         res.(monk).(['synpca' modi{j}])     = synpca;
@@ -408,12 +411,12 @@ for i = 1:conf.n_monks
         nmf_res = nmf_explore(all, conf);
         synall  = nmf_res.syns;
         
-        [~, synall, score_all]              = match_syns(synpca, synall);
+        [~, synall, score_all]              = match_syns(synpca, synall, baseline);
         res.(monk).(['synall' modi{j}])     = synall;
         res.(monk).(['allpca_sc' modi{j}])  = score_all;
     end
 end
-clear synnmf synpca score_group all
+clear synnmf synpca score_group all baseline
     
 
 
@@ -518,7 +521,8 @@ for i= 1:conf.n_monks
         pro_syns    = g_pro(1).center;
         sup_syns    = g_sup(1).center;
         
-        [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns);
+        baseline    = res.(monk).stats.h_base;
+        [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns, baseline);
         
         for j = 1:size(pro_syns,1)
             subplot(4,1,j)

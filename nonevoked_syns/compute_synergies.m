@@ -19,7 +19,8 @@ config.Niter_res_test   = 20;
 config.opt              = statset('MaxIter',50);
 config.max_channels     = 16;
 config.modi             = {'_pro','_sup'};
-config.dimensions       = 3;
+config.dim              = 3;
+config.n_baseline       = 5;
 
 if config.n_best > config.Niter_exploration
     disp('n_best has to be smaller than Niter_exploration');
@@ -34,13 +35,60 @@ for monk = monks
     tmp_sess = nonevoked_sessions(config); 
     
     disp('computing synergies..');
-    sessions = comp_syns(tmp_sess, config); %#ok<NASGU>
-    save([outpath 'all_data_' char(monk)], 'sessions');
+    sessions = comp_syns(tmp_sess, config);  
+    stats    = estimate_baseline(sessions, config); %#ok<NASGU>
+    save([outpath 'all_data_' char(monk)], 'sessions', 'stats');
 end
 
 
 diary('off');
 disp('finished');
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function stats = estimate_baseline(sessions, conf)
+
+m_scores = NaN(length(sessions), conf.n_baseline);
+h_scores = NaN(length(sessions), conf.n_baseline);
+
+c2take   = all(vertcat(sessions.channels));
+
+for i = 1:length(sessions)
+    
+    data    = sessions(i).mats(1).data_raw(:,c2take);
+    hands   = 1;
+    
+    % if both handpositions available
+    if sessions(i).hands > 1 && size(sessions(i).mats(2).data_raw, 1) > 10
+        pro     = sessions(i).mats(1).data_raw(:,c2take);
+        sup     = sessions(i).mats(2).data_raw(:,c2take);
+        data    = vertcat(data, sup);         %#ok<AGROW>
+        hands   = 2;
+    end
+    
+    % bootstrap loop
+    for j = 1:conf.n_baseline
+        r_data          = shuffle_inc(data);
+        nmf             = nmf_explore(r_data, conf);
+        pca             = pcaica(r_data, conf.dim)';
+        [~, ~, scores]  = match_syns(nmf.syns, pca);
+        m_scores(i,j)   = mean(scores);
+        
+        if hands == 2
+            r_pro           = shuffle_inc(pro);
+            r_sup           = shuffle_inc(sup);
+            nmf_pro         = nmf_explore(r_pro, conf);
+            nmf_sup         = nmf_explore(r_sup, conf);
+            [~, ~, scores]  = match_syns(nmf_pro.syns, nmf_sup.syns);
+            h_scores(i,j)   = mean(scores);
+        end
+    end
+end
+h_scores = h_scores(~any(isnan(h_scores),2),:);
+stats.m_base = mean(m_scores(:));
+stats.h_base = mean(h_scores(:));
+
 
 
 
