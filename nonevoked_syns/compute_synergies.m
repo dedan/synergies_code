@@ -26,7 +26,6 @@ if config.n_best > config.Niter_exploration
 end
 
 diary([outpath 'log.txt']);
-sessions = struct([]);
 
 for monk = monks
     config.monk             = char(monk);
@@ -35,11 +34,7 @@ for monk = monks
     tmp_sess = nonevoked_sessions(config); 
     
     disp('computing synergies..');
-    if isempty(sessions)
-        sessions = comp_syns(tmp_sess, config);
-    else    
-        sessions = [sessions comp_syns(tmp_sess, config)]; %#ok<AGROW>
-    end
+    sessions = comp_syns(tmp_sess, config); %#ok<NASGU>
     save([outpath 'all_data_' char(monk)], 'sessions');
 end
 

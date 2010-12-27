@@ -20,14 +20,14 @@ clc;
 conf = struct;
 conf.opt                = statset('MaxIter',5);
 conf.outpath            = '~/Documents/uni/yifat_lab/results/natural_mov/';
-conf.inpath             = '~/Documents/uni/yifat_lab/results/data/';   
-conf.names              = {'chalva'};
+conf.inpath             = '/Volumes/LAB/results/data/';   
+conf.names              = {'chalva', 'vega'};
 conf.n_monks            = length(conf.names);
 conf.significant        = 25;
 conf.max_channels       = 16;
-conf.dimensions         = 3;
-conf.Niter_exploration  = 5;
-conf.n_best             = 5;
+conf.dim                = 3;
+conf.Niter_exploration  = 2;
+conf.n_best             = 2;
 conf.rank1_raw          = true;
 conf.n_trials           = 50;
 conf.image_format       = 'jpg';
@@ -53,13 +53,10 @@ for i = 1:conf.n_monks
     end        
 end
 
-% load also last data, maybe the current monkey is missing and will be
-% appended now
-load([conf.inpath 'nat_mov_res.mat']);
 addpath('../lib'); 
 addpath('../plots');
 clear tmp
- 
+
 
 
 %% statistics
