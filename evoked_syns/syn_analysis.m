@@ -92,7 +92,7 @@ for m = 1:length(conf.monks)
 
     
     % sort out the sessions which contain artefacts
-    load([conf.result_folder 'data' filesep conf.handsorted 'sort_' monk]);
+    load([conf.inpath 'data' filesep conf.handsorted 'sort_' monk]);
     
     % wow, what a line. I do this weird indexing to make it the same length
     % as flags
@@ -314,7 +314,7 @@ for m = 1:length(conf.monks)
             axis off
             title(['#' int2str(i) ' sc: ' num2str(scores(i))]);
         end
-        subplot(length(pos), conf.dim+1, conf.dim*mo +1)
+        subplot(length(pos), conf.dim+1, (conf.dim+1)*mo)
         plot(pca_res(:), nmf_res.syns(:), '.');
         [p, r] = corrcoef(pca_res(:), nmf_res.syns(:));
         title([num2str(p(2,1)) ' -- ' num2str(r(2,1))]);
