@@ -71,6 +71,10 @@ for i=1:length(sessdir),
             load(fullname);
             ctx_coord = read_cortical_data( DDFparam);
             totel = 0;
+            
+            % NOTE this is wrong. It was not stimulated with both
+            % electrodes but the response is plotted on the location of
+            % both electrodes.
             for indx = 1:2,
                 if ~isempty(ctx_coord(indx).x),
                     totel = totel+1;
