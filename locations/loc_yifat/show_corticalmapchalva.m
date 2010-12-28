@@ -1,44 +1,34 @@
-function show_corticalmapchalva()
+function show_corticalmapchalva(path, monk)
 
-load('/Volumes/LAB/results/data/evoked_data_chalva.mat');
-srcdir = '/Volumes/LAB/chalva/';
-monk   = 'chalva';
+srcdir = [path monk filesep];
+load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
+load(['scales_' monk]);
 
-figure(1)
+
+% prepare the plot
+figure(2)
 clf
-
-curmap = imread('chalva_cortex.bmp');
+curmap = imread([monk '_cortex.bmp']);
 imagesc(curmap);
 colormap gray
 axis equal
 h = gcf;
-set(h,'Position',[  1          29        1280         929]);
-load scales
+set(h,'Position',[1 29 1280 929]);
 hold on
 
-dy = 1*(D10/10);
-dx = 1*(D10/10);
-plot(X0,Y0,'go');
-
-% plotting a grid
-for i=-10:10,
-    for j=-10:10,
-        cury = Y0 + dy*i;
-        curx = X0 + j*dx;
-        hh = plot(curx, cury, '.k');
-        set(hh,'MarkerSize',1);
-        set(hh,'Color',[.5 .5 .5]);
-    end
+if strcmp('vega', monk)
+    plot(AL(1),AL(2),'rx');
+    plot(AM(1),AM(2),'rx');
+    plot(PL(1),PL(2),'rx');
+    plot(PM(1),PM(2),'rx');
+    plot(PC(1),PC(2),'rx');
+    plot(C(1),C(2),'rx');
 end
 
-sessdir = dir([srcdir filesep 'data' filesep monk(1) '*']);
-syms    = {'o','^','s'};
 
-PenIndx = 1;
-
-for i=1:length(sessdir),
+for i=1:length(resps),
     
-    curdir   = char(sessdir(i).name);
+    curdir   = char(resps(i).session);
     fname    = [curdir '_param.mat'];
     fullname = [srcdir 'info_files' filesep fname];
     
@@ -46,136 +36,123 @@ for i=1:length(sessdir),
         disp(['Cannot find file --> ' fname]);
     else
         load(fullname);
-        sp_coord = read_cortical_data( DDFparam);
         
+        coord = new_cortical_data(DDFparam, SESSparam.SubSess(resps(i).subsession), monk);
         
-        % 
-%        coord = new_cortical_data(DDFparam, sessions(i).subsession);
-        
-        
-        curID    = DDFparam.ID;
-        
-        for j = 1:length(sp_coord)
+        if strcmp(monk, 'chalva')
             
             % the 1.5 corresponde to the distance between the figure origin
             % to the actual in-chamber origin
-            x = X0-(sp_coord(j).x)*D10/10;
-            y = Y0+(sp_coord(j).y)*D10/10;
-
-            h = plot(x, y, 'ok');
-            
-            set(h,'MarkerFaceColor',  pass_color(sp_coord(j).pass));
-
-            if sp_coord(j).Thr < 10 && sp_coord(j).Thr > 0,
-                set(h,'MarkerSize',15);
-            else
-                set(h,'MarkerSize',10);
+            x = X0 - coord.x * D10/10;
+            y = Y0 + coord.y * D10/10;
+        elseif strcmp(monk, 'vega')
+            % coordinate transformation of the data with respect to origin read from the
+            % info file.
+            if coord.posi == 0,         % means circular positioner
+                [x,y]   = get_orig(coord.qd, PL, PM, AL, AM, PC, C);
+                x       = x - coord.x / 5 * Scale5;
+                y       = y - coord.y / 5 * Scale5;
+                
+            elseif coord.posi == 1,     % means dual positioner
+                [x,y]   = get_orig('C', PL, PM, AL, AM, PC, C);
+                [dx,dy] = translate_Dual(coord.electrode -1, curdir, coord.x, coord.y);
+                x       = x + dx / 5 * Scale5;
+                y       = y - dy / 5 * Scale5;
+            else 
+                error('bla');
             end
-            
-            % context menu
-            cimenu(PenIndx) = uicontextmenu;
-            set(h,'UIContextMenu',cimenu(PenIndx) );
-            uimenu(cimenu(PenIndx), 'Label',[curdir '-' num2str(curID)]);
-            PenIndx = PenIndx + 1;
         end
+        
+        h = plot(x, y, 'ob');
+                
+        set(h,'MarkerSize', eps + resps(i).field *2);
+        set(h,'MarkerFaceColor',  'b');
+        
     end;
 end
 hold off
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function c = pass_color(pass)
-switch (pass),
-    case 0,
-        c = 'y';
-    case 1,
-        c = 'r';
-    case 2,
-        c = 'b';
-    case 3,
-        c = 'g';
-    case 4,
-        c = 'c';
-    case 99,
-        c = [0.8 0.8 0.8];
-end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function coord = new_cortical_data(ddf, subs)
+function coord = new_cortical_data(ddf, subs, monk)
 
 % which electrodes were used
 % in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
-used_electrodes = find([DDFparam.Electrode.InUse]);
+used_electrodes = find([ddf.Electrode.InUse]);
 if strcmp(monk, 'vega') || strcmp(monk, 'vega_first')
     used_electrodes = used_electrodes(used_electrodes ~= 1);
 end
 
 for used = used_electrodes
     if isfield(subs.Electrode(used).Stim, 'Flag') && subs.Electrode(used).Stim.Flag
-        coord.x     = DDFparam.Electrode(used).X;
-        coord.y     = DDFparam.Electrode(used).Y;
+        coord.x         = ddf.Electrode(used).Y;
+        coord.y         = ddf.Electrode(used).X;
+        coord.posi      = ddf.Positioner;
+        coord.qd        = ddf.Electrode(used).Quad;
+        coord.electrode = used;
     end
 end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ctx_coord = read_cortical_data( PRM)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% some translation with respect to date of recording session!??
+function [dx,dy] = translate_Dual(electrode, curdir, x,y)
 
-ctx_coord.x = [];
-ctx_coord.y = [];
-ctx_coord.id = PRM.ID;
-indx = 1;
-for i=1:length(PRM.Electrode),
-    if PRM.Electrode(i).InUse,
-        ctx_coord(indx).y = PRM.Electrode(i).Y;
-        ctx_coord(indx).x = PRM.Electrode(i).X;
-        ctx_coord(indx).pass = get_pass_type(PRM.Electrode(i).Active);
-        ctx_coord(indx).Thr =  str2double(PRM.Electrode(i).Threshold);
-        indx = indx+1;
+DD = str2double(curdir(2:3));
+MM = str2double(curdir(4:5));
+
+if (DD >= 15 && MM ==2) || (MM > 2),
+    if electrode == 1, % left electrode
+        dx = x + 6.5;
+        dy = y + 1;
+    elseif electrode == 2,
+        dx = x - 4;
+        dy = y - 2;
     end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function   eff = quantify_effect( resp)
-
-if ~isempty(findstr( lower(resp), 'finger'))
-    eff = 'r';
-elseif ~isempty(findstr( lower(resp), 'thumb'))
-    eff = 'r';
-elseif ~isempty(findstr( lower(resp), 'wrist'))
-    eff = 'm';
-elseif ~isempty(findstr( lower(resp), 'elbow'))
-    eff = 'g';
-elseif ~isempty(findstr( lower(resp), 'shoulder'))
-    eff = 'b';
-elseif ~isempty(findstr( lower(resp), 'sholder'))
-    eff = 'b';
+elseif DD==14 && MM==2,
+    if electrode == 1, % left electrode
+        dx = x + 7.5;
+        dy = y + .5;
+    elseif electrode == 2,
+        dx = x - 5;
+        dy = y - 1;
+    end
+elseif DD>= 7 && MM== 2,
+    if electrode == 1, % left electrode
+        dx = x + 10.8;
+        dy = y - 2;
+    elseif electrode == 2,
+        dx = x - 11.5;
+        dy = y + 0.5;
+    end
 else
-    disp(['Effect is --> ' resp]);
-    eff = 'y';
+    error('dual translation problem');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function passtype = get_pass_type(PassResp)
 
-passtype = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% get the coordinates of an origin for a quadrant
+function [x, y] = get_orig(qd, PL, PM, AL, AM, PC, C)
 
-disp(PassResp);
-if isempty(PassResp),
-    return;
-end
-PassResp = lower(PassResp);
-if ~isempty(findstr(PassResp,'wrist')),
-    passtype = 1;
-elseif ~isempty(findstr(PassResp,'fingers')) | ~isempty(findstr(PassResp,'thumb')),
-    passtype = 2;
-elseif ~isempty(findstr(PassResp,'elbow')),
-    passtype = 3;
-elseif   ~isempty(findstr(PassResp,'shoulder')),
-    passtype = 4;
+if(strcmpi( qd, 'pl'))
+    x = PL(1);
+    y = PL(2);
+elseif (strcmpi( qd, 'pc'))
+    x = PC(1);
+    y = PC(2);
+elseif (strcmpi( qd, 'pm'))
+    x = PM(1);
+    y = PM(2);
+elseif (strcmpi( qd, 'am'))
+    x = AM(1);
+    y = AM(2);
+elseif (strcmpi( qd, 'al'))
+    x = AL(1);
+    y = AL(2);
+elseif (strcmpi( qd, 'c'))
+    x = C(1);
+    y = C(2);
 else
-    disp([PassResp '--> unidentified type'])
-end
-
-
+    error('Wrong quadrant');
+end;
