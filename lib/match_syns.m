@@ -43,7 +43,9 @@ for i = 1:s
 end
 
 % normalize scores with estimated baseline
-scores = (scores - baseline) / (1 - baseline);
+if nargin == 3
+    scores = (scores - baseline) / (1 - baseline);
+end 
 
 
 
