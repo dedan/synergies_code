@@ -25,9 +25,14 @@ for dati = 1:length(filtered_data)
     if length(dat.file(1):dat.file(end)) > 1
         disp('have to connect');
     end
-    for file_number = dat.file(1):dat.file(end)
-        file = [config.dat_folder 'data' filesep dat.session filesep 'MAT' filesep ...
-            dat.session sprintf('%03d',file_number)];
+    
+    files = cell(1,length(dat.file(1):dat.file(end)));
+    for i = 1:length(dat.file(1):dat.file(end))
+        
+        file_number = dat.file(i); 
+        files{i}    = [dat.session sprintf('%03d',file_number)];
+        file        = [config.dat_folder 'data' filesep dat.session ... 
+                        filesep 'MAT' filesep files{i}];
         
         stim_check = whos('-file',[file '_bhv'],'AMstim_on', 'StimTime');
         if(stim_check.size(1) > 4) && exist([file '_emg.mat'], 'file')
@@ -38,9 +43,6 @@ for dati = 1:length(filtered_data)
             emg = load([file '_emg.mat'], 'EMG*');
             first_good = find(config.c2take,1);
             f_orig = emg.(['EMG' int2str(config.channels(first_good)) '_KHz']);
-            
-            %NOTE beim aneinanderhängen darauf achten zur zweiten stimmtime
-            %einen offset in länge der vorigen session draufzurechnen
             
             tmp = NaN(length(find(config.c2take)), ...
                 length(emg.(['EMG' int2str(config.channels(first_good))])));
@@ -75,7 +77,7 @@ for dati = 1:length(filtered_data)
         resp(j).amp         = dat.amp;
         resp(j).electrode   = dat.electrode;
         resp(j).location    = dat.location;
-        resp(j).file        = file;
+        resp(j).files       = files;
         resp(j).connected   = length(dat.file(1):dat.file(end)) > 1;
         
         % NOTE continue to skip the non pronation or supination sessions
