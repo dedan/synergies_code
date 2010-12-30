@@ -1,7 +1,8 @@
-function show_corticalmapchalva(path, monk)
+function response_map(path, monk)
 
 srcdir = [path monk filesep];
 load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
+load([path 'results' filesep 'data' filesep 'nat_mov_res_' monk '.mat']);
 load(['scales_' monk]);
 
 
@@ -11,10 +12,9 @@ clf
 curmap = imread([monk '_cortex.bmp']);
 imagesc(curmap);
 colormap gray
-axis equal
-h = gcf;
-set(h,'Position',[1 29 1280 929]);
-hold on
+axis     equal
+hold     on
+axis([0 size(curmap,2) 0 size(curmap,1)])
 
 if strcmp('vega', monk)
     plot(AL(1),AL(2),'rx');
@@ -37,7 +37,7 @@ for i=1:length(resps),
     else
         load(fullname);
         
-        coord = new_cortical_data(DDFparam, SESSparam.SubSess(resps(i).subsession), monk);
+        coord = get_cortical_data(DDFparam, SESSparam.SubSess(resps(i).subsession), monk);
         
         if strcmp(monk, 'chalva')
             
@@ -59,14 +59,19 @@ for i=1:length(resps),
                 x       = x + dx / 5 * Scale5;
                 y       = y - dy / 5 * Scale5;
             else 
-                error('bla');
+                error('positioner variable not available');
             end
         end
         
-        h = plot(x, y, 'ob');
-                
+        h = plot(x, y, 'ko');
         set(h,'MarkerSize', eps + resps(i).field *2);
         set(h,'MarkerFaceColor',  'b');
+        
+        c2take = nat_mov_res.c2take;
+        [x1 y1] = pol2cart(nat_mov_res.pds(1,c2take), 1 *(resps(i).response - min(resps(i).response)));
+        f = 1;
+        plot([x, x + f *sum(x1)], [y, y + f * sum(y1)], 'k');
+        
         
     end;
 end
@@ -75,7 +80,7 @@ hold off
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function coord = new_cortical_data(ddf, subs, monk)
+function coord = get_cortical_data(ddf, subs, monk)
 
 % which electrodes were used
 % in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
@@ -86,11 +91,18 @@ end
 
 for used = used_electrodes
     if isfield(subs.Electrode(used).Stim, 'Flag') && subs.Electrode(used).Stim.Flag
-        coord.x         = ddf.Electrode(used).Y;
-        coord.y         = ddf.Electrode(used).X;
-        coord.posi      = ddf.Positioner;
-        coord.qd        = ddf.Electrode(used).Quad;
-        coord.electrode = used;
+        
+        if strcmp(monk, 'vega')
+            % !!!! X and Y switched for vega
+            coord.x         = ddf.Electrode(used).Y;
+            coord.y         = ddf.Electrode(used).X;
+            coord.electrode = used;
+            coord.posi      = ddf.Positioner;
+            coord.qd        = ddf.Electrode(used).Quad;
+        else
+            coord.x         = ddf.Electrode(used).X;
+            coord.y         = ddf.Electrode(used).Y;
+        end
     end
 end
 
