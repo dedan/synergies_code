@@ -7,8 +7,9 @@
 
 
 conf.monks          = {'chalva', 'vega'};
-conf.res_folder     = '~/Documents/uni/yifat_lab/results/';
-conf.n_boot         = 100;
+conf.res_folder     = '/Volumes/LAB/results/';
+conf.out            = '~/Documents/uni/yifat_lab/results/';
+conf.n_boot         = 1000;
 conf.noise          = 0.5;
 conf.image_format   = 'pdf';
 
@@ -45,16 +46,13 @@ for m = conf.monks
     idx         = strcmp(monk, {resps.monk});
     responses   = vertcat(resps(idx).response);
 
-    proj_res = project(responses, nat_mov_res.(monk).synall, conf.n_boot, conf.noise);
+    proj_res = project(responses, nat_mov_res.(monk).synall_pro, conf.n_boot, conf.noise);
     
     h = plot_proj(proj_res);
     
-    saveas(h, [conf.res_folder 'projection' filesep 'projection_' monk '.' conf.image_format]);
+    saveas(h, [conf.out 'projection' filesep 'projection_' monk '.' conf.image_format]);
     close(h);
-    
-    disp('principal angles: ');
-    
-    disp(subspace(evoked_res.(monk).all.nmf', nat_mov_res.(monk).synall'));
+        
 
 end
 
