@@ -13,6 +13,7 @@ conf = struct;
 conf.comment = 'will mehr session info in den fin_res struct schreiben';
 
 conf.monks                    = {'chalva'};
+conf.n_monks                  = length(conf.monks);
 conf.modi                     = {'pro', 'sup'};
 
 % general settings
@@ -31,12 +32,17 @@ conf.channels            = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
 conf.stim_value          = 150;           % look only at stimulations around this value
 
 % matrix factorization
-conf.dimensions          = 3;             % reduce to this number of synergies
-conf.Niter_res_test      = 10;            % number of iterations for the residual test
-conf.Niter_exploration   = 50;            % number of iterations for nmf exploration
-conf.n_best              = 20;            % take only n_best explorations
-conf.opt                 = statset('MaxIter',50);     % number of early explorations
+conf.dim                 = 3;             % reduce to this number of synergies
+conf.Niter_res_test      = 2;            % number of iterations for the residual test
+conf.Niter_exploration   = 3;            % number of iterations for nmf exploration
+conf.n_best              = 2;            % take only n_best explorations
+conf.opt                 = statset('MaxIter', 50);     % number of early explorations
 
+% clustering
+conf.n_cluster = 4;
+
+% normalize over sessions
+conf.norm       = false;
 
 % files and folders
 conf.result_folder       = '~/Documents/uni/yifat_lab/results/';
@@ -132,13 +138,22 @@ for m = 1:length(conf.monks)
     idx.pro = ([resps.hand] == 1);
     idx.sup = ([resps.hand] == 2);
     
-    res.(monk).pro.flat = vertcat(resps(idx.(monk) & idx.pro).response);
-    res.(monk).sup.flat = vertcat(resps(idx.(monk) & idx.sup).response);
-    if ~isempty(res.(monk).sup.flat)
-        res.(monk).all.flat = vertcat(res.(monk).pro.flat, res.(monk).sup.flat);
+    if conf.norm
+        res.(monk).pro.flat = normr(vertcat(resps(idx.(monk) & idx.pro).response));
+        if ~isempty(vertcat(resps(idx.(monk) & idx.sup).response))
+            res.(monk).sup.flat = normr(vertcat(resps(idx.(monk) & idx.sup).response));
+        else
+            res.(monk).sup.flat = [];
+        end
     else
-        res.(monk).all.flat = [];
+        res.(monk).pro.flat = vertcat(resps(idx.(monk) & idx.pro).response);
+        if ~isempty(vertcat(resps(idx.(monk) & idx.sup).response))
+            res.(monk).sup.flat = vertcat(resps(idx.(monk) & idx.sup).response);
+        else
+            res.(monk).sup.flat = [];
+        end
     end
+    res.(monk).all.flat = vertcat(res.(monk).pro.flat, res.(monk).sup.flat);
     
     disp(['pronation - number of recordings: ' num2str(length(find(idx.(monk) & idx.pro)))]);
     disp(['supination - number of recordings: ' num2str(length(find(idx.(monk) & idx.sup)))]);
@@ -154,6 +169,66 @@ disp(' ');
 disp('calculated and separated responses');
 clear flags monk h1 h2
 
+
+
+
+%% look at clusters in the responses (imagesc and pca scatter)
+h1 = figure('Visible','off');
+h2 = figure('Visible','off');
+colors = {'r', 'g', 'b', 'y'};
+for i = 1:length(conf.monks)
+
+    monk    = char(conf.monks(i));
+    dat     = res.(monk).all.flat;
+
+    figure(h1)
+    subplot(conf.n_monks, 3, (i-1)*3 + 1)
+    dis     = sum(dat - repmat(dat(1,:), size(dat,1), 1), 2);
+    [~, id] = sort(dis);
+    imagesc(dat);
+    title([ monk ' original']);
+    axis off;
+
+    subplot(conf.n_monks, 3, (i-1)*3 + 2)
+    imagesc(dat(id,:))
+    title([monk ' sorted']);
+    axis off;
+
+    subplot(conf.n_monks, 3, (i-1)*3 + 3)
+    cluster_idx  = kmeans(dat, conf.n_cluster, 'replicates', 100);
+    [~, id]      = sort(cluster_idx);
+    imagesc(dat(id,:));
+    title([monk ' clustered']);
+    axis off;
+
+    % project responses on principal components
+    figure(h2)
+    [~, loadings] = princomp(dat);
+
+    for j = 1:conf.n_cluster
+
+        id = cluster_idx == j;
+
+        subplot(conf.n_monks, 3, (i-1)*3 + 1)
+        plot(loadings(id,1), loadings(id,2), ['.' colors{j}]);
+        hold on
+        title([monk ' 1 on 2']);
+
+        subplot(conf.n_monks, 3, (i-1)*3 + 2)
+        plot(loadings(id,1), loadings(id,3), ['.' colors{j}]);
+        hold on
+        title([monk ' 1 on 3']);
+
+        subplot(conf.n_monks, 3, (i-1)*3 + 3)
+        plot(loadings(id,2), loadings(id,3), ['.' colors{j}]);
+        hold on
+        title([monk ' 2 on 3']);
+    end
+end
+saveas(h1, [conf.cur_res_fold  'raw_clusters.' conf.image_format]);
+saveas(h2, [conf.cur_res_fold  'pcas.' conf.image_format]);
+close(h1);
+close(h2);
 
 
 
