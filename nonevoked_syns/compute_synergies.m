@@ -36,6 +36,8 @@ for monk = monks
     
     disp('computing synergies..');
     sessions = comp_syns(tmp_sess, config);  
+    
+    disp('estimate matching baselines..');    
     stats    = estimate_baseline(sessions, config); %#ok<NASGU>
     save([outpath 'all_data_' char(monk)], 'sessions', 'stats');
 end

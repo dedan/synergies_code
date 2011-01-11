@@ -93,7 +93,7 @@ for i = 1:length(dir_list)
                 res(rec).location.depth = subs.Electrode(used).Depth;
                 res(rec).location.x     = DDFparam.Electrode(used).X;
                 res(rec).location.y     = DDFparam.Electrode(used).Y;
-                if isfield(DDFparam.Electrode(used), 'Quad')
+                if isfield(DDFparam.Electrode(used), 'Quad') && isfield(DDFparam, 'Positioner')
                     res(rec).location.quad  = DDFparam.Electrode(used).Quad;
                     res(rec).location.posi  = DDFparam.Positioner;
                     
