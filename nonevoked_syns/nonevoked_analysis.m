@@ -175,72 +175,72 @@ clear tmp chan all_chan
 
 
 %% rank1 analysis
-
 % plot the rank1 values for all sessions and the different tests to see
-% relation between the different tests
+% relation between the different tests. also check for difference according
+% to handpos
 
 
 % first store them in a convenient matrix
-rank1 = NaN(2,length(sessions));
+rank1 = NaN(4,length(sessions));
 for i = 1:length(sessions)
-    if conf.rank1_raw
-        rank1(1,i)  = sessions(i).r_nmf_raw_pro(1);
-        rank1(2,i)  = sessions(i).r_pca_raw_pro(1);
-    else
-        rank1(1,i)  = sessions(i).r_nmf_pro(1);
-        rank1(2,i)  = sessions(i).r_pca_pro(1);
-    end
+    rank1(1,i)  = sessions(i).r_nmf_raw_pro(1);
+    rank1(2,i)  = sessions(i).r_pca_raw_pro(1);
+    rank1(3,i)  = sessions(i).r_nmf_raw_sup(1);
+    rank1(4,i)  = sessions(i).r_pca_raw_sup(1);
 end
 
 h = figure('Visible', 'off');
 
-% plot the rank1 values for pca and nmf and also the difference between
-% them. furthermore the line at the value at which sessions are chosen as
-% significant
-plot(rank1','.');
+% plot the rank1 values for pca and nmf and the line at the value at which 
+% sessions are chosen as significant
+subplot(2,2,1:2);
+plot(rank1([1 3],:)','.');
 hold on;
-plot(ones(1,length(rank1)) * conf.significant);
+plot(ones(1,size(rank1, 2)) * conf.significant);
 
 % separating lines between the monkeys
-for i=1:conf.n_monks
-    plot(ones(1,10)*find(idx.(conf.names{i}), 1, 'last' ), 1:10:100, 'r--');
+for j = 1:conf.n_monks
+    plot(ones(1,10)*find(idx.(conf.names{j}), 1, 'last' ), 1:10:100, 'r--');
+    text(find(idx.(conf.names{j}), 1 )+2, 70, conf.names{j});
 end
 hold off;
-legend('nmf', 'pca', 'Location', 'NorthWest');
-for i = 1:conf.n_monks
-    text(find(idx.(conf.names{i}), 1 )+2, 70, conf.names{i});
-end
+legend('nmf pro', 'nmf sup', 'Location', 'NorthWest');
 
 % also calculate the correlation of the two rank1 values
-[r p] = corrcoef(rank1');
+subplot(2,2,3)
+all_nmf = rank1([1 3],:);
+all_pca = rank1([2 4],:);
+[r p] = corrcoef(all_nmf(:), all_pca(:));
+plot(all_nmf(:), all_pca(:), '.');
 title(['nmf vs. pcaica, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
-if conf.rank1_raw
-    saveas(h, [conf.outpath  'rank1_raw.' conf.image_format]);
-else
-    saveas(h, [conf.outpath  'rank1.' conf.image_format]);
-end
-    
+subplot(2,2,4)
+all_pro = rank1(1:2, rank1(4,:) > 0);
+all_sup = rank1(3:4, rank1(4,:) > 0);
+[r p] = corrcoef(all_pro(:), all_sup(:));
+plot(all_pro(:), all_sup(:), '.');
+title(['pro vs. sup, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
+
+saveas(h, [conf.outpath  'rank1.' conf.image_format]);    
 close(h);
 
 
 % sort out boring sessions
 % we sort out sessions where the rank1 model already has an remaining error
 % lower then 25 %
-disp('')
+disp(' ')
 disp('rank1 filtering');
-disp(['sorting out: ' num2str(length(find(rank1(1,:) < conf.significant))) ' sessions']);
 for i = 1:conf.n_monks
+    n_sort_out = length(find(rank1(1,idx.(conf.names{i})) < conf.significant));
+    disp([conf.names{i} ' - sorting out: ' num2str(n_sort_out) ' sessions']);
     idx.(conf.names{i}) = idx.(conf.names{i}) & rank1(1,:) > conf.significant;
     disp([conf.names{i} ' remaining: ' num2str(length(find(idx.(conf.names{i})))) ' sessions' ]);
 end
 
+% NOTE I take pronation for sorting, because supination not for all
+% available and they are strongly correlated
 
-
-clear rank1 r p
-
-
-
+clear rank1 r p all_nmf all_pca all_pro all_sup
 
 
 
