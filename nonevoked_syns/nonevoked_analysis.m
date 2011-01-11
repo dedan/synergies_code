@@ -253,24 +253,25 @@ clear rank1 r p all_nmf all_pca all_pro all_sup
 h = figure('Visible', 'off');
 
 % plot mean residual and mean shuffled
-x = 0:conf.max_channels;
-modi = {'_raw', ''};
-map = jet;
+x       = 0:conf.max_channels;
+colors  = {'b', 'g', 'c'};
 
-for i = 1:2
-    subplot(2,1,i);
-    for j=1:length(conf.names)
-        data = vertcat(sessions(idx.(conf.names{j})).(['r_nmf' modi{i} '_pro']));
-        y    = [ones(length(find(idx.(conf.names{j}))),1)*100 data]';
-        plot(x, y, 'Color', map(j*15,:));
-        hold on
-    end
-    y = [100 mean(vertcat(sessions.(['r_nmf' modi{i} '_pro'])))];
-    plot(x, y, 'k', 'LineWidth', 1.5);
-    y = [100 mean(vertcat(sessions.(['r_nmf_s' modi{i} '_pro'])))];
-    plot(x, y, 'r', 'LineWidth', 1.5);
-    hold off
+for j=1:length(conf.names)
+    data = vertcat(sessions(idx.(conf.names{j})).r_nmf_raw_pro);
+    y    = [ones(length(find(idx.(conf.names{j}))),1)*100 data]';
+    plot(x, y, 'Color', colors{j});
+    hold on
 end
+
+y = [100 mean(vertcat(sessions.r_nmf_raw_pro))];
+plot(x, y, 'k', 'LineWidth', 1.5);
+y = [100 mean(vertcat(sessions.r_nmf_s_raw_pro))];
+plot(x, y, 'r', 'LineWidth', 1.5);
+
+% plot 15 per cent line
+plot(x, ones(1,length(x)) * 15, '--k');
+
+hold off
 saveas(h, [conf.outpath  'resid_test.' conf.image_format]);
 close(h);
 
@@ -429,12 +430,12 @@ for i = 1:conf.n_monks
     h = figure('Visible', 'off');
    
     subplot(6,4,[1 5 9]);
-    imagesc(normr(res.(monk).nmfdat));
+    imagesc((res.(monk).nmfdat_pro));
     axis off
     title(['consistency over sessions (nmf)' conf.names{i}]);
     
     subplot(6,4,[13 17 21]);
-    imagesc(normr(res.(monk).pcadat));
+    imagesc((res.(monk).pcadat_pro));
     axis off
     title(['consistency over sessions (pca)' conf.names{i}]);
     
