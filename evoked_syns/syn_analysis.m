@@ -111,7 +111,8 @@ for m = 1:length(conf.monks)
     % plot the field size histogram
     figure(h1)
     subplot(length(conf.monks), 1, m)
-    hist([resps(idx.(monk)).field],0:length(conf.channels));
+    [n, xout] = hist([resps(idx.(monk)).field], 0:length(conf.channels));
+    bar(xout, n ./ max(n) * 100);
     title(monk)
 
     % sort out the sessions with fieldsize 0
@@ -263,23 +264,34 @@ close(h);
 %% distribution of final data 
 
 % plot distribution
-h = figure('Visible','off');
+h   = figure('Visible','off');
+mod = {'pro', 'sup'};
 
 for m = 1:length(conf.monks)
     monk = char(conf.monks{m});
     
-    subplot(2, length(conf.monks), m)
-    [n,xout] = hist([resps(idx.(monk) & idx.pro).response], 100);
-    n        = (n / max(n)) *100;
-    bar(xout,n)
-    title([monk ' pronation']);
     
-    subplot(2, length(conf.monks), m + length(conf.monks))
-    [n,xout] = hist([resps(idx.(monk) & idx.sup).response], 100);
-    n        = (n / max(n)) *100;
-    bar(xout,n)
-    title([monk ' supination']);
-end    
+    for k = 1:length(mod)
+        subplot(2, length(conf.monks), (m-1) * 2 + k)
+        
+        sig_resps   = [];
+        unsig_resps = [];
+        for i = find(idx.(monk) & idx.(mod{k}))
+            sig                     = false(1, length(resps(i).response));
+            sig(resps(i).fields)    = true;
+            sig_resps               = [sig_resps resps(i).response(sig)];
+            unsig_resps             = [unsig_resps resps(i).response(~sig)];
+        end
+        [n_sig, sigx]   = hist(sig_resps, 50);
+        [n_unsig, unx]  = hist(unsig_resps, 50);
+        n               = sum(n_sig) + sum(n_unsig);
+        bar( unx, n_unsig ./ n * 100, 'b')
+        hold on
+        bar(sigx, n_sig ./ n * 100, 'r')
+        hold off
+        title([monk ' ' mod{k}]);
+    end
+end
 saveas(h, [conf.cur_res_fold 'response_dist' '.' conf.image_format]);
 close(h);
 
