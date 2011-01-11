@@ -1,13 +1,28 @@
-function response_map(path, monk)
+
+path = '/Volumes/LAB/';
+monk = 'chalva';
 
 srcdir = [path monk filesep];
 load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
 load([path 'results' filesep 'data' filesep 'nat_mov_res_' monk '.mat']);
 load(['scales_' monk]);
 
+cluster_idx = kmeans(normr(vertcat(resps.response)),4, 'replicates', 100);
+
+colors = {'r', 'b', 'k', 'g'};
+markers = {'^', 'v'};
+
+% 1: no 
+% 2: cluster 
+% 3: 0-response
+% 4: visible effect
+coloring        = 3;
+draw_direction  = false;
+response_field  = false;
+add_noise       = true;
 
 % prepare the plot
-figure(2)
+figure(3)
 clf
 curmap = imread([monk '_cortex.bmp']);
 imagesc(curmap);
@@ -26,7 +41,7 @@ if strcmp('vega', monk)
 end
 
 
-for i=1:length(resps),
+for i=1:length(resps)
     
     curdir   = char(resps(i).session);
     fname    = [curdir '_param.mat'];
@@ -62,19 +77,49 @@ for i=1:length(resps),
                 error('positioner variable not available');
             end
         end
+
+        if add_noise
+            x = x + randn(1)*4;
+            y = y + randn(1)*4;
+        end
         
         h = plot(x, y, 'ko');
-        set(h,'MarkerSize', eps + resps(i).field *2);
-        set(h,'MarkerFaceColor',  'b');
         
-        c2take = nat_mov_res.c2take;
-        [x1 y1] = pol2cart(nat_mov_res.pds(1,c2take), 1 *(resps(i).response - min(resps(i).response)));
-        f = 1;
-        plot([x, x + f *sum(x1)], [y, y + f * sum(y1)], 'k');
+        if response_field
+            set(h,'MarkerSize', eps + resps(i).field *2);
+        end
+        
+        if coloring == 1
+            set(h,'MarkerFaceColor',  'none');
+        elseif coloring == 2
+            set(h,'MarkerFaceColor',  colors{cluster_idx(i)});
+        elseif coloring == 3
+            idx = (resps(i).field == 0) +1;
+            set(h,'Marker',  markers{idx});
+            set(h,'MarkerEdgeColor',  colors{idx});
+            set(h,'MarkerSize', 7);
+        elseif coloring == 4
+            set(h,'MarkerEdgeColor',  quantify_effect(resps(i).location.res));    
+        end
+
+        if draw_direction
+            c2take = nat_mov_res.c2take;
+            [x1 y1] = pol2cart(nat_mov_res.pds(1,c2take), 1 *(resps(i).response - min(resps(i).response)));
+            f = 1;
+            plot([x, x + f *sum(x1)], [y, y + f * sum(y1)], 'k');
+        end
         
         
     end;
 end
 hold off
+
+if coloring == 4
+    disp('fingers -> r');
+    disp('wrist -> g');
+    disp('elbow -> b');
+    disp('shoulder -> m');
+    disp('face, body, none -> k');
+end
 
 
