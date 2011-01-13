@@ -10,9 +10,7 @@ clear
 
 conf = struct;
 
-conf.comment = 'will mehr session info in den fin_res struct schreiben';
-
-conf.monks                    = {'chalva'};
+conf.monks                    = {'chalva', 'vega'};
 conf.n_monks                  = length(conf.monks);
 conf.modi                     = {'pro', 'sup'};
 
@@ -22,7 +20,7 @@ conf.skip_window_computation  = 1;
 conf.do_resid_test            = 0;
 conf.inflag                   = true;     % write info messages
 conf.erflag                   = true;     % write error messages
-conf.image_format             = 'pdf';    % format of output images
+conf.image_format             = 'jpg';    % format of output images
 
 
 % emg channels
@@ -39,10 +37,10 @@ conf.n_best              = 2;            % take only n_best explorations
 conf.opt                 = statset('MaxIter', 50);     % number of early explorations
 
 % clustering
-conf.n_cluster = 4;
+conf.n_cluster = 3;
 
 % normalize over sessions
-conf.norm       = false;
+conf.norm       = true;
 
 % files and folders
 conf.result_folder       = '~/Documents/uni/yifat_lab/results/';
@@ -112,7 +110,7 @@ for m = 1:length(conf.monks)
     figure(h1)
     subplot(length(conf.monks), 1, m)
     [n, xout] = hist([resps(idx.(monk)).field], 0:length(conf.channels));
-    bar(xout, n ./ max(n) * 100);
+    bar(xout, n ./ sum(n) * 100);
     title(monk)
 
     % sort out the sessions with fieldsize 0
@@ -172,6 +170,25 @@ clear flags monk h1 h2
 
 
 
+%% kmeans resid test
+for i = 1:conf.n_monks
+
+    monk    = char(conf.monks(i));
+    dat     = res.(monk).all.flat;
+    
+    if strcmp(monk, 'chalva')
+        dat = dat([1:6 8:end],:);
+    end
+
+
+    subplot(conf.n_monks, 1, i);
+    resid = NaN(1,10);
+    for j = 1:10
+        [~, ~, sumd]  = kmeans(dat, j, 'replicates', 100);
+        resid(j)      = sum(sumd);
+    end
+    plot(resid)
+end
 
 %% look at clusters in the responses (imagesc and pca scatter)
 h1 = figure('Visible','off');
@@ -181,6 +198,10 @@ for i = 1:length(conf.monks)
 
     monk    = char(conf.monks(i));
     dat     = res.(monk).all.flat;
+    
+%     if strcmp(monk, 'chalva')
+%         dat = dat([1:6 8:end],:);
+%     end
 
     figure(h1)
     subplot(conf.n_monks, 3, (i-1)*3 + 1)
@@ -196,8 +217,10 @@ for i = 1:length(conf.monks)
     axis off;
 
     subplot(conf.n_monks, 3, (i-1)*3 + 3)
-    cluster_idx  = kmeans(dat, conf.n_cluster, 'replicates', 100);
-    [~, id]      = sort(cluster_idx);
+    [cluster_idx c]  = kmeans(dat, conf.n_cluster, 'replicates', 100);
+    [~, id]          = sort(cluster_idx);
+    
+    
     imagesc(dat(id,:));
     title([monk ' clustered']);
     axis off;
@@ -279,8 +302,8 @@ for m = 1:length(conf.monks)
         for i = find(idx.(monk) & idx.(mod{k}))
             sig                     = false(1, length(resps(i).response));
             sig(resps(i).fields)    = true;
-            sig_resps               = [sig_resps resps(i).response(sig)];
-            unsig_resps             = [unsig_resps resps(i).response(~sig)];
+            sig_resps               = [sig_resps resps(i).response(sig)]; %#ok<AGROW>
+            unsig_resps             = [unsig_resps resps(i).response(~sig)]; %#ok<AGROW>
         end
         [n_sig, sigx]   = hist(sig_resps, 50);
         [n_unsig, unx]  = hist(unsig_resps, 50);
@@ -294,129 +317,6 @@ for m = 1:length(conf.monks)
 end
 saveas(h, [conf.cur_res_fold 'response_dist' '.' conf.image_format]);
 close(h);
-
-
-
-
-%% resid tests to see to which dimension data can be reduced
-
-if conf.do_resid_test
-    
-    disp(' ');
-    disp('doing resid test ..');
-    
-    for m = 1:length(conf.monks)
-        
-        monk = char(conf.monks{m});
-        clear resid_res;
-                
-        
-        tmp_pro             = res.(monk).pro.flat;
-        resid_res(1,:)      = test_resid_nmf(tmp_pro, conf); 
-
-        %repeat for shuffled data as only one random shuffling might not be representative
-        tmp = zeros(conf.Niter_res_test, min(size(tmp_pro)));
-        for j = 1:conf.Niter_res_test
-            tmp(j,:)    = test_resid_nmf(shuffle_inc(tmp_pro), conf);
-        end
-        resid_res(2,:) = mean(tmp); 
-        l = {'resid pro', 'shuffled resid pro'};
-
-        % if supination data available
-        tmp_sup             = res.(monk).sup.flat;
-        if ~isempty(tmp_sup)
-            resid_res(3,:)  = test_resid_nmf(tmp_sup, conf); 
-            tmp = zeros(conf.Niter_res_test, min(size(tmp_sup)));        
-            for j = 1:conf.Niter_res_test
-                tmp(j,:)    = test_resid_nmf(shuffle_inc(tmp_sup), conf);
-            end
-            resid_res(4,:)  = mean(tmp);
-            
-            tmp_all         = res.(monk).all.flat;
-            resid_res(5,:)  = test_resid_nmf(tmp_all, conf);
-            tmp = zeros(conf.Niter_res_test, min(size(tmp_all)));
-            for j = 1:conf.Niter_res_test
-                tmp(j,:)    = test_resid_nmf(shuffle_inc(tmp_all), conf);
-            end
-            resid_res(6,:) = mean(tmp);
-
-            l = {'resid pro', 'shuffled resid pro', 'resid sup', ...
-                'shuffled resid sup', 'resid all', 'shuffled resid all'};
-        end
-        
-        % add a line to show 10 %
-        resid_res(size(resid_res,1)+1,:)    = ones(1,size(resid_res,2)) * 10; %#ok<SAGROW>
-        first                               = ones(size(resid_res,1),1)*100;
-        first(size(resid_res,1))            = 10;
-        resid_res                           = [first resid_res]; %#ok<AGROW>
-        
-        h = figure('Visible','off');
-        plot(0:size(resid_res,2)-1, resid_res');
-        legend(l);
-        saveas(h, [conf.cur_res_fold 'resid_' monk '.' conf.image_format]);
-        close(h);        
-    end
-    
-    disp(' ');
-    disp('finished resid test !');
-    
-else
-    disp('resid test skipped');
-end
-clear resid_res tmp_pro tmp_sup tmpp tmps first
-
-
-
-%% matrix factorizations
-
-disp(' ');
-disp('start the search for synergists..');
-
-pos = {'pro', 'sup', 'all'};
-
-for m = 1:length(conf.monks)    
-    monk = char(conf.monks{m});
-    h = figure('Visible','off');
-    
-    for mo = 1:length(pos)
-        mod = char(pos{mo});
-        
-        if isempty(res.(monk).(mod).flat)
-            res.(monk).(mod).nmf = [];
-            res.(monk).(mod).pca = [];
-            continue;
-        end
-        % compute synergies
-        nmf_res      = nmf_explore(res.(monk).(mod).flat, conf);
-        disp(['standard deviation of group size: ' num2str(nmf_res.std)]);
-        pca_res      = pcaica(res.(monk).(mod).flat, conf.dim)';
-        
-        % norm, match and sort them
-        [pca_res, nmf_res.syns, scores] = match_syns(pca_res, nmf_res.syns);
-        
-        % plot
-        for i = 1:conf.dim
-            subplot(length(pos), conf.dim+1, (conf.dim+1)*(mo-1) + i)
-            bar( [pca_res(i,:)' nmf_res.syns(i,:)']);
-            axis off
-            title(['#' int2str(i) ' sc: ' num2str(scores(i))]);
-        end
-        subplot(length(pos), conf.dim+1, (conf.dim+1)*mo)
-        plot(pca_res(:), nmf_res.syns(:), '.');
-        [p, r] = corrcoef(pca_res(:), nmf_res.syns(:));
-        title([num2str(p(2,1)) ' -- ' num2str(r(2,1))]);
-
-        % save results
-        res.(monk).(mod).nmf = nmf_res.syns;    
-        res.(monk).(mod).pca = pca_res;    
-    end
-    saveas(h, [conf.cur_res_fold  'synergies_' monk '.' conf.image_format]);
-    close(h);
-end
-
-disp(' ');
-clear nmf_res pca_res monk mod scores ind
-
 
 
 %% save configuration
