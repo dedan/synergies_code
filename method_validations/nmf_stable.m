@@ -1,7 +1,7 @@
 
 clear
 
-path  = '~/Documents/uni/yifat_lab/synergies_code/test_data/';
+path  = '/Volumes/LAB/results/data/';
 
 conf = struct;
 conf.Niter_exploration = 50;
@@ -11,7 +11,7 @@ conf.dimensions        = 3;
 
 
 % this will load a struct called sessions
-load([path 'all_data_syn']);
+load([path 'all_data_vega']);
 addpath('../lib'); 
 
 
@@ -64,3 +64,41 @@ imagesc(nmf_res.syns);
 figure(2)
 hist([sessions.syn_pro_std]);
 
+
+
+%% do we find the correct synergies also when the order of the model is
+% larger than it should be or has to be?
+figure(3)
+config = struct;
+config.Niter_exploration= 30;
+config.n_best           = 30;
+config.opt              = statset('MaxIter',50);
+
+dat = sessions(1).mats(1).data_raw;
+
+config.dim  = 3;
+res3        = nmf_explore(dat, config);
+
+config.dim  = 4;
+res4        = nmf_explore(dat, config);
+
+[m1, m2, scores] = match_syns(res3.syns, res4.syns);
+subplot 211; imagesc(m1); subplot 212; imagesc(m2)
+title(['scores: ' num2str(scores)]);
+
+
+
+%% gleiche ergebnisse ob normalisiert oder nicht?
+figure(4)
+config = struct;
+config.Niter_exploration= 30;
+config.n_best           = 30;
+config.opt              = statset('MaxIter',50);
+config.dim  = 3;
+
+res        = nmf_explore(sessions(1).mats(1).data_raw, config);
+res_norm   = nmf_explore(normr(sessions(1).mats(1).data_raw), config);
+
+[m1, m2, scores] = match_syns(res.syns, res_norm.syns);
+subplot 211; imagesc(m1); subplot 212; imagesc(m2)
+title(['scores: ' num2str(scores)]);
