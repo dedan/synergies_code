@@ -105,6 +105,8 @@ for i = 1:conf.n_monks
     hist([sessions(idx.(conf.names{i})).trials], 100);
     xlabel('trials');
 end
+disp(' ');
+disp(['mean number of trials: ' num2str(mean([sessions.trials]))]);
 
 subplot(4,conf.n_monks, conf.n_monks*3+1);
 hist([sessions.hands]);
@@ -138,11 +140,12 @@ for i = 1:conf.n_monks
     all_std  = repmat(circ_std(data) * 2, size(data,1), 1);
     out      = sum(abs(data - all_mean) > all_std, 2)';
     
-    disp([monk ': sort out ' num2str(length(find(out >= 4))) ...
+    disp([monk ': sort out ' num2str(length(find(out >= conf.n_pd_unstable))) ...
         ' sessions because unstable pds']);
-    idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & out < 4;
+    idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & out < conf.n_pd_unstable;
 end
 clear data
+
 
 
 %% which channels
@@ -170,7 +173,6 @@ for i = 1:conf.n_monks
 end
 
 clear tmp chan all_chan
-
 
 
 
@@ -244,8 +246,6 @@ clear rank1 r p all_nmf all_pca all_pro all_sup
 
 
 
-
-
 %% Remaining Error
 % remaining error is plotted only for pronation handposition because this
 % is the only position which is available for all monkeys
@@ -287,6 +287,7 @@ close(h);
 clear x y data map modi
 
 
+
 %% what is the remaining error for rank 3 model?
 for i = 1:conf.n_monks
     data = vertcat(sessions(idx.(conf.names{i})).r_nmf_raw_pro);
@@ -301,9 +302,6 @@ for i = 1:conf.n_monks
         num2str(mean(data(:,conf.dim)))]);
 end
 clear data
-
-
-
 
 
 
@@ -371,7 +369,7 @@ end
 modi = {'_pro', '_sup'};
 
 for i = 1:conf.n_monks
-    
+
     monk = conf.names{i};
     
     if max([sessions(idx.(conf.names{i})).hands]) == 1
@@ -543,9 +541,6 @@ clear max_hands ses2take g_pro g_sup pro_syns sup_syns p r
 
 
 
-
-
-
 %% stability of prefered directions (over sessions)
 for i = 1:conf.n_monks
 
@@ -553,34 +548,85 @@ for i = 1:conf.n_monks
     ses2take    = idx.(conf.names{i}) & [sessions.hands] == max_hands;
     n2take      = length(find(ses2take));
     c2take_idx  = find(res.(conf.names{i}).c2take);
+    n_feather   = ceil(length(c2take_idx)/2);
     
+    if conf.only_sig_pd
+        sig = 0.05;
+        bla = 'onlysig';
+    else
+        sig = 1.0;
+        bla = 'all';
+    end
     
-    h = figure('Visible', 'off');    
-    all = vertcat(sessions(ses2take).pd);            
-    for k = 1:length(c2take_idx)
+    all_pd = vertcat(sessions(ses2take).pd);
+    all_p1 = vertcat(sessions(ses2take).p1);
+    sigs = all_p1 < sig;
+    
+    h = figure('Visible', 'off'); 
+
+    
+    if max_hands == 1
+        % pd significance
+        subplot(n_feather +1, 2, 1);
+        bar(c2take_idx, sum(all_p1 < 0.05) ./ n2take * 100, 'b');
+        title('pd significance in percent of sessions');
         
-        subplot(ceil(length(c2take_idx)/2),2,k);
-        if max_hands == 1
-            [x y] = pol2cart(all(:,c2take_idx(k)), ones(size(all(:,c2take_idx(k)))));
+        % cstds
+        subplot(n_feather +1, 2, 2);
+        for j = 1:size(all_pd, 2)
+            [~, res.(conf.names{i}).cstd(j)]  = circ_std(all_pd(sigs(:,j),j));
+            res.(conf.names{i}).pds(j)        = circ_mean(all_pd(sigs(:,j),j));
+        end
+        bar(c2take_idx, res.(conf.names{i}).cstd(c2take_idx));
+        title('cstds');
+        
+        % feather
+        for k = 1:length(c2take_idx)
+            subplot(ceil(length(c2take_idx)/2) +2,2,k+2);
+            tmp = all_pd(sigs(:, c2take_idx(k)), c2take_idx(k));
+            [x y] = pol2cart(tmp, ones(size(tmp)));
             feather(x, y, 'b');
-            [~, res.(conf.names{i}).cstd]  = circ_std(all);
-            res.(conf.names{i}).pds        = circ_mean(all);
-        else
-            id_pro = 1:2:2*n2take-1;
-            id_sup = 2:2:2*n2take;
-            [x y] = pol2cart(all(id_pro,c2take_idx(k)), ones(size(all(id_pro,c2take_idx(k)))));
+            axis off
+            title(['channel ' num2str(c2take_idx(k))]);        
+        end
+    else
+        subplot(n_feather +1, 2, 1);
+        id_pro = 1:2:2*n2take-1;
+        id_sup = 2:2:2*n2take;
+        bar(c2take_idx,  [sum(all_p1(id_pro,c2take_idx) < 0.05)' ./ n2take ...
+                          sum(all_p1(id_sup,c2take_idx) < 0.05)' ./ n2take] * 100);
+        title('pd significance in percent of sessions');
+        
+        subplot(n_feather +1, 2, 2);
+        for j = 1:size(all_pd, 2)
+            tmp = all_pd(id_pro, :);
+            [~, res.(conf.names{i}).cstd(1,j)] = circ_std(tmp(sigs(id_pro,j), j));
+            res.(conf.names{i}).pds(2,j)       = circ_mean(tmp(sigs(id_pro,j), j));            
+            tmp = all_pd(id_sup, :);
+            [~, res.(conf.names{i}).cstd(2,j)] = circ_std(tmp(sigs(id_sup,j), j));                        
+            res.(conf.names{i}).pds(1,j)       = circ_mean(tmp(sigs(id_sup,j), j));
+        end
+        bar(c2take_idx, res.(conf.names{i}).cstd(:,c2take_idx)');
+        title('cstds')
+        
+        for k = 1:length(c2take_idx)
+            subplot(ceil(length(c2take_idx)/2) +2,2,k+2);
+            tmp = all_pd(id_pro, :);
+            tmp1  = tmp(sigs(id_pro,c2take_idx(k)), c2take_idx(k));
+            [x y] = pol2cart(tmp1, ones(size(tmp1)));
             feather(x, y, 'b');
             hold on
-            [x y] = pol2cart(all(id_sup,c2take_idx(k)), ones(size(all(id_sup,c2take_idx(k)))));
+            tmp = all_pd(id_sup, :);            
+            tmp1  = tmp(sigs(id_sup,c2take_idx(k)), c2take_idx(k));
+            [x y] = pol2cart(tmp1, ones(size(tmp1)));
             feather(x, y, 'r');
             hold off
-            [~, res.(conf.names{i}).cstd(1,:)] = circ_std(all(id_pro,:));
-            [~, res.(conf.names{i}).cstd(2,:)] = circ_std(all(id_sup,:));
-            res.(conf.names{i}).pds(1,:)       = circ_mean(all(id_pro,:));
-            res.(conf.names{i}).pds(2,:)       = circ_mean(all(id_sup,:));
-        end            
+            axis off
+            title(['channel ' num2str(c2take_idx(k))]);             
+        end
     end
-    saveas(h, [conf.outpath  'pd_consist_feather_' conf.names{i} '.' conf.image_format]);
+        
+    saveas(h, [conf.outpath  'pd_consist_feather_' bla '_' conf.names{i} '.' conf.image_format]);
     close(h);
     
     
@@ -609,7 +655,7 @@ for i = 1:conf.n_monks
 end
 
 
-clear x y all c2take_idx n_hands monk_first col in_deg inds id_pro id_sup
+clear x y all_pd all_p1 all_p2 c2take_idx n_hands monk_first col in_deg inds id_pro id_sup
         
 
 
