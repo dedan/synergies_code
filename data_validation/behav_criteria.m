@@ -21,7 +21,7 @@ fields  = {'reaction', 'movement', 'ang_div'};
 data    = struct;
 
 set.reaction_win = [-200, 500];
-set.movement_win = [500, 1500];
+set.movement_win = [0, 1500];
 set.ang_div_win  = [-35, 35];
 
 set.reaction_lim = [-1000,2000];
