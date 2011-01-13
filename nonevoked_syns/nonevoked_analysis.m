@@ -21,16 +21,18 @@ conf = struct;
 conf.opt                = statset('MaxIter',5);
 conf.outpath            = '~/Documents/uni/yifat_lab/results/natural_mov/';
 conf.inpath             = '/Volumes/LAB/results/data/';   
-conf.names              = {'chalva', 'vega'};
+conf.names              = {'chalva', 'vega', 'darma'};
 conf.n_monks            = length(conf.names);
 conf.significant        = 25;
 conf.max_channels       = 16;
 conf.dim                = 3;
 conf.Niter_exploration  = 2;
 conf.n_best             = 2;
-conf.rank1_raw          = true;
 conf.n_trials           = 50;
+conf.norm_matchscore    = false;
 conf.image_format       = 'jpg';
+conf.n_pd_unstable      = 4;
+conf.only_sig_pd        = true;
 mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
 conf.map = mymap;
@@ -391,16 +393,20 @@ for i = 1:conf.n_monks
         group_pca           = group(sessions(ses2take), ['pca' modi{j}]);
         synnmf              = group_nmf(1).center;
         synpca              = group_pca(1).center;
-        res.(monk).nmfdat   = vertcat(group_nmf.dat);
-        res.(monk).pcadat   = vertcat(group_pca.dat);
-        res.(monk).nmf_std  = group_nmf(1).idx;
-        res.(monk).pca_std  = group_pca(1).idx;
         
-        baseline                            = res.(monk).stats.m_base;
-        [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, baseline);
+        if conf.norm_matchscore
+            baseline                            = res.(monk).stats.m_base;
+            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, baseline);
+        else
+            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf);
+        end
         res.(monk).(['synnmf' modi{j}])     = synnmf;
         res.(monk).(['nmfpca_sc' modi{j}])  = score_group;
         res.(monk).(['synpca' modi{j}])     = synpca;
+        res.(monk).(['nmfdat'  modi{j}])    = vertcat(group_nmf.dat);
+        res.(monk).(['pcadat'  modi{j}])    = vertcat(group_pca.dat);
+        res.(monk).(['nmf_std' modi{j}])    = group_nmf(1).idx;
+        res.(monk).(['pca_std' modi{j}])    = group_pca(1).idx;
         
         % will the synergies look the same when I compute them on the whole dat
         all = [];
@@ -409,13 +415,17 @@ for i = 1:conf.n_monks
         end
         nmf_res = nmf_explore(all, conf);
         synall  = nmf_res.syns;
-        
-        [~, synall, score_all]              = match_syns(synpca, synall, baseline);
+
+        if conf.norm_matchscore
+            [~, synall, score_all]              = match_syns(synpca, synall, baseline);
+        else
+            [~, synall, score_all]              = match_syns(synpca, synall);
+        end
         res.(monk).(['synall' modi{j}])     = synall;
         res.(monk).(['allpca_sc' modi{j}])  = score_all;
     end
 end
-clear synnmf synpca score_group all baseline
+clear synnmf synpca score_group baseline
     
 
 
@@ -483,23 +493,20 @@ h = figure('Visible', 'off');
 
 for i = 1:conf.n_monks
     subplot(conf.n_monks,2,i*2-1);
-    hist(res.(conf.names{i}).nmf_std);
+    hist(res.(conf.names{i}).nmf_std_pro);
     title([conf.names{i} ' std of clustering (nmf): ' ...
-        num2str(std(hist(res.(conf.names{i}).nmf_std, conf.dim)))]);
+        num2str(std(hist(res.(conf.names{i}).nmf_std_pro, conf.dim)))]);
     
     subplot(conf.n_monks,2,i*2);
-    hist(res.(conf.names{i}).pca_std);
+    hist(res.(conf.names{i}).pca_std_pro);
     title([conf.names{i} ' std of clustering (pca): ' ...
-        num2str(std(hist(res.(conf.names{i}).pca_std, conf.dim)))]);    
+        num2str(std(hist(res.(conf.names{i}).pca_std_pro, conf.dim)))]);    
 end
 saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
 clear p_pos
-
-
-
 
 
 
@@ -520,8 +527,12 @@ for i= 1:conf.n_monks
         pro_syns    = g_pro(1).center;
         sup_syns    = g_sup(1).center;
         
-        baseline    = res.(monk).stats.h_base;
-        [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns, baseline);
+        if conf.norm_matchscore
+            baseline    = res.(monk).stats.h_base;
+            [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns, baseline);
+        else
+            [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns);
+        end
         
         for j = 1:size(pro_syns,1)
             subplot(4,1,j)
