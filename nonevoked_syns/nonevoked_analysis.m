@@ -33,6 +33,7 @@ conf.norm_matchscore    = false;
 conf.image_format       = 'jpg';
 conf.n_pd_unstable      = 4;
 conf.only_sig_pd        = true;
+conf.n_bootstrap        = 100;
 mymap = [linspace(145/255,178/255,32)' linspace(167/255,213/255,32)' linspace(216/255,111/255,32)'];
 mymap = [mymap; linspace(178/255,251/255,32)' linspace(213/255,147/255,32)' linspace(111/255,24/255,32)'];
 conf.map = mymap;
@@ -698,16 +699,55 @@ for i = 1:conf.n_monks
         saveas(h, [conf.outpath  'syn_rose_sup_' conf.names{i} '.' conf.image_format]);
         close(h);
     end
-    
-    nat_mov_res = res.(conf.names{i});
-    save([conf.inpath 'nat_mov_res_' conf.names{i} '.mat'], 'nat_mov_res');
-    
 end
 clear h i pds syn
 
 
-
-clear h_fake pds rose_agg syn
-
+%% look for directedness of synergies
 
 
+% different synergies
+h = figure('Visible','off');
+for i = 1:length(conf.names);
+
+    % get distribution of muscle activations for comparison (bootstrap)    
+    flat = res.(conf.names{i}).nmfdat_pro(:);
+    pds  = res.(conf.names{i}).pds(1,:);
+    
+    % for all synergies
+    for j = 1:conf.dim
+        
+        % bootstrap
+        boot_dist = NaN(1, conf.n_bootstrap);
+        for boot = 1:conf.n_bootstrap;
+            perms           = randperm(size(flat,1));
+            rand_act        = flat(perms(1:size(res.(conf.names{i}).nmfdat_pro,2)));
+            boot_dist(boot) = circ_std( pds(rand_act > median(rand_act))'); 
+        end
+        
+        
+        syn     = res.(conf.names{i}).synnmf_pro(j,:);
+        cstd(j) = circ_std( pds(1, syn > median(syn))'); 
+    end
+        
+    subplot(length(conf.names), 1, i);
+    [a b] = hist(boot_dist(:));
+    a = a./conf.n_bootstrap;
+    bar(b,a,'b');
+    hold on;
+    [a b] = hist(cstd);
+    bar(b,a,'r');
+    hold off;
+    legend('shuffled data', 'synergies');
+    title(conf.names{i});
+end
+saveas(h, [conf.outpath 'circ_std_syns.' conf.image_format]);
+close(h);
+clear cstd boot_dist flat pds a b boot i j perms rand_act
+
+
+%% save the results
+for i = 1:length(conf.names)
+    nat_mov_res = res.(conf.names{i});
+    save([conf.inpath 'nat_mov_res_' conf.names{i} '.mat'], 'nat_mov_res');
+end
