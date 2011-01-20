@@ -76,7 +76,7 @@ for monk = conf.monks
         resps   = [resps tmp.resps]; %#ok<AGROW>
     end
 end
-clear tmp;
+clear tmp monk;
 
 
 %% separate and filter responses
@@ -166,7 +166,7 @@ close(h2);
 
 disp(' ');
 disp('calculated and separated responses');
-clear flags monk h1 h2
+clear flags monk h1 h2 amps m n xout
 
 
 
@@ -224,6 +224,7 @@ for i = 1:length(conf.monks)
     imagesc(dat(id,:));
     title([monk ' clustered']);
     axis off;
+clear c cluster_idx dat h id j loadings monk resid sumd
 
     % project responses on principal components
     figure(h2)
@@ -253,6 +254,7 @@ saveas(h1, [conf.cur_res_fold  'raw_clusters.' conf.image_format]);
 saveas(h2, [conf.cur_res_fold  'pcas.' conf.image_format]);
 close(h1);
 close(h2);
+clear a b c cluster_idx colors dat h i id j loadings modi monk resid score sumd tmp
 
 
 
@@ -279,6 +281,7 @@ for i = 1:length(conf.monks)
 end
 saveas(h, [conf.cur_res_fold  'resp_field_size.' conf.image_format]);
 close(h);
+clear monk fields h
 
 
 
@@ -317,6 +320,7 @@ for m = 1:length(conf.monks)
 end
 saveas(h, [conf.cur_res_fold 'response_dist' '.' conf.image_format]);
 close(h);
+clear i h syn pds rose_agg h_fake j
 
 
 %% save configuration

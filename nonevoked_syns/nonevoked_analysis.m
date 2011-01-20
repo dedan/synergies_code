@@ -59,7 +59,7 @@ end
 
 addpath('../lib'); 
 addpath('../plots');
-clear tmp
+clear tmp stats i 
 
 
 
@@ -116,7 +116,7 @@ title('handpositions');
 
 saveas(h, [conf.outpath  'statistics.' conf.image_format]);
 close(h);
-clear y x
+clear y x h i 
 
 
 %% sorting
@@ -146,7 +146,7 @@ for i = 1:conf.n_monks
         ' sessions because unstable pds']);
     idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & out < conf.n_pd_unstable;
 end
-clear data
+clear data all_mean all_std i inds j monk out 
 
 
 
@@ -174,7 +174,7 @@ for i = 1:conf.n_monks
     res.(conf.names{i}).c2take   = all(all_chan);
 end
 
-clear tmp chan all_chan
+clear tmp chan all_chan i
 
 
 
@@ -244,7 +244,7 @@ end
 % NOTE I take pronation for sorting, because supination not for all
 % available and they are strongly correlated
 
-clear rank1 r p all_nmf all_pca all_pro all_sup
+clear rank1 r p all_nmf all_pca all_pro all_sup h i j n_sort_out
 
 
 
@@ -286,7 +286,7 @@ title('std of resid values for different model orders');
 saveas(h, [conf.outpath  'resid_test_std.' conf.image_format]);
 close(h);
 
-clear x y data map modi
+clear x y data map modi colors h j 
 
 
 
@@ -303,7 +303,7 @@ for i = 1:conf.n_monks
     disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
         num2str(mean(data(:,conf.dim)))]);
 end
-clear data
+clear data h i
 
 
 
@@ -313,7 +313,7 @@ clear data
 for i= 1:conf.n_monks
     
     if max([sessions(idx.(conf.names{i})).hands] >1)
-        figure('Visible', 'off');
+        h = figure('Visible', 'off');
         
         % select sessions from vega for which both handpos available
         x       = 0:conf.max_channels;
@@ -358,11 +358,11 @@ for i= 1:conf.n_monks
         
         
         saveas(h, [conf.outpath  'rank1_dist_' conf.names{i} '.' conf.image_format]);
-        close(h);
-                
-        clear x index n_index pro sup 
+        close(h);                
     end
 end
+clear x index n_index pro sup h i
+
 
 
 
@@ -425,7 +425,7 @@ for i = 1:conf.n_monks
         res.(monk).(['allpca_sc' modi{j}])  = score_all;
     end
 end
-clear synnmf synpca score_group baseline
+clear synnmf synpca score_group baseline all group_nmf group_pca h i j k modi monk nmf_res score_all ses2take synall
     
 
 
@@ -506,7 +506,7 @@ saveas(h, [conf.outpath  'syn_consist_sessions_std.' conf.image_format]);
 close(h);
 
 
-clear p_pos
+clear p_pos h i j monk
 
 
 
@@ -547,7 +547,7 @@ for i= 1:conf.n_monks
         saveas(h, [conf.outpath  'post_consist_' conf.names{i} '.' conf.image_format]);
     end
 end
-clear max_hands ses2take g_pro g_sup pro_syns sup_syns p r
+clear max_hands ses2take g_pro g_sup pro_syns sup_syns p r h i j scores
 
 
 
@@ -666,7 +666,8 @@ for i = 1:conf.n_monks
 end
 
 
-clear x y all_pd all_p1 all_p2 c2take_idx n_hands monk_first col in_deg inds id_pro id_sup
+clear x y all_pd all_p1 all_p2 c2take_idx n_hands monk_first col in_deg inds id_pro 
+clear id_sup bla h i j k max_hands n2take n_feather ses2take sig sigs tmp tmp1
         
 
 
@@ -702,6 +703,7 @@ for i = 1:conf.n_monks
     save([conf.inpath 'nat_mov_res_' conf.names{i} '.mat'], 'nat_mov_res');
     
 end
+clear h i pds syn
 
 
 
