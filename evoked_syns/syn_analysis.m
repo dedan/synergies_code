@@ -357,6 +357,39 @@ for m = 1:length(conf.monks)
 end
 saveas(h, [conf.cur_res_fold 'response_dist' '.' conf.image_format]);
 close(h);
+clear h mod monk m k sig_resps unsig_resps sig n_sig sigx n_unsig unx n
+
+
+%% plot clusters in PD space
+for i = 1:conf.n_monks
+    
+    % load nonevoked data (PDs are in there)
+    load([conf.inpath 'data' filesep 'nat_mov_res_' conf.monks{i}]);
+    
+    % roseplot
+    h = figure('Visible', 'off');
+    syn      = res.(conf.monks{i}).all.center;
+    pds      = nat_mov_res.pds;
+    
+    for j = 1:conf.dim
+        
+        subplot(2,2,j);
+        rose_agg = [];
+        for k = 1:size(syn,2)
+            rose_agg = [rose_agg ones(1, floor(syn(j,k) * 100)) * pds(1,k)]; %#ok<AGROW>
+        end
+        h_fake = rose(ones(1,100));
+        hold on;
+        rose(rose_agg,30);
+        set(h_fake, 'Visible', 'Off');
+        title(['# ' num2str(j)]);
+    end
+    subplot(2,2,4)
+    rose(pds(1,:), 180);
+    title('pd distribution');
+    saveas(h, [conf.cur_res_fold  'syn_rose_' conf.monks{i} '.' conf.image_format]);
+    close(h);
+end
 clear i h syn pds rose_agg h_fake j
 
 
