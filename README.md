@@ -21,6 +21,9 @@ There are two *callable* files.
 
 The data computed in this first steps can then be used in the analysis files 
 
+* **compute_synergies** to compute the synergies and do residual tests on the data from natural movement
+* --> this will result in all_data_monkname files to be used in nonevoked_analysis
+
 
 Explanation of folder content and how to use the files:
 -------------------------------------------------------
