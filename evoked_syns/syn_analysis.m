@@ -37,7 +37,7 @@ conf.n_best              = 2;            % take only n_best explorations
 conf.opt                 = statset('MaxIter', 50);     % number of early explorations
 
 % clustering
-conf.n_cluster = 3;
+conf.n_cluster = 4;
 
 % normalize over sessions
 conf.norm       = true;
@@ -170,90 +170,127 @@ clear flags monk h1 h2 amps m n xout
 
 
 
-%% kmeans resid test
-for i = 1:conf.n_monks
 
-    monk    = char(conf.monks(i));
-    dat     = res.(monk).all.flat;
-    
-    if strcmp(monk, 'chalva')
-        dat = dat([1:6 8:end],:);
-    end
-
-
-    subplot(conf.n_monks, 1, i);
-    resid = NaN(1,10);
-    for j = 1:10
-        [~, ~, sumd]  = kmeans(dat, j, 'replicates', 100);
-        resid(j)      = sum(sumd);
-    end
-    plot(resid)
-end
 
 %% look at clusters in the responses (imagesc and pca scatter)
-h1 = figure('Visible','off');
-h2 = figure('Visible','off');
-colors = {'r', 'g', 'b', 'y'};
-for i = 1:length(conf.monks)
+colors           = {'r', 'g', 'b', 'y'};
 
-    monk    = char(conf.monks(i));
-    dat     = res.(monk).all.flat;
+% without loop stupid code separation of monkeys because so different
+
+%% for chalva
+monk    = 'chalva';
+h       = figure('Visible','off');
+dat     = res.(monk).pro.flat;        
+                
+subplot(3, 3, 1)
+[cluster_idx c]         = kmeans(dat, conf.n_cluster, 'replicates', 100);
+res.(monk).pro.center   = c;
+res.(monk).all.center   = c;
+[~, id]                 = sort(cluster_idx);
+hist(cluster_idx);
+title('cluster distribution');
+
+subplot(3, 3, 2);
+imagesc(dat(id,:));
+title([monk ' clustered']);
+axis off;
+        
+% project responses on principal components
+[~, loadings] = princomp(dat);
+subplot(3, 3, 3)
+for j = 1:conf.n_cluster
     
-%     if strcmp(monk, 'chalva')
-%         dat = dat([1:6 8:end],:);
-%     end
+    id = (cluster_idx == j);
+    plot(loadings(id,1), loadings(id,2), ['.' colors{j}]);
+    hold on
+    xlabel('1st PC');
+    ylabel('2nd PC');
+end
 
-    figure(h1)
-    subplot(conf.n_monks, 3, (i-1)*3 + 1)
-    dis     = sum(dat - repmat(dat(1,:), size(dat,1), 1), 2);
-    [~, id] = sort(dis);
-    imagesc(dat);
-    title([ monk ' original']);
-    axis off;
+% kmeans resid test
+subplot(3, 3, 4:6);
+resid = NaN(1,10);
+for j = 1:10
+    [~, ~, sumd]  = kmeans(dat, j, 'replicates', 100);
+    resid(j)      = sum(sumd);
+end
+plot(resid)
+title('mean field sum')
 
-    subplot(conf.n_monks, 3, (i-1)*3 + 2)
-    imagesc(dat(id,:))
-    title([monk ' sorted']);
-    axis off;
+subplot(3, 3, 7:9);
+dat   = dat([1:6 8:end],:);
+resid = NaN(1,10);
+for j = 1:10
+    [~, ~, sumd]  = kmeans(dat, j, 'replicates', 100);
+    resid(j)      = sum(sumd);
+end
+plot(resid)
+title('mean field sum (outlier removed)')
 
-    subplot(conf.n_monks, 3, (i-1)*3 + 3)
-    [cluster_idx c]  = kmeans(dat, conf.n_cluster, 'replicates', 100);
-    [~, id]          = sort(cluster_idx);
-    
-    
-    imagesc(dat(id,:));
-    title([monk ' clustered']);
-    axis off;
+
+saveas(h, [conf.cur_res_fold  'raw_clusters_' monk '.' conf.image_format]);
+close(h);
 clear c cluster_idx dat h id j loadings monk resid sumd
 
-    % project responses on principal components
-    figure(h2)
-    [~, loadings] = princomp(dat);
 
-    for j = 1:conf.n_cluster
-
-        id = cluster_idx == j;
-
-        subplot(conf.n_monks, 3, (i-1)*3 + 1)
-        plot(loadings(id,1), loadings(id,2), ['.' colors{j}]);
-        hold on
-        title([monk ' 1 on 2']);
-
-        subplot(conf.n_monks, 3, (i-1)*3 + 2)
-        plot(loadings(id,1), loadings(id,3), ['.' colors{j}]);
-        hold on
-        title([monk ' 1 on 3']);
-
-        subplot(conf.n_monks, 3, (i-1)*3 + 3)
-        plot(loadings(id,2), loadings(id,3), ['.' colors{j}]);
-        hold on
-        title([monk ' 2 on 3']);
-    end
+%% %%%% VEGA
+monk    = 'vega';
+modi    = {'pro', 'sup', 'all'};
+conf.n_cluster = 3;
+h       = figure('Visible','off'); 
+for i = 1:length(modi)
+        
+    dat                         = res.(monk).(modi{i}).flat;
+    [cluster_idx c]             = kmeans(dat, conf.n_cluster, 'replicates', 100);
+    res.(monk).(modi{i}).center = c;
+    res.(monk).(modi{i}).idx    = cluster_idx;
 end
-saveas(h1, [conf.cur_res_fold  'raw_clusters.' conf.image_format]);
-saveas(h2, [conf.cur_res_fold  'pcas.' conf.image_format]);
-close(h1);
-close(h2);
+
+subplot(3, 2, 1)
+hist(res.(monk).all.idx);
+title('cluster distribution');
+
+subplot(3, 2, 2)
+[~, id]          = sort(res.(monk).all.idx);
+imagesc(dat(id,:));
+title([monk ' clustered ' modi{i}]);
+axis off;
+
+% kmeans resid test
+subplot(3, 2, 3:4)
+resid = NaN(1,10);
+for j = 1:10
+    [~, ~, sumd]  = kmeans(dat, j, 'replicates', 100);
+    resid(j)      = sum(sumd);
+end
+plot(resid)
+title('mean field sum')
+
+
+% project responses on principal components
+[~, loadings] = princomp(res.(monk).all.flat);
+
+subplot(3, 2, 5)
+for j = 1:conf.n_cluster
+    
+    id = (cluster_idx == j);
+    
+    plot(loadings(id,1), loadings(id,2), ['.' colors{j}]);
+    hold on
+    xlabel('1st PC');
+    ylabel('2nd PC');
+    title(modi{i});
+end
+
+subplot(3, 2, 6)
+[a, b, score]   = match_syns(res.(monk).pro.center, res.(monk).sup.center);
+tmp(1:2:conf.n_cluster*2-1,:)  = a;
+tmp(2:2:conf.n_cluster*2,:)    = b;
+imagesc(tmp);
+title(num2str(score));
+    
+saveas(h, [conf.cur_res_fold  'raw_clusters_' monk '.' conf.image_format]);
+close(h);
 clear a b c cluster_idx colors dat h i id j loadings modi monk resid score sumd tmp
 
 
