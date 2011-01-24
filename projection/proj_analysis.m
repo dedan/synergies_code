@@ -13,7 +13,7 @@ conf.n_boot         = 1000;
 conf.noise          = 0.5;
 conf.image_format   = 'pdf';
 
-resps = struct([]);
+resps       = struct([]);
 
 
 % load a result file from the syn_analysis
@@ -21,14 +21,18 @@ for monk = conf.monks
     
     if isempty(resps)
         load([conf.res_folder 'data' filesep 'evoked_data_chalva.mat']);     
+        
+        % load the nonevoked results
+        load([conf.res_folder 'data' filesep 'nat_mov_res.mat']);
     else
         tmp     = load([conf.res_folder 'data' filesep 'evoked_data_' char(monk) '.mat']);     
         resps   = [resps tmp.resps]; %#ok<AGROW>
+
+        tmp     = load([conf.res_folder 'data' filesep 'nat_mov_res_' char(monk) '.mat']);        
+        nat_mov_res.(char(monk)) = tmp.nat_mov_res;
     end
 end
 
-% load the nonevoked results
-load([conf.res_folder 'data' filesep 'nat_mov_res.mat']);
 
 % load the evoked results
 load([conf.res_folder 'data' filesep 'evoked_res.mat']);
@@ -58,7 +62,22 @@ end
 
 
 
-%%
+%% principal angles between clusters and synergies
+
+
+for m = conf.monks
+    
+    monk = char(m);
+    disp(monk);
+    disp('pro pro');
+    disp(num2str(subspace(evoked_res.(monk).pro.center', nat_mov_res.(monk).synall_pro')));
+    
+    if ~isempty(nat_mov_res.(monk).synall_sup)
+        disp('sup sup');
+        disp(num2str(subspace(evoked_res.(monk).pro.center', nat_mov_res.(monk).synall_pro')));
+    end
+end
+
 n = 10000;
 r = zeros(1,n);
 d = 11;
