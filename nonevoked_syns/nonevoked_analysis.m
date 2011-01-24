@@ -50,11 +50,11 @@ sessions = struct([]);
 for i = 1:conf.n_monks
     if isempty(sessions)
         load([conf.inpath 'all_data_' conf.names{i}]);
-        res.(conf.names{i}).stats = stats;
+%        res.(conf.names{i}).stats = stats;
     else
         tmp         = load([conf.inpath 'all_data_' conf.names{i}]);
         sessions    = [sessions tmp.sessions]; %#ok<AGROW>
-        res.(conf.names{i}).stats = tmp.stats;        
+%        res.(conf.names{i}).stats = tmp.stats;        
     end        
 end
 
@@ -650,122 +650,6 @@ clear max_hands ses2take g_pro g_sup pro_syns sup_syns p r h i j scores
 
 
 
-%% stability of prefered directions (over sessions)
-for i = 1:conf.n_monks
-
-    max_hands   = max([sessions(idx.(conf.names{i})).hands]);
-    ses2take    = idx.(conf.names{i}) & [sessions.hands] == max_hands;
-    n2take      = length(find(ses2take));
-    c2take_idx  = find(res.(conf.names{i}).c2take);
-    n_feather   = ceil(length(c2take_idx)/2);
-    
-    if conf.only_sig_pd
-        sig = 0.05;
-        bla = 'onlysig';
-    else
-        sig = 1.0;
-        bla = 'all';
-    end
-    
-    all_pd = vertcat(sessions(ses2take).pd);
-    all_p1 = vertcat(sessions(ses2take).p1);
-    sigs = all_p1 < sig;
-    
-    h = figure('Visible', 'off'); 
-
-    
-    if max_hands == 1
-        % pd significance
-        subplot(n_feather +1, 2, 1);
-        bar(c2take_idx, sum(all_p1 < 0.05) ./ n2take * 100, 'b');
-        title('pd significance in percent of sessions');
-        
-        % cstds
-        subplot(n_feather +1, 2, 2);
-        for j = 1:size(all_pd, 2)
-            [~, res.(conf.names{i}).cstd(j)]  = circ_std(all_pd(sigs(:,j),j));
-            res.(conf.names{i}).pds(j)        = circ_mean(all_pd(sigs(:,j),j));
-        end
-        bar(c2take_idx, res.(conf.names{i}).cstd(c2take_idx));
-        title('cstds');
-        
-        % feather
-        for k = 1:length(c2take_idx)
-            subplot(ceil(length(c2take_idx)/2) +2,2,k+2);
-            tmp = all_pd(sigs(:, c2take_idx(k)), c2take_idx(k));
-            [x y] = pol2cart(tmp, ones(size(tmp)));
-            feather(x, y, 'b');
-            axis off
-            title(['channel ' num2str(c2take_idx(k))]);        
-        end
-    else
-        subplot(n_feather +1, 2, 1);
-        id_pro = 1:2:2*n2take-1;
-        id_sup = 2:2:2*n2take;
-        bar(c2take_idx,  [sum(all_p1(id_pro,c2take_idx) < 0.05)' ./ n2take ...
-                          sum(all_p1(id_sup,c2take_idx) < 0.05)' ./ n2take] * 100);
-        title('pd significance in percent of sessions');
-        
-        subplot(n_feather +1, 2, 2);
-        for j = 1:size(all_pd, 2)
-            tmp = all_pd(id_pro, :);
-            [~, res.(conf.names{i}).cstd(1,j)] = circ_std(tmp(sigs(id_pro,j), j));
-            res.(conf.names{i}).pds(2,j)       = circ_mean(tmp(sigs(id_pro,j), j));            
-            tmp = all_pd(id_sup, :);
-            [~, res.(conf.names{i}).cstd(2,j)] = circ_std(tmp(sigs(id_sup,j), j));                        
-            res.(conf.names{i}).pds(1,j)       = circ_mean(tmp(sigs(id_sup,j), j));
-        end
-        bar(c2take_idx, res.(conf.names{i}).cstd(:,c2take_idx)');
-        title('cstds')
-        
-        for k = 1:length(c2take_idx)
-            subplot(ceil(length(c2take_idx)/2) +2,2,k+2);
-            tmp = all_pd(id_pro, :);
-            tmp1  = tmp(sigs(id_pro,c2take_idx(k)), c2take_idx(k));
-            [x y] = pol2cart(tmp1, ones(size(tmp1)));
-            feather(x, y, 'b');
-            hold on
-            tmp = all_pd(id_sup, :);            
-            tmp1  = tmp(sigs(id_sup,c2take_idx(k)), c2take_idx(k));
-            [x y] = pol2cart(tmp1, ones(size(tmp1)));
-            feather(x, y, 'r');
-            hold off
-            axis off
-            title(['channel ' num2str(c2take_idx(k))]);             
-        end
-    end
-        
-    saveas(h, [conf.outpath  'pd_consist_feather_' bla '_' conf.names{i} '.' conf.image_format]);
-    close(h);
-    
-    
-    h = figure('Visible', 'off');
-    for j = 1:max_hands
-        subplot(max_hands,1,j)
-        inds = find(ses2take);
-        for k = 1:length(inds)
-            col = [k k k]/length(inds);
-            in_deg = rad2deg(sessions(inds(k)).pd(j,c2take_idx));
-            in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
-            plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
-            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), ...
-                res.(conf.names{i}).cstd(j,c2take_idx), 'UniformOutput', false))
-            set(gca,'XTick', c2take_idx);
-            hold on
-        end
-        grid
-        xlabel('circular stds');
-        ylabel('pds (deg)');
-        hold off
-    end
-    saveas(h, [conf.outpath  'pd_consist_' conf.names{i} '.' conf.image_format]);
-    close(h);
-        
-end
-
-
-clear x y all_pd all_p1 all_p2 c2take_idx n_hands monk_first col in_deg inds id_pro 
-clear id_sup bla h i j k max_hands n2take n_feather ses2take sig sigs tmp tmp1
         
 
 
