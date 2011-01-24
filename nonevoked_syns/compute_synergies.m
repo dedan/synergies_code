@@ -161,24 +161,21 @@ for i= 1:length(fdat)
             
             % normalized by division with acitivity before TO
             mats(j).data_raw  = [mats(j).data_raw; tmp_amp' ./ tmp_bck'];
-            mats(j).data(k,:) = mean(tmp_amp,2)' ./ mean(tmp_bck,2)';
         end
         
         % remove NaNs from the channels which are not used anyway
         e2take = logical(data.chdata(1).channels);
-        mats(j).data(:,~e2take) = 0;
         mats(j).data_raw(:,~e2take) = 0;
         
         
         % warn if there are still NaNs in the data
         if any(isnan(mats(j).data(:))) || any(isnan(mats(j).data_raw(:)))
             disp(['nan problem in: ' fdat(i).name]);
-            mats(j).data(isnan(mats(j).data)) = 0;
             mats(j).data_raw(isnan(mats(j).data_raw)) = 0;
         end
     end
     
-    if isempty(mats(1).data)
+    if isempty(mats(1).data_raw)
         disp(['problem with: ' fdat(i).name]);
     else
         
