@@ -5,7 +5,7 @@ monk = 'chalva';
 srcdir = [path monk filesep];
 load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
 load([path 'results' filesep 'data' filesep 'nat_mov_res_' monk '.mat']);
-load(['scales_' monk]);
+load(['..' filesep 'data' filesep 'scales_' monk]);
 
 cluster_idx = kmeans(normr(vertcat(resps.response)),4, 'replicates', 100);
 
@@ -24,7 +24,7 @@ add_noise       = true;
 % prepare the plot
 figure(3)
 clf
-curmap = imread([monk '_cortex.bmp']);
+curmap = imread(['..' filesep 'data' filesep monk '_cortex.bmp']);
 imagesc(curmap);
 colormap gray
 axis     equal

@@ -151,31 +151,128 @@ clear data all_mean all_std i inds j monk out
 
 
 
-%% which channels
-% assign muscle mappings
-     %(vega_first, vega_later, darma, chalva)
-chan = {'FCU-F', 'X', 'PL-F', 'FCR-F', 'BR-B', 'X', 'FDS-F', 'FDP-F', ...
-            'X', 'EDC-E', 'X', 'APL-E', 'EDC-E', 'ECR-E', 'ED45-E', 'ECU-E';
-        'BR-B', 'EDC-E', 'APL-E', 'ECU-E', 'FCR-F', 'APL-E', 'ED45-E', 'ED23-E', ...
-            'ECU-E', 'BR-B', 'PL-F', 'FCR-F', 'X', 'X', 'X', 'FDS-F';
-        'ECU-E', 'ED45-E', 'EDC-E', 'APL-E', 'ECR-E', 'ED23-E', 'BIC-P', 'BIC-P', ...
-            'FDS-F', 'PL-F', 'FCU-F', 'FCR-F', 'PT-F', 'FDP-F', 'TRIC-P', 'BIC-P';
-        'FCU-F', 'FDS-F', 'PL-F', 'FCR-F', 'PT-F', 'FDP-F', 'PL-F', 'BIC-P', ...
-            'ECU-E', 'EDC-E', 'ED45-E', 'ECR-E', 'ED23-E', 'APL-E', 'ECR-E', 'TRIC-P'};
-        
-tmp = intersect({chan{1,:}},{chan{2,:}});
-tmp = intersect(tmp,{chan{3,:}});
-disp('');
-disp([num2str(length(tmp)) ' channels in common for all monkeys']);
-
-% only use channels which are available for all sessions of a monk
+%% only use channels which are available for all sessions of a monk
 for i = 1:conf.n_monks
     
     all_chan                     = vertcat(sessions(idx.(conf.names{i})).channels);
     res.(conf.names{i}).c2take   = all(all_chan);
 end
 
-clear tmp chan all_chan i
+clear all_chan i
+
+
+%% stability of prefered directions (over sessions) (feather)
+for i = 1:conf.n_monks
+
+    max_hands   = max([sessions(idx.(conf.names{i})).hands]);
+    ses2take    = idx.(conf.names{i}) & [sessions.hands] == max_hands;
+    n2take      = length(find(ses2take));
+    c2take_idx  = find(res.(conf.names{i}).c2take);
+    n_feather   = ceil(length(c2take_idx)/2);
+    
+    sig     = 0.05;
+    
+    all_pd  = vertcat(sessions(ses2take).pd);
+    all_p1  = vertcat(sessions(ses2take).p1);
+    sigs    = all_p1 < sig;
+    
+    h = figure('Visible', 'off');
+    
+    if max_hands == 1
+        ids(1).id = 1:n2take;
+    else
+        ids(1).id = 1:2:2*n2take-1;
+        ids(2).id = 2:2:2*n2take;
+    end
+    
+    % pd significance
+    subplot(n_feather +2, 2, 1);
+    agg = NaN(length(c2take_idx), max_hands);
+    for j = 1:max_hands
+        agg(:,j) = sum(all_p1(ids(j).id, c2take_idx) < 0.05)' ./ n2take * 100;
+    end
+    bar(c2take_idx,  agg);
+    title('pd significance in percent of sessions');
+    
+    for j = 1:max_hands
+        
+        for k = 1:length(c2take_idx)
+         
+            tmp = all_pd(ids(j).id, :);
+            [~, res.(conf.names{i}).cstd_all(j,k)] = circ_std(tmp(:, k));
+            [~, res.(conf.names{i}).cstd_sig(j,k)] = circ_std(tmp(sigs(ids(j).id, k), k));                        
+            res.(conf.names{i}).pds_all(j,k)       = circ_mean(tmp(:, k));            
+            res.(conf.names{i}).pds_sig(j,k)       = circ_mean(tmp(sigs(ids(j).id, k), k));
+        end
+    end
+    subplot(n_feather +2, 2, 2);
+    bar(c2take_idx, res.(conf.names{i}).cstd_all(c2take_idx));
+    title('cstds over all sessions');
+    ylim([0 2]);
+    
+    subplot(n_feather +2, 2, 4);
+    bar(c2take_idx, res.(conf.names{i}).cstd_sig(c2take_idx));
+    title('cstds over significant sessions');
+    ylim([0 2]);
+    saveas(h, [conf.outpath  'pd_consist_bars_' conf.names{i} '.' conf.image_format]);
+    close(h);    
+    
+    
+    h = figure('Visible', 'off');    
+    colors          = {'b', 'r'};
+    for k = 1:length(c2take_idx)
+        
+        subplot(n_feather, 2, k);
+        
+        for j = 1:max_hands
+            tmp   = all_pd(ids(j).id, c2take_idx(k));
+            [x y] = pol2cart(tmp, ones(size(tmp)));
+            hs = feather(x, y, colors{j});
+            % overdraw the not significant pds with a dotted line
+            set(hs(~sigs(ids(j).id, c2take_idx(k))), 'LineStyle', ':');            
+            hold on
+        end
+        axis off
+        title(['channel ' num2str(c2take_idx(k))]);
+    end
+        
+    saveas(h, [conf.outpath  'pd_consist_feather_' conf.names{i} '.' conf.image_format]);
+    close(h);
+end
+
+
+
+%% stability of prefered directions (over sessions) (scatter)
+for i = 1:conf.n_monks
+
+    h = figure('Visible', 'off');
+    for j = 1:max_hands
+        subplot(max_hands,1,j)
+        inds = find(ses2take);
+        for k = 1:length(inds)
+            col = [k k k]/length(inds);
+            in_deg = rad2deg(sessions(inds(k)).pd(j,c2take_idx));
+            in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
+            plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
+            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), ...
+                res.(conf.names{i}).cstd_all(j,c2take_idx), 'UniformOutput', false))
+            set(gca,'XTick', c2take_idx);
+            hold on
+        end
+        grid
+        xlabel('circular stds');
+        ylabel('pds (deg)');
+        hold off
+    end
+    saveas(h, [conf.outpath  'pd_consist_' conf.names{i} '.' conf.image_format]);
+    close(h);
+        
+end
+
+
+clear x y all_pd all_p1 all_p2 c2take_idx n_hands monk_first col in_deg inds id_pro 
+clear id_sup bla h i j k max_hands n2take n_feather ses2take sig sigs tmp tmp1
+
 
 
 
