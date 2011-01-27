@@ -18,7 +18,7 @@ else
     error('the two groups must have the same size');
 end
 
-[syn1, syn2, scores] = match_syns(syn1, syn2);
+[syn1, syn2, scores] = match_syns(syn1, syn2, 1);
 
 for j = 1:n
     subplot(n+1,1,j)

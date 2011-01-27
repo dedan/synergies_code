@@ -82,7 +82,7 @@ res3        = nmf_explore(dat, config);
 config.dim  = 4;
 res4        = nmf_explore(dat, config);
 
-[m1, m2, scores] = match_syns(res3.syns, res4.syns);
+[m1, m2, scores] = match_syns(res3.syns, res4.syns, 1);
 subplot 211; imagesc(m1); subplot 212; imagesc(m2)
 title(['scores: ' num2str(scores)]);
 
@@ -99,6 +99,6 @@ config.dim  = 3;
 res        = nmf_explore(sessions(1).mats(1).data_raw, config);
 res_norm   = nmf_explore(normr(sessions(1).mats(1).data_raw), config);
 
-[m1, m2, scores] = match_syns(res.syns, res_norm.syns);
+[m1, m2, scores] = match_syns(res.syns, res_norm.syns, 1);
 subplot 211; imagesc(m1); subplot 212; imagesc(m2)
 title(['scores: ' num2str(scores)]);

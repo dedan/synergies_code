@@ -74,7 +74,7 @@ for i = 1:length(sessions)
         r_data          = shuffle_inc(data);
         nmf             = nmf_explore(r_data, conf);
         pca             = pcaica(r_data, conf.dim)';
-        [~, ~, scores]  = match_syns(nmf.syns, pca);
+        [~, ~, scores]  = match_syns(nmf.syns, pca, 1);
         m_scores(i,j)   = mean(scores);
         
         if hands == 2
@@ -82,7 +82,7 @@ for i = 1:length(sessions)
             r_sup           = shuffle_inc(sup);
             nmf_pro         = nmf_explore(r_pro, conf);
             nmf_sup         = nmf_explore(r_sup, conf);
-            [~, ~, scores]  = match_syns(nmf_pro.syns, nmf_sup.syns);
+            [~, ~, scores]  = match_syns(nmf_pro.syns, nmf_sup.syns, 1);
             h_scores(i,j)   = mean(scores);
         end
     end

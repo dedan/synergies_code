@@ -494,9 +494,9 @@ for i = 1:conf.n_monks
         
         if conf.norm_matchscore
             baseline                            = res.(monk).stats.m_base;
-            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, baseline);
+            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, 1, baseline);
         else
-            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf);
+            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, 1);
         end
         res.(monk).(['synnmf' modi{j}])     = synnmf;
         res.(monk).(['nmfpca_sc' modi{j}])  = score_group;
@@ -515,15 +515,16 @@ for i = 1:conf.n_monks
         synall  = nmf_res.syns;
 
         if conf.norm_matchscore
-            [~, synall, score_all]              = match_syns(synpca, synall, baseline);
+            [~, synall, score_all]              = match_syns(synpca, synall, 1, baseline);
         else
-            [~, synall, score_all]              = match_syns(synpca, synall);
+            [~, synall, score_all]              = match_syns(synpca, synall, 1);
         end
         res.(monk).(['synall' modi{j}])     = synall;
         res.(monk).(['allpca_sc' modi{j}])  = score_all;
     end
 end
-clear synnmf synpca score_group baseline all group_nmf group_pca h i j k modi monk nmf_res score_all ses2take synall
+clear synnmf synpca score_group baseline all group_nmf group_pca h i j 
+clear k modi monk nmf_res score_all ses2take synall
     
 
 
@@ -627,9 +628,9 @@ for i= 1:conf.n_monks
         
         if conf.norm_matchscore
             baseline    = res.(monk).stats.h_base;
-            [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns, baseline);
+            [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns, 1, baseline);
         else
-            [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns);
+            [pro_syns, sup_syns, scores] = match_syns(pro_syns, sup_syns, 1);
         end
         
         for j = 1:size(pro_syns,1)

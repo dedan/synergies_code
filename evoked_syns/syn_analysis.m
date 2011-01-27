@@ -283,7 +283,7 @@ for j = 1:conf.n_cluster
 end
 
 subplot(3, 2, 6)
-[a, b, score]   = match_syns(res.(monk).pro.center, res.(monk).sup.center);
+[a, b, score]   = match_syns(res.(monk).pro.center, res.(monk).sup.center, 1);
 tmp(1:2:conf.n_cluster*2-1,:)  = a;
 tmp(2:2:conf.n_cluster*2,:)    = b;
 imagesc(tmp);
