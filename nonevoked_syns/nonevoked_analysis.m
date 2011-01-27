@@ -30,7 +30,7 @@ conf.Niter_exploration  = 2;
 conf.n_best             = 2;
 conf.n_trials           = 50;
 conf.norm_matchscore    = false;
-conf.image_format       = 'jpg';
+conf.image_format       = 'pdf';
 conf.n_pd_unstable      = 4;
 conf.only_sig_pd        = true;
 conf.n_bootstrap        = 100;
@@ -186,7 +186,7 @@ for i = 1:conf.n_monks
     end
     
     % pd significance
-    subplot(n_feather +2, 2, 1);
+    subplot(2, 2, 1);
     agg = NaN(length(c2take_idx), max_hands);
     for j = 1:max_hands
         agg(:,j) = sum(all_p1(ids(j).id, c2take_idx) < 0.05)' ./ n2take * 100;
@@ -205,12 +205,12 @@ for i = 1:conf.n_monks
             res.(conf.names{i}).pds_sig(j,k)       = circ_mean(tmp(sigs(ids(j).id, k), k));
         end
     end
-    subplot(n_feather +2, 2, 2);
+    subplot(2, 2, 2);
     bar(c2take_idx, res.(conf.names{i}).cstd_all(c2take_idx));
     title('cstds over all sessions');
     ylim([0 2]);
     
-    subplot(n_feather +2, 2, 4);
+    subplot(2, 2, 4);
     bar(c2take_idx, res.(conf.names{i}).cstd_sig(c2take_idx));
     title('cstds over significant sessions');
     ylim([0 2]);
@@ -246,6 +246,10 @@ end
 for i = 1:conf.n_monks
 
     h = figure('Visible', 'off');
+    max_hands   = max([sessions(idx.(conf.names{i})).hands]);
+    ses2take    = idx.(conf.names{i}) & [sessions.hands] == max_hands;
+    c2take_idx  = find(res.(conf.names{i}).c2take);  
+    
     for j = 1:max_hands
         subplot(max_hands,1,j)
         inds = find(ses2take);
@@ -255,7 +259,7 @@ for i = 1:conf.n_monks
             in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
             plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
             set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), ...
-                res.(conf.names{i}).cstd_all(j,c2take_idx), 'UniformOutput', false))
+                res.(conf.names{i}).cstd_all(j,:), 'UniformOutput', false))
             set(gca,'XTick', c2take_idx);
             hold on
         end
@@ -307,6 +311,9 @@ for j = 1:conf.n_monks
 end
 hold off;
 legend('nmf pro', 'nmf sup', 'Location', 'NorthWest');
+set(gca,'XTickLabel',[])
+xlabel('sessions');
+ylabel('reconstruction error for rank1 model');
 
 % also calculate the correlation of the two rank1 values
 subplot(2,2,3)
@@ -666,7 +673,7 @@ for i = 1:conf.n_monks
     % roseplot 
     h = figure('Visible', 'off');
     syn      = res.(conf.names{i}).synnmf_pro;
-    pds      = res.(conf.names{i}).pds(1,:);
+    pds      = res.(conf.names{i}).pds_all(1,:);
     
     plot_rose(h, syn, pds);
     saveas(h, [conf.outpath  'syn_rose_pro_' conf.names{i} '.' conf.image_format]);
@@ -675,7 +682,7 @@ for i = 1:conf.n_monks
     if max([sessions(idx.(conf.names{i})).hands] >1)
         h = figure('Visible', 'off');
         syn      = res.(conf.names{i}).synnmf_sup;
-        pds      = res.(conf.names{i}).pds(1,:);
+        pds      = res.(conf.names{i}).pds_all(1,:);
         
         plot_rose(h, syn, pds);
         saveas(h, [conf.outpath  'syn_rose_sup_' conf.names{i} '.' conf.image_format]);
@@ -694,7 +701,7 @@ for i = 1:length(conf.names);
 
     % get distribution of muscle activations for comparison (bootstrap)    
     flat = res.(conf.names{i}).nmfdat_pro(:);
-    pds  = res.(conf.names{i}).pds(1,:);
+    pds  = res.(conf.names{i}).pds_all(1,:);
     
     % for all synergies
     for j = 1:conf.dim
