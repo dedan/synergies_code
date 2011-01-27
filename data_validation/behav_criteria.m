@@ -114,7 +114,7 @@ end
 
 for i = 1:length(fields)
     
-    figure(i)
+    h = figure('Visible', 'off');
     
     for j = 1:length(names)
         subplot(length(names)+1, 1, j)
@@ -129,7 +129,7 @@ for i = 1:length(fields)
         plot(x1, y, 'r.');
         plot(x2, y, 'r.');
         hold off
-        title(names{j});
+        title([fields{i} ' - ' names{j}]);
         
     end
     subplot(length(names)+1, 1, length(names)+1)
@@ -144,5 +144,7 @@ for i = 1:length(fields)
     plot(x1, y, 'r.');
     plot(x2, y, 'r.');
     hold off
-    title('all');
+    title([fields{i} ' - all']);
+    saveas(h, ['~/Documents/uni/yifat_lab/results/data_validation/' fields{i} '.pdf']);
+    close(h);
 end
