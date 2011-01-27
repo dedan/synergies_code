@@ -9,7 +9,7 @@
 conf.monks          = {'chalva', 'vega'};
 conf.res_folder     = '/Volumes/LAB/results/';
 conf.out            = '~/Documents/uni/yifat_lab/results/';
-conf.n_boot         = 1000;
+conf.n_boot         = 10000;
 conf.noise          = 0.5;
 conf.image_format   = 'pdf';
 
