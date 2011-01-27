@@ -4,7 +4,7 @@
 % matched rows in W2.  
 % type:  1 dot product matching  -- 2 corrcoef matching
 
-function [w1, w2, scores] = match_syns(w1,w2, type, baseline)
+function [w1, w2, scores, idx] = match_syns(w1,w2, type, baseline)
 
 s       = size(w1,1);
 scores  = zeros(1,s);

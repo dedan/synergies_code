@@ -494,25 +494,6 @@ for i = 1:conf.n_monks
             ses2take = idx.(monk);
         end
         
-        group_nmf           = group(sessions(ses2take), ['nmf' modi{j}]);
-        group_pca           = group(sessions(ses2take), ['pca' modi{j}]);
-        synnmf              = group_nmf(1).center;
-        synpca              = group_pca(1).center;
-        
-        if conf.norm_matchscore
-            baseline                            = res.(monk).stats.m_base;
-            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, 1, baseline);
-        else
-            [synpca, synnmf, score_group]       = match_syns(synpca, synnmf, 1);
-        end
-        res.(monk).(['synnmf' modi{j}])     = synnmf;
-        res.(monk).(['nmfpca_sc' modi{j}])  = score_group;
-        res.(monk).(['synpca' modi{j}])     = synpca;
-        res.(monk).(['nmfdat'  modi{j}])    = vertcat(group_nmf.dat);
-        res.(monk).(['pcadat'  modi{j}])    = vertcat(group_pca.dat);
-        res.(monk).(['nmf_std' modi{j}])    = group_nmf(1).idx;
-        res.(monk).(['pca_std' modi{j}])    = group_pca(1).idx;
-        
         % will the synergies look the same when I compute them on the whole dat
         all = [];
         for k = find(ses2take)
@@ -520,6 +501,33 @@ for i = 1:conf.n_monks
         end
         nmf_res = nmf_explore(all, conf);
         synall  = nmf_res.syns;
+        synall_pca = pcaica(all, conf.dim)';
+        
+        group_nmf           = group(sessions(ses2take), ['nmf' modi{j}]);
+        group_pca           = group(sessions(ses2take), ['pca' modi{j}]);
+        synnmf              = group_nmf(1).center;
+        synpca              = group_pca(1).center;
+        
+        % sort the synpca according to pca synergies computed on all the
+        % data and sort everything according to this. this is the only way
+        % of keeping the order or the synergies, I mean sorting them
+        % according to their eigenvalues which is only done with pca
+        [synall_pca, synpca]  = match_syns(synall_pca, synpca, 1);
+        
+        if conf.norm_matchscore
+            baseline                                = res.(monk).stats.m_base;
+            [synpca, synnmf, score_group, id_sort]  = match_syns(synpca, synnmf, 1, baseline);
+        else
+            [synpca, synnmf, score_group, id_sort]  = match_syns(synpca, synnmf, 1);
+        end
+        res.(monk).(['synnmf' modi{j}])     = synnmf;
+        res.(monk).(['nmfpca_sc' modi{j}])  = score_group;
+        res.(monk).(['synpca' modi{j}])     = synpca;
+        res.(monk).(['nmfdat'  modi{j}])    = vertcat(group_nmf(id_sort).dat);
+        res.(monk).(['pcadat'  modi{j}])    = vertcat(group_pca.dat);
+        res.(monk).(['nmf_std' modi{j}])    = group_nmf(1).idx;
+        res.(monk).(['pca_std' modi{j}])    = group_pca(1).idx;
+        
 
         if conf.norm_matchscore
             [~, synall, score_all]              = match_syns(synpca, synall, 1, baseline);
