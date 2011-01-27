@@ -27,7 +27,7 @@ best        = col(idx(1:conf.n_best));
 
 % group, plot and save the results  --> show nmf stability
 grouped     = group(best, 'syns');
-result.flat = flatten(grouped);
+result.flat = vertcat(grouped.dat);
 result.syns = grouped(1).center;
 result.std  = std(hist(grouped(1).idx, conf.dim));
 
