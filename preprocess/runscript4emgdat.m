@@ -24,7 +24,7 @@ config.t_move  = [0, 1500];       % movemente time
 config.ang_div = 35;                % angular deviation
 
 config.also_with_stim   = 0;
-config.n_btstrp         = 4000;
+config.n_btstrp         = 5000;
 
 for monk = monks
     config.path     = [path char(monk) filesep];
