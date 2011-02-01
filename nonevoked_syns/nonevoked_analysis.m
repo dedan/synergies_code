@@ -206,12 +206,12 @@ for i = 1:conf.n_monks
         end
     end
     subplot(2, 2, 2);
-    bar(c2take_idx, res.(conf.names{i}).cstd_all(c2take_idx));
+    bar(c2take_idx, res.(conf.names{i}).cstd_all');
     title('cstds over all sessions');
     ylim([0 2]);
     
     subplot(2, 2, 4);
-    bar(c2take_idx, res.(conf.names{i}).cstd_sig(c2take_idx));
+    bar(c2take_idx, res.(conf.names{i}).cstd_sig');
     title('cstds over significant sessions');
     ylim([0 2]);
     saveas(h, [conf.outpath  'pd_consist_bars_' conf.names{i} '.' conf.image_format]);
