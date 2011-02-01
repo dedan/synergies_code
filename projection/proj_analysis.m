@@ -17,19 +17,18 @@ resps       = struct([]);
 
 
 % load a result file from the syn_analysis
-for monk = conf.monks
+for i = 1:length(conf.monks)
+    monk = conf.monks{i};
+
+    % load the nonevoked results
+    tmp     = load([conf.res_folder 'data' filesep 'nat_mov_res_' monk '.mat']);
+    nat_mov_res.(monk) = tmp.nat_mov_res;
     
     if isempty(resps)
-        load([conf.res_folder 'data' filesep 'evoked_data_chalva.mat']);     
-        
-        % load the nonevoked results
-        load([conf.res_folder 'data' filesep 'nat_mov_res.mat']);
+        load([conf.res_folder 'data' filesep 'evoked_data_' monk '.mat']);     
     else
-        tmp     = load([conf.res_folder 'data' filesep 'evoked_data_' char(monk) '.mat']);     
+        tmp     = load([conf.res_folder 'data' filesep 'evoked_data_' monk '.mat']);     
         resps   = [resps tmp.resps]; %#ok<AGROW>
-
-        tmp     = load([conf.res_folder 'data' filesep 'nat_mov_res_' char(monk) '.mat']);        
-        nat_mov_res.(char(monk)) = tmp.nat_mov_res;
     end
 end
 
@@ -48,13 +47,14 @@ for m = conf.monks
     monk = char(m);
     
     idx         = strcmp(monk, {resps.monk});
-    responses   = vertcat(resps(idx).response);
+    larger      = idx & [resps.field] > 0;
+    responses   = vertcat(resps(larger).response);
 
     proj_res = project(responses, nat_mov_res.(monk).synall_pro, conf.n_boot, conf.noise);
     
     h = plot_proj(proj_res);
     
-    saveas(h, [conf.out 'projection' filesep 'projection_' monk '.' conf.image_format]);
+    saveas(h, [conf.out 'projection' filesep 'projection_larger0_' monk '.' conf.image_format]);
     close(h);
         
 
