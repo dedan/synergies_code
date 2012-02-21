@@ -119,11 +119,13 @@ for j = 1:length(u)
         tmp.channel.signal  = data.channel(i).signal(indx,:);
         tmp.channel.hand_position = data.channel(i).hand_position(indx);
         
-        pd = get_pd( tmp);
+        [pd, x, y] = get_pd( tmp);
         p1 = sig_dir_emg(tmp.channel, config);
         p2 = anova1(tmp.channel.amp, tmp.channel.dir,'off');
         
         data.pd(j,i)     = pd;
+        data.tuning_x    = x;
+        data.tuning_y{j,i}    = y;
         data.p1(j,i)     = p1;
         data.p2(j,i)     = p2;
     end
@@ -211,7 +213,7 @@ for j=1:length(vrs),
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function pd = get_pd(data )
+function [pd, x, y] = get_pd(data )
 
 u = unique(data.channel.dir);
 x = NaN(1,length(u));

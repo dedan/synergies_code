@@ -2,7 +2,8 @@
 This folder contains all the files which are used to do preprocessing, to make the data available for analysis. 
 
 preprocessing of nonevoked data (synergies during normal movement)
-    runscript4emgdat
+    runscript4emgdat(path, monkeys)
+    saves the results to path/monkey/EMGdat
     
 preprocessing of evoked data (synergies during stimulation)
     runscript4evoked
