@@ -68,14 +68,7 @@ clear tmp stats i
 % First lets get some statistics on the Data we have available
 
 for i = 1:length(sessions)
-    sessions(i).target1     = size(sessions(i).mats(1).data,1); 
     sessions(i).n_channels  = length(find(sessions(i).channels)); 
-    
-    if length(sessions(i).mats) == 2
-        sessions(i).target2    = size(sessions(i).mats(2).data,1); 
-    else
-        sessions(i).target2    = -1; 
-    end
 end
 
 h = figure('Visible', 'off');
@@ -85,17 +78,6 @@ for i = 1:conf.n_monks
     idx.(conf.names{i})    = strcmp(conf.names{i}, {sessions.monk});
     
     disp([conf.names{i} ': ' num2str(length(find(idx.(conf.names{i})))) ' sessions' ]);
-
-    % distribution of targets
-    subplot(4,conf.n_monks,i);
-    [y x] = hist([sessions(idx.(conf.names{i})).target1],-1:8);
-    bar(x,y,'r');
-    hold on
-    [y x] = hist([sessions(idx.(conf.names{i})).target2],-1:8);
-    bar(x+0.2,y,'b');
-    hold off
-    title(conf.names{i});
-    xlabel('targets');
 
     % distribution of used channels
     subplot(4, conf.n_monks, conf.n_monks +i);
@@ -148,7 +130,6 @@ for i = 1:conf.n_monks
     idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & out < conf.n_pd_unstable;
 end
 clear data all_mean all_std i inds j monk out 
-
 
 
 %% only use channels which are available for all sessions of a monk

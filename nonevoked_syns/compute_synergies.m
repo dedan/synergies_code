@@ -49,6 +49,7 @@ disp('finished');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% estimate the baseline of the matching scores
 function stats = estimate_baseline(sessions, conf)
 
 m_scores = NaN(length(sessions), conf.n_baseline);
@@ -169,7 +170,7 @@ for i= 1:length(fdat)
         
         
         % warn if there are still NaNs in the data
-        if any(isnan(mats(j).data(:))) || any(isnan(mats(j).data_raw(:)))
+        if any(isnan(mats(j).data_raw(:)))
             disp(['nan problem in: ' fdat(i).name]);
             mats(j).data_raw(isnan(mats(j).data_raw)) = 0;
         end
@@ -204,22 +205,6 @@ for i= 1:length(fdat)
         % explained variance tests
         for j = 1:positions
             c2take  = logical(res(rc).channels);
-            [r s]   = test_resid_nmf( mats(j).data(:,c2take), config);
-            res(rc).(['r_nmf' config.modi{j}])(1:length(r))    = r;
-            res(rc).(['std_nmf' config.modi{j}])(1:length(s))  = s;
-            
-            r       = test_resid_pcaica( mats(j).data(:,c2take), config);
-            res(rc).(['r_pca' config.modi{j}])(1:length(r))    = r;
-            
-            %repeat for shuffled data as only one random shuffling might not be representative
-            tmp = zeros(config.Niter_res_test, min(size(mats(j).data(:,c2take))));
-            for k = 1:config.Niter_res_test
-                tmp(k,:) = test_resid_nmf(shuffle_inc(mats(j).data(:,c2take)), config);
-            end
-            m = mean(tmp);
-            res(rc).(['r_nmf_s' config.modi{j}])(1:length(m))  = m;
-            
-            % and the same for the raw version
             [r s]   = test_resid_nmf( mats(j).data_raw(:,c2take), config);
             res(rc).(['r_nmf_raw' config.modi{j}])(1:length(r))    = r;
             res(rc).(['std_nmf_raw' config.modi{j}])(1:length(s))  = s;
