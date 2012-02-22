@@ -3,6 +3,7 @@
 inpath  = '~/projects/yifat_paper/results/data/';
 outpath = '~/projects/yifat_paper/results/tuning/';
 names   = {'vega', 'darma', 'chalva'};
+dimensions = 3
 
 selection.chalva = 2:15;
 selection.vega   = 60:80;
@@ -18,6 +19,33 @@ disp('');
 disp([num2str(length(channels_in_common)) ' channels in common for all monkeys']);
 disp('all channels ever recorded')
 disp(all_channels)
+
+cic = channels_in_common
+f = figure('Visible', 'off')
+figure(1)
+for d = 1:dimensions
+
+    for cur_monk = 1:length(names)
+
+        subplot(3, dimensions, (cur_monk-1)*dimensions + d)
+        load([inpath 'nat_mov_res_' names{cur_monk}]);
+
+        chan = {channels.(names{cur_monk}).name{nat_mov_res.c2take}};
+        cum = zeros(3, length(cic));
+
+        for chan_num = 1:length(cic)
+
+            idx = strmatch(cic{chan_num}, chan);
+            for i = 1:length(idx)
+                cum(i, chan_num) = nat_mov_res.synnmf_pro(d, idx(i));
+            end
+        end
+        bar(cum')
+        title(['synergy #: ' int2str(d) ' - ' names{cur_monk}])
+        % set(gca,'XTickLabel', char(cic));
+    end
+end
+saveas(f, [outpath 'syn_comparison.png'])
 
 
 % to be sure that the tuning curves are actually consistend of sessions, we
