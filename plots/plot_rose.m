@@ -6,14 +6,21 @@ if size(syns, 1) ~= 3
     return;
 end
 
-
 figure(h);
 
 for j = 1:3
-    
+
     subplot(2,2,j);
-    [~, id] = sort(pds);
-    polar(pds(id), syns(j,:))
+    rose_agg = [];
+
+    for k = 1:size(syns,2)
+        rose_agg = [rose_agg ones(1, floor(syns(j,k) * 100)) * pds(k)]; %#ok<AGROW>
+    end
+
+    h_fake = rose(ones(1,100));
+    hold on;
+    rose(rose_agg,30);
+    set(h_fake, 'Visible', 'Off');
     title(['# ' num2str(j)]);
 end
 
