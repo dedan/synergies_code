@@ -20,9 +20,8 @@ disp([num2str(length(channels_in_common)) ' channels in common for all monkeys']
 disp('all channels ever recorded')
 disp(all_channels)
 
-cic = channels_in_common
-f = figure('Visible', 'off')
-figure(1)
+cic = channels_in_common;
+f = figure('Visible', 'off');
 for d = 1:dimensions
 
     for cur_monk = 1:length(names)
@@ -42,10 +41,39 @@ for d = 1:dimensions
         end
         bar(cum')
         title(['synergy #: ' int2str(d) ' - ' names{cur_monk}])
-        % set(gca,'XTickLabel', char(cic));
+        set(gca,'XTickLabel', char(cic));
     end
 end
 saveas(f, [outpath 'syn_comparison.png'])
+
+
+%% synergies in PD space
+
+for cur_monk = 1:length(names)
+
+    load([inpath 'all_data_' names{cur_monk}]);
+    load([inpath 'nat_mov_res_' names{cur_monk}]);
+
+    % roseplot
+    f = figure('Visible', 'off');
+    syn      = nat_mov_res.synnmf_pro;
+    pds      = nat_mov_res.pds_all(1,:);
+
+    ch_types = channels.(names{cur_monk}).type(nat_mov_res.c2take);
+    plot_rose(f, syn, pds, ch_types);
+    saveas(f, [outpath  'syn_rose_pro_' names{cur_monk} '.png']);
+    close(f);
+
+    if max([sessions.hands] >1)
+        f = figure('Visible', 'off');
+        syn      = nat_mov_res.synnmf_sup;
+        pds      = nat_mov_res.pds_all(2,:);
+
+        plot_rose(f, syn, pds, ch_types);
+        saveas(f, [outpath  'syn_rose_sup_' names{cur_monk} '.png']);
+        close(f);
+    end
+end
 
 
 % to be sure that the tuning curves are actually consistend of sessions, we
@@ -85,7 +113,7 @@ for cur_monk = 1:length(names)
 
     load([inpath 'all_data_' names{cur_monk}]);
     c2take   = all(vertcat(sessions.channels));
-    chan_names = channels.(names{cur_monk}).name
+    chan_names = channels.(names{cur_monk}).name;
 
     mean_pds = circ_mean(vertcat(sessions.pd));
     for c = find(c2take)

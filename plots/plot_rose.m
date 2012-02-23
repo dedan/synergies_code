@@ -1,4 +1,4 @@
-function plot_rose(h, syns, pds)
+function plot_rose(f, syns, pds, types)
 
 
 if size(syns, 1) ~= 3
@@ -6,20 +6,24 @@ if size(syns, 1) ~= 3
     return;
 end
 
-figure(h);
+colors = ['r' 'g' 'b'];
 
 for j = 1:3
 
     subplot(2,2,j);
-    rose_agg = [];
-
-    for k = 1:size(syns,2)
-        rose_agg = [rose_agg ones(1, floor(syns(j,k) * 100)) * pds(k)]; %#ok<AGROW>
-    end
-
     h_fake = rose(ones(1,100));
     hold on;
-    rose(rose_agg,30);
+
+    for t = 1:3 	% different muscle types
+        rose_agg = [];
+	    for k = find(types == t)
+	        rose_agg = [rose_agg ones(1, floor(syns(j,k) * 100)) * pds(k)]; %#ok<AGROW>
+	    end
+        h = rose(rose_agg, 30);
+        x = get(h, 'XData');
+        y = get(h, 'YData');
+        p = patch(x, y, colors(t));
+	end
     set(h_fake, 'Visible', 'Off');
     title(['# ' num2str(j)]);
 end
