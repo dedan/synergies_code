@@ -3,7 +3,7 @@
 % residual tests. Once this is run, the files which are created can be used
 % for further analysis
 
-% call this function for example with: 
+% call this function for example with:
 % compute_synergies('/Volumes/LAB/', '~/Documents/uni/yifat_lab/results/data/', {'chalva'})
 
 function compute_synergies(data_path, outpath, monks)
@@ -32,12 +32,12 @@ for monk = monks
     config.monk             = char(monk);
     config.emgdat_path      = [data_path config.monk filesep 'EMGdat' filesep];
 
-    tmp_sess = nonevoked_sessions(config); 
-    
+    tmp_sess = nonevoked_sessions(config);
+
     disp('computing synergies..');
-    sessions = comp_syns(tmp_sess, config);  
-    
-    disp('estimate matching baselines..');    
+    sessions = comp_syns(tmp_sess, config);
+
+    disp('estimate matching baselines..');
     stats    = estimate_baseline(sessions, config); %#ok<NASGU>
     save([outpath 'all_data_' char(monk)], 'sessions', 'stats');
 end
@@ -58,10 +58,10 @@ h_scores = NaN(length(sessions), conf.n_baseline);
 c2take   = all(vertcat(sessions.channels));
 
 for i = 1:length(sessions)
-    
+
     data    = sessions(i).mats(1).data_raw(:,c2take);
     hands   = 1;
-    
+
     % if both handpositions available
     if sessions(i).hands > 1 && size(sessions(i).mats(2).data_raw, 1) > 10
         pro     = sessions(i).mats(1).data_raw(:,c2take);
@@ -69,7 +69,7 @@ for i = 1:length(sessions)
         data    = vertcat(data, sup);         %#ok<AGROW>
         hands   = 2;
     end
-    
+
     % bootstrap loop
     for j = 1:conf.n_baseline
         r_data          = shuffle_inc(data);
@@ -77,7 +77,7 @@ for i = 1:length(sessions)
         pca             = pcaica(r_data, conf.dim)';
         [~, ~, scores]  = match_syns(nmf.syns, pca, 1);
         m_scores(i,j)   = mean(scores);
-        
+
         if hands == 2
             r_pro           = shuffle_inc(pro);
             r_sup           = shuffle_inc(sup);
@@ -102,7 +102,7 @@ function sessions = comp_syns(sessions, conf)
 c2take = all(vertcat(sessions.channels));
 
 for i = 1:length(sessions)
-    
+
     disp(['session ' num2str(i)]);
 
     data    = sessions(i).mats(1).data_raw(:,c2take);
@@ -110,7 +110,7 @@ for i = 1:length(sessions)
     sessions(i).nmf_pro     = nmf_res.syns;
     sessions(i).nmf_pro_std = nmf_res.std;
     sessions(i).pca_pro     = pcaica(data, conf.dim)';
-    
+
     if sessions(i).hands > 1 && size(sessions(i).mats(2).data_raw, 1) > 10
         data    = sessions(i).mats(2).data_raw(:,c2take);
         nmf_res = nmf_explore(data, conf);
@@ -121,7 +121,7 @@ for i = 1:length(sessions)
         sessions(i).hands       = 1;
         sessions(i).nmf_sup     = [];
         sessions(i).nmf_sup_std	= [];
-        sessions(i).pca_sup     = [];        
+        sessions(i).pca_sup     = [];
     end
 end
 
@@ -141,11 +141,11 @@ rc    = 1;      % result counter
 
 % iterate over all the EMG files
 for i= 1:length(fdat)
-    
+
     data = load([config.emgdat_path char(fdat(i).name)]);
     display(['processing file: ' num2str(i) ' of ' num2str(length(fdat))]);
     mats = struct;
-    
+
     % for pronation and supination (middle position skipped because only
     % available for a few sessions
     positions = length(data.chdata);
@@ -154,32 +154,32 @@ for i= 1:length(fdat)
     end
     for j=1:positions
         mats(j).data_raw = [];
-        
+
         % for all trials
         for k=1:length(data.chdata(j).amp)
             tmp_amp           = data.chdata(j).amp{k};
             tmp_bck           = data.chdata(j).bck_amp{k};
-            
+
             % normalized by division with acitivity before TO
             mats(j).data_raw  = [mats(j).data_raw; tmp_amp' ./ tmp_bck'];
         end
-        
+
         % remove NaNs from the channels which are not used anyway
         e2take = logical(data.chdata(1).channels);
         mats(j).data_raw(:,~e2take) = 0;
-        
-        
+
+
         % warn if there are still NaNs in the data
         if any(isnan(mats(j).data_raw(:)))
             disp(['nan problem in: ' fdat(i).name]);
             mats(j).data_raw(isnan(mats(j).data_raw)) = 0;
         end
     end
-    
+
     if isempty(mats(1).data_raw)
         disp(['problem with: ' fdat(i).name]);
     else
-        
+
         % put in struct what we got so far
         res(rc).mats     = mats;
         res(rc).name     = char(fdat(i).name);
@@ -193,7 +193,7 @@ for i= 1:length(fdat)
         res(rc).p1       = vertcat(data.chdata.p1);
         res(rc).p2       = vertcat(data.chdata.p2);
         res(rc).trials   = data.chdata.trials;
-        
+
         % initialize test results (to make them all same length)
         vars = {'r_nmf', 'std_nmf', 'r_pca', 'r_nmf_s', ...
             'r_nmf_raw', 'std_nmf_raw', 'r_pca_raw', 'r_nmf_s_raw'};
@@ -202,18 +202,18 @@ for i= 1:length(fdat)
                 res(rc).([vars{k} config.modi{l}]) = zeros(1,config.max_channels);
             end
         end
-        
-        
+
+
         % explained variance tests
         for j = 1:positions
             c2take  = logical(res(rc).channels);
             [r s]   = test_resid_nmf( mats(j).data_raw(:,c2take), config);
             res(rc).(['r_nmf_raw' config.modi{j}])(1:length(r))    = r;
             res(rc).(['std_nmf_raw' config.modi{j}])(1:length(s))  = s;
-            
+
             r       = test_resid_pcaica( mats(j).data_raw(:,c2take), config);
             res(rc).(['r_pca_raw' config.modi{j}])(1:length(r))    = r;
-            
+
             %repeat for shuffled data as only one random shuffling might not be representative
             tmp = zeros(config.Niter_res_test, min(size(mats(j).data_raw(:,c2take))));
             for k = 1:config.Niter_res_test
@@ -221,7 +221,7 @@ for i= 1:length(fdat)
             end
             m = mean(tmp);
             res(rc).(['r_nmf_s_raw' config.modi{j}])(1:length(m))  = m;
-            
+
         end
         if positions == 1
             res(rc).('r_nmf_sup')        = 0;

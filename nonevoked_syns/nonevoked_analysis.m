@@ -214,46 +214,16 @@ for i = 1:conf.n_monks
             hold on
         end
         axis off
-        title(['channel ' num2str(c2take_idx(k))]);
+        title_string = [' std pro: ' sprintf('%.2f', res.(conf.names{i}).cstd_all(1,k))];
+        if max_hands > 1
+            title_string = [title_string ' std sup: ' sprintf('%.2f', res.(conf.names{i}).cstd_all(2,k))];
+        end
+        title(['ch: ' num2str(c2take_idx(k)) title_string]);
     end
 
     saveas(h, [conf.outpath  'pd_consist_feather_' conf.names{i} '.' conf.image_format]);
     close(h);
 end
-
-
-
-%% stability of prefered directions (over sessions) (scatter)
-for i = 1:conf.n_monks
-
-    h = figure('Visible', 'off');
-    max_hands   = max([sessions(idx.(conf.names{i})).hands]);
-    ses2take    = idx.(conf.names{i}) & [sessions.hands] == max_hands;
-    c2take_idx  = find(res.(conf.names{i}).c2take);
-
-    for j = 1:max_hands
-        subplot(max_hands,1,j)
-        inds = find(ses2take);
-        for k = 1:length(inds)
-            col = [k k k]/length(inds);
-            in_deg = rad2deg(sessions(inds(k)).pd(j,c2take_idx));
-            in_deg(in_deg < 0) = 360 + in_deg(in_deg < 0);
-            plot(c2take_idx, in_deg, '^','MarkerSize',10, 'MarkerFaceColor', col);
-            set(gca,'XTickLabel',arrayfun(@(x) sprintf('%.2f',x), ...
-                res.(conf.names{i}).cstd_all(j,:), 'UniformOutput', false))
-            set(gca,'XTick', c2take_idx);
-            hold on
-        end
-        grid
-        xlabel('circular stds');
-        ylabel('pds (deg)');
-        hold off
-    end
-    saveas(h, [conf.outpath  'pd_consist_' conf.names{i} '.' conf.image_format]);
-    close(h);
-
-end
-
 
 clear x y all_pd all_p1 all_p2 c2take_idx n_hands monk_first col in_deg inds id_pro
 clear id_sup bla h i j k max_hands n2take n_feather ses2take sig sigs tmp tmp1
@@ -395,7 +365,6 @@ clear data h i
 
 %% for vega and darma (where both handpositions are available) is there a difference
 % in the residual?
-
 for i= 1:conf.n_monks
 
     if max([sessions(idx.(conf.names{i})).hands] >1)
@@ -424,32 +393,9 @@ for i= 1:conf.n_monks
 
         saveas(h, [conf.outpath  'rank1_handpos_' conf.names{i} '.' conf.image_format]);
         close(h);
-
-        figure('Visible', 'off');
-        subplot 221
-        hist(pro(:,1), 1:100)
-        title('pronation rank 1');
-
-        subplot 222
-        hist(pro(:,2), 1:100)
-        title('pronation rank 2');
-
-        subplot 223
-        hist(sup(:,1), 1:100)
-        title('supination rank 1');
-
-        subplot 224
-        hist(sup(:,2), 1:100)
-        title('supination rank 2');
-
-
-        saveas(h, [conf.outpath  'rank1_dist_' conf.names{i} '.' conf.image_format]);
-        close(h);
     end
 end
 clear x index n_index pro sup h i
-
-
 
 
 %% synergy computation stuff
