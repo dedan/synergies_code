@@ -289,7 +289,7 @@ close(h);
 % we sort out sessions where the rank1 model already has an remaining error
 % lower then 25 %
 disp(' ')
-disp('rank1 filtering');
+disp(['rank1 filtering with: ' num2str(conf.significant) ' %']);
 for i = 1:conf.n_monks
     n_sort_out = length(find(rank1(1,idx.(conf.names{i})) < conf.significant));
     disp([conf.names{i} ' - sorting out: ' num2str(n_sort_out) ' sessions']);
@@ -332,34 +332,6 @@ plot(x, ones(1,length(x)) * 15, '--k');
 hold off
 saveas(h, [conf.outpath  'resid_test.' conf.image_format]);
 close(h);
-
-% std of residual values for different model orders, averaged over all the
-% sessions. This plot serves to see for which dimensionality reduction the
-% nmf is stable
-h = figure('Visible', 'off');
-plot(mean(vertcat(sessions.std_nmf_raw_pro)))
-title('std of resid values for different model orders');
-saveas(h, [conf.outpath  'resid_test_std.' conf.image_format]);
-close(h);
-
-clear x y data map modi colors h j
-
-
-
-%% what is the remaining error for rank 3 model?
-for i = 1:conf.n_monks
-    data = vertcat(sessions(idx.(conf.names{i})).r_nmf_raw_pro);
-    h = figure('Visible', 'off');
-    hist(data(:,conf.dim),50);
-    title(['dist of rank ' num2str(conf.dim) ' resid values -- mean ' ...
-        num2str(mean(data(:, conf.dim)))]);
-    saveas(h, [conf.outpath  'resid_dist_' conf.names{i} '.' conf.image_format]);
-    close(h);
-    disp('');
-    disp(['mean of rank ' num2str(conf.dim) ' resid values: '  ...
-        num2str(mean(data(:,conf.dim)))]);
-end
-clear data h i
 
 
 
