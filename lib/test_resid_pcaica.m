@@ -15,4 +15,4 @@ for i=1:min(size(matin))
    dif = matin - ones(lm,1)*m - (w(:,1:i)*h(:,1:i)')';
    v(i) = sum(sum(dif.^2));
 end
-v = (1 - (v/SS)) * 100;
+v = (v/SS) * 100;
