@@ -5,28 +5,29 @@
 
 % only channels which are available for all sessions of a monkey are used
 
-path = '~/Documents/uni/yifat_lab/results/natural_mov/';
+names = {'chalva', 'vega', 'darma'};
+path = '~/projects/yifat_paper/results/';
+n = 5
 
-load([path 'all_data_dummy']);
+for n = 1:length(names)
 
-
-
-for i = 1:length(sessions)
-    
-    disp(['(' num2str(i) ')session id: ' num2str(sessions(i).id) ' - monk: ' sessions(i).monk]);
-    
-    idx         = strmatch(sessions(i).monk, {sessions.monk});
-    all_chan    = vertcat(sessions(idx).channels);
+    f = figure('Visible', 'off')
+    load([path 'data/all_data_' names{n} ]);
+    all_chan    = vertcat(sessions.channels);
     c2take      = all(all_chan);
-    
-    subplot 211
-    imagesc(sessions(i).mats(1).data(:,c2take));
-    title('averaged over trials (per target)');
-    
-    subplot 212
-    imagesc(sessions(i).mats(1).data_raw(:,c2take));
-    title('without averaging');
 
-    pause;
+    for i = 1:5
+        subplot(2, 5, i);
+        imagesc(sessions(i).mats(1).data_raw(:,c2take));
+        axis off
+
+        subplot(2, 5, 5  + i);
+        dat = sessions(i).mats(1).data_raw(:,c2take);
+        imagesc(dat ./ repmat(std(dat), size(dat, 1), 1));
+        axis off
+        title(num2str(sessions(i).id));
+
+    end
+    saveas(f, [path 'validation/data_raw_' names{n} '.png'])
+    close(f)
 end
-
