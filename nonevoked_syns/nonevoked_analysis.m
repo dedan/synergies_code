@@ -501,6 +501,18 @@ for i = 1:conf.n_monks
 end
 
 
+% plot the synergies
+for i = 1:conf.n_monks
+    f = figure('Visible', 'off');
+    for j = 1:conf.dim
+        h = subplot(conf.dim, 1, j);
+        plot_syn(h, res.(conf.names{i}).synnmf_pro(j, :), ...
+                channels.(conf.names{i}).name(res.(conf.names{i}).c2take))
+    end
+    saveas(f, [conf.outpath  'nmf_synergies_' conf.names{i} '.' conf.image_format]);
+    close(f);
+end
+
 % stds of clustering
 h = figure('Visible', 'off');
 
