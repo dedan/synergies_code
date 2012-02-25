@@ -17,6 +17,6 @@ for i=1:min(size(matin))
     end
 end
 var_res = std(v);
-v = (min(v)/SS) * 100;
+v = (1 - (min(v)/SS)) * 100;
 
 warning on stats:nnmf:LowRank

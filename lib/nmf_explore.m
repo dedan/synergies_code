@@ -3,7 +3,7 @@ function result = nmf_explore(dat, conf)
 result = struct;
 col    = struct;
 
-centered = matin - repmat(mean(matin), size(matin, 1), 1);
+centered = dat - repmat(mean(dat), size(dat, 1), 1);
 SS = sum(sum(centered.^2));
 
 for j = 1:conf.Niter_exploration;
