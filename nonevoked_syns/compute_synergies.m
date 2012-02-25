@@ -134,10 +134,34 @@ function res = nonevoked_sessions(config)
 % these are later on used to find out only the interesting sessions (not
 % already explainable by rank1)
 
+n_targets = 8;
 res  = struct;
 
 fdat  = dir([config.emgdat_path 'EMG' config.monk(1) '*.mat']);
 rc    = 1;      % result counter
+
+% compute std of a channel over all sessions for normalization
+cum = [];
+for i= 1:length(fdat)
+
+    data = load([config.emgdat_path char(fdat(i).name)]);
+
+    % skip session in which not all targets were used
+    if length(data.chdata(1).amp) < n_targets
+        continue
+    end
+
+    for j = 1:8
+        tmp_amp = data.chdata(1).amp{j}';
+        tmp_bck = data.chdata(1).bck_amp{j}';
+        cum     = [cum; tmp_amp ./ tmp_bck];
+    end
+end
+
+cum(isnan(cum)) = 0;
+channel_stds = std(cum);
+
+
 
 % iterate over all the EMG files
 for i= 1:length(fdat)
@@ -164,10 +188,13 @@ for i= 1:length(fdat)
             mats(j).data_raw  = [mats(j).data_raw; tmp_amp' ./ tmp_bck'];
         end
 
+        % normalize the raw data
+        mats(j).data_raw = mats(j).data_raw ./ repmat(channel_stds, size(mats(j).data_raw, 1), 1);
+
+
         % remove NaNs from the channels which are not used anyway
         e2take = logical(data.chdata(1).channels);
         mats(j).data_raw(:,~e2take) = 0;
-
 
         % warn if there are still NaNs in the data
         if any(isnan(mats(j).data_raw(:)))
