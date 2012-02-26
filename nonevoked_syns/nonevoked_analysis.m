@@ -43,7 +43,7 @@ diary([conf.outpath 'log.txt']);
 clear mymap
 
 res = struct;
-
+load(['data' filesep 'channels.mat'])
 
 %% load data
 sessions = struct([]);
@@ -58,8 +58,6 @@ for i = 1:conf.n_monks
     end
 end
 
-addpath('../lib');
-addpath('../plots');
 clear tmp stats i
 
 
@@ -250,7 +248,6 @@ h = figure('Visible', 'off');
 
 % plot the rank1 values for pca and nmf and the line at the value at which
 % sessions are chosen as significant
-subplot(2,2,1:2);
 plot(rank1([1 3],:)','.');
 hold on;
 plot(ones(1,size(rank1, 2)) * conf.significant);
@@ -266,20 +263,16 @@ set(gca,'XTickLabel',[])
 xlabel('sessions');
 ylabel('reconstruction error for rank1 model');
 
-% also calculate the correlation of the two rank1 values
-subplot(2,2,3)
+% correlations between different rank1 values
 all_nmf = rank1([1 3],:);
 all_pca = rank1([2 4],:);
 [r p] = corrcoef(all_nmf(:), all_pca(:));
-plot(all_nmf(:), all_pca(:), '.');
-title(['nmf vs. pcaica, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
-
-subplot(2,2,4)
 all_pro = rank1(1:2, rank1(4,:) > 0);
 all_sup = rank1(3:4, rank1(4,:) > 0);
 [r p] = corrcoef(all_pro(:), all_sup(:));
-plot(all_pro(:), all_sup(:), '.');
-title(['pro vs. sup, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
+disp(sprintf('\n%s\n', 'correlation of rank1 values: '));
+disp(['nmf vs. pcaica, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
+disp(['pro vs. sup, r: ' num2str(r(1,2)) ' - p: ' num2str(p(1,2))]);
 
 saveas(h, [conf.outpath  'rank1.' conf.image_format]);
 close(h);
