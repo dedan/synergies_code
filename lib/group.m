@@ -16,6 +16,7 @@ flat        = [];
 
 for i = 1:length(data_orig)
    data(i).dat             = normr(data_orig(i).(fieldname));     %#ok<AGROW>
+   data(i).data(isnan(data(i).dat)) = 0;
    flat                    = [flat; data(i).dat]; %#ok<AGROW>
    add_info(i).not_taken   = true(1,group_size);
 end
