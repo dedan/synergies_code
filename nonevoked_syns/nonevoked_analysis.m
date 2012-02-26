@@ -469,7 +469,7 @@ for i = 1:conf.n_monks
     title('centers (pca)');
 
     p_pos = {[3 7], [11 15], [19 23]};
-    for j = 1:size(res.(monk).synnmf_pro,1)
+    for j = 1:3
         subplot(6,4,p_pos{j})
         bar( [res.(monk).synpca_pro(j,:)' res.(monk).synnmf_pro(j,:)']);
         axis off
@@ -479,7 +479,7 @@ for i = 1:conf.n_monks
     title('pca vs. means');
 
     p_pos = {[4 8], [12 16], [20 24]};
-    for j = 1:size(res.(monk).synpca_pro,1)
+    for j = 1:3
         subplot(6,4,p_pos{j})
         bar( [res.(monk).synpca_pro(j,:)' res.(monk).synall_pro(j,:)']);
         axis off
@@ -552,15 +552,11 @@ for i= 1:conf.n_monks
         end
 
         for j = 1:size(pro_syns,1)
-            subplot(4,1,j)
+            subplot(conf.dim, 1, j)
             bar( [pro_syns(j,:)' sup_syns(j,:)']);
             axis off
             title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
         end
-        subplot(4,1,4)
-        plot(pro_syns(:), sup_syns(:), '.');
-        [r, p] = corrcoef(pro_syns(:), sup_syns(:));
-        title(['r: ' num2str(r(2,1)) ' -- p: ' num2str(p(2,1))]);
         saveas(h, [conf.outpath  'post_consist_' conf.names{i} '.' conf.image_format]);
     end
 end
