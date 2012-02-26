@@ -1,16 +1,10 @@
 function plot_rose(f, syns, pds, types)
 
-
-if size(syns, 1) ~= 3
-    warning('dedan:dim', 'this function is for 3d synergies');
-    return;
-end
-
 colors = ['r' 'g' 'b'];
 
-for j = 1:3
+for j = 1:size(syns, 1)
 
-    subplot(2,2,j);
+    subplot(3,2,j);
     h_fake = rose(ones(1,100));
     hold on;
 
@@ -28,7 +22,7 @@ for j = 1:3
     title(['# ' num2str(j)]);
 end
 
-subplot(2,2,4)
+subplot(3,2,5)
 for t = 1:3
     k = find(types == t);
     h = rose(pds(1, k), 180);
