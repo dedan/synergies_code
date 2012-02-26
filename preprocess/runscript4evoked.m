@@ -4,9 +4,6 @@
 
 function runscript4evoked(path, monks, conf)
 
-addpath('../lib');
-
-
 if nargin == 2
     disp('no config struct given, standard values used');
     disp('');
@@ -14,7 +11,7 @@ if nargin == 2
     conf.stim_value     = [];      % take all stimulation values.
     conf.window         = [-20 20]; % start and end of average window
     conf.int_window     = [6 20];   % integrate window only in this part (final response)
-    conf.inflag         = true;
+    conf.inflag         = false;
     conf.errflag        = true;
     conf.channels       = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
     disp(conf)

@@ -63,8 +63,6 @@ for dati = 1:length(filtered_data)
 
     if length(StimTime_agg) > 1
 
-        disp('take this session');
-
         % get hand information from ed file
         ed_name = [config.monk(1) sprintf('%02d', dat.id) sprintf('%02d', dat.subsession) ...
                     'ee.1.mat'];
@@ -105,6 +103,8 @@ for dati = 1:length(filtered_data)
         end
 
         j = j+1;
+    else
+        disp('session skipped');
     end
 end
 

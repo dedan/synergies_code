@@ -1,8 +1,4 @@
 
-%% add path
-addpath(genpath('../lib')); %#ok<MCAP>
-addpath(genpath('../preprocess')); %#ok<MCAP>
-
 
 %% set confuration
 
@@ -24,7 +20,7 @@ conf.image_format             = 'pdf';    % format of output images
 
 
 % emg channels
-conf.channels            = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44]; 
+conf.channels            = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
 
 % response
 conf.stim_value          = 150;           % look only at stimulations around this value
@@ -43,13 +39,13 @@ conf.n_cluster = 3;
 conf.norm       = true;
 
 % files and folders
-conf.result_folder       = '~/Documents/uni/yifat_lab/results/';
-conf.inpath              = '/Volumes/LAB/results/';
+conf.result_folder       = '~/projects/yifat_paper/results/';
+conf.inpath              = '~/projects/yifat_paper/results/';
 conf.cur_res_fold        = [conf.result_folder 'evoked_syns' filesep];
 mkdir(conf.cur_res_fold)
 
 
-% sort sessions according to the handsorted flags 
+% sort sessions according to the handsorted flags
 % (see also ../data_validation/sort_sessions)
 conf.handsorted          = '';
 
@@ -60,7 +56,7 @@ conf.handsorted          = '';
 
 resps = struct([]);
 for monk = conf.monks
-    
+
     disp(['loading data for: ' char(monk)]);
     if conf.skip_window_computation
         disp('skip window calculation, take data from previous session..');
@@ -68,7 +64,7 @@ for monk = conf.monks
         disp('calculate responses .. ');
         runscript4evoked('/Volumes/LAB/', monk)
     end
-    
+
     if isempty(resps)
         load([conf.inpath 'data' filesep 'evoked_data_' char(monk)]);
     else
@@ -88,16 +84,16 @@ h1 = figure('Visible','off');
 h2 = figure('Visible','off');
 for m = 1:length(conf.monks)
     monk = char(conf.monks(m));
-    
+
     % get the indeces of subsessions
     idx.(monk) = strcmp(monk, {resps.monk});
     disp(' ');
     disp([monk ' -- number of sessions: ' num2str(length(find(idx.(monk))))]);
 
-    
+
     % sort out the sessions which contain artefacts
     load([conf.inpath 'data' filesep conf.handsorted 'sort_' monk]);
-    
+
     % wow, what a line. I do this weird indexing to make it the same length
     % as flags
     idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & (flags ~= 2);
@@ -116,10 +112,10 @@ for m = 1:length(conf.monks)
     % sort out the sessions with fieldsize 0
     disp(['sorted out ' int2str(length(find([resps(idx.(monk)).field] == 0))) ...
         ' subsessions because of fieldsize was 0']);
-    
+
     disp(['0-field to non-0-field ratio: ' ...
         num2str( length(find([resps(idx.(monk)).field] == 0)) / length(find(idx.(monk))))]);
-    
+
     % same indexing magic as above
     idx.(monk)(idx.(monk)) = idx.(monk)(idx.(monk)) & [resps(idx.(monk)).field] ~= 0;
 
@@ -131,12 +127,12 @@ for m = 1:length(conf.monks)
     subplot(length(conf.monks), 1, m)
     hist(amps);
     title(monk);
-    
+
 
     % sort the resulting vectors according to the hand position of the subsession
     idx.pro = ([resps.hand] == 1);
     idx.sup = ([resps.hand] == 2);
-    
+
     if conf.norm
         res.(monk).pro.flat = normr(vertcat(resps(idx.(monk) & idx.pro).response));
         if ~isempty(vertcat(resps(idx.(monk) & idx.sup).response))
@@ -153,10 +149,10 @@ for m = 1:length(conf.monks)
         end
     end
     res.(monk).all.flat = vertcat(res.(monk).pro.flat, res.(monk).sup.flat);
-    
+
     disp(['pronation - number of recordings: ' num2str(length(find(idx.(monk) & idx.pro)))]);
     disp(['supination - number of recordings: ' num2str(length(find(idx.(monk) & idx.sup)))]);
-    
+
 end
 
 saveas(h1, [conf.cur_res_fold  'resp_fields.' conf.image_format]);
@@ -180,8 +176,8 @@ colors           = {'r', 'g', 'b', 'y'};
 %% for chalva
 monk    = 'chalva';
 h       = figure('Visible','off');
-dat     = res.(monk).pro.flat;        
-                
+dat     = res.(monk).pro.flat;
+
 subplot(3, 3, 1)
 [cluster_idx c]         = kmeans(dat, conf.n_cluster, 'replicates', 100);
 res.(monk).pro.center   = c;
@@ -194,12 +190,12 @@ subplot(3, 3, 2);
 imagesc(dat(id,:));
 title([monk ' clustered']);
 axis off;
-        
+
 % project responses on principal components
 [~, loadings] = princomp(dat);
 subplot(3, 3, 3)
 for j = 1:conf.n_cluster
-    
+
     id = (cluster_idx == j);
     plot(loadings(id,1), loadings(id,2), ['.' colors{j}]);
     hold on
@@ -237,9 +233,9 @@ clear c cluster_idx dat h id j loadings monk resid sumd
 monk    = 'vega';
 modi    = {'pro', 'sup', 'all'};
 conf.n_cluster = 3;
-h       = figure('Visible','off'); 
+h       = figure('Visible','off');
 for i = 1:length(modi)
-        
+
     dat                         = res.(monk).(modi{i}).flat;
     [cluster_idx c]             = kmeans(dat, conf.n_cluster, 'replicates', 100);
     res.(monk).(modi{i}).center = c;
@@ -272,9 +268,9 @@ title('mean field sum')
 
 subplot(3, 2, 5)
 for j = 1:conf.n_cluster
-    
+
     id = (cluster_idx == j);
-    
+
     plot(loadings(id,1), loadings(id,2), ['.' colors{j}]);
     hold on
     xlabel('1st PC');
@@ -288,7 +284,7 @@ tmp(1:2:conf.n_cluster*2-1,:)  = a;
 tmp(2:2:conf.n_cluster*2,:)    = b;
 imagesc(tmp);
 title(num2str(score));
-    
+
 saveas(h, [conf.cur_res_fold  'raw_clusters_' monk '.' conf.image_format]);
 close(h);
 clear a b c cluster_idx colors dat h i id j loadings modi monk resid score sumd tmp
@@ -300,15 +296,15 @@ clear a b c cluster_idx colors dat h i id j loadings modi monk resid score sumd 
 
 h = figure('Visible','off');
 for i = 1:length(conf.monks)
-    
+
     monk = char(conf.monks(i));
     subplot(length(conf.monks),1,i);
-    
+
     fields = cell(1, length(conf.channels));
     for j = find(idx.(monk))
         fields{resps(j).field} = [fields{resps(j).field} resps(j).response(resps(j).fields)];
     end
-    
+
     for j = 1:length(conf.channels);
         hold on
         plot(ones(1, length(fields{j})) * j, fields{j}, '.b');
@@ -324,7 +320,7 @@ clear monk fields h
 
 
 
-%% distribution of final data 
+%% distribution of final data
 
 % plot distribution
 h   = figure('Visible','off');
@@ -332,11 +328,11 @@ mod = {'pro', 'sup'};
 
 for m = 1:length(conf.monks)
     monk = char(conf.monks{m});
-    
-    
+
+
     for k = 1:length(mod)
         subplot(2, length(conf.monks), (m-1) * 2 + k)
-        
+
         sig_resps   = [];
         unsig_resps = [];
         for i = find(idx.(monk) & idx.(mod{k}))
@@ -362,16 +358,19 @@ clear h mod monk m k sig_resps unsig_resps sig n_sig sigx n_unsig unx n
 
 %% plot clusters in PD space
 for i = 1:conf.n_monks
-    
+
     % load nonevoked data (PDs are in there)
     load([conf.inpath 'data' filesep 'nat_mov_res_' conf.monks{i}]);
-    
+
     % roseplot
     h = figure('Visible', 'off');
     center   = res.(conf.monks{i}).all.center;
     pds      = nat_mov_res.pds_all(1,:);    % take only pronation pds
 
-    plot_rose(h, center, pds); 
+    load('data/channels.mat')
+    ch_types = channels.(conf.monks{i}).type(nat_mov_res.c2take);
+
+    plot_rose(h, center, pds, ch_types);
     saveas(h, [conf.cur_res_fold  'center_rose_' conf.monks{i} '.' conf.image_format]);
     close(h);
 end
