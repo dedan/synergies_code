@@ -61,7 +61,7 @@ for cur_monk = 1:length(names)
 
     ch_types = channels.(names{cur_monk}).type(nat_mov_res.c2take);
     plot_rose(f, syn, pds, ch_types);
-    saveas(f, [outpath  'syn_rose_pro_' names{cur_monk} '.png']);
+    saveas(f, [outpath  'syn_rose_' names{cur_monk} '_pro'  '.png']);
     close(f);
 
     if max([sessions.hands] >1)
@@ -70,7 +70,7 @@ for cur_monk = 1:length(names)
         pds      = nat_mov_res.pds_all(2,:);
 
         plot_rose(f, syn, pds, ch_types);
-        saveas(f, [outpath  'syn_rose_sup_' names{cur_monk} '.png']);
+        saveas(f, [outpath  'syn_rose_' names{cur_monk} '_sup'  '.png']);
         close(f);
     end
 end

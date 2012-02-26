@@ -29,5 +29,13 @@ for j = 1:3
 end
 
 subplot(2,2,4)
-rose(pds(1,:), 360);
+for t = 1:3
+    k = find(types == t);
+    h = rose(pds(1, k), 180);
+    hold on
+    x = get(h, 'XData');
+    y = get(h, 'YData');
+    p = patch(x, y, colors(t));
+end
+
 title('pd distribution');
