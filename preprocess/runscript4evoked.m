@@ -10,7 +10,8 @@ addpath('../lib');
 if nargin == 2
     disp('no config struct given, standard values used');
     disp('');
-    conf.stim_value     = 150;      % look only at stimulations around this value
+    %    conf.stim_value     = 150;      % look only at stimulations around this value
+    conf.stim_value     = [];      % take all stimulation values.
     conf.window         = [-20 20]; % start and end of average window
     conf.int_window     = [6 20];   % integrate window only in this part (final response)
     conf.inflag         = true;
@@ -20,34 +21,33 @@ if nargin == 2
 end
 
 
-conf.inpath         = '/Volumes/LAB/results/data/';
-
+conf.inpath         = '~/projects/yifat_paper/results/data/';
 
 
 for monk = monks
     % load the natural movement results
-    load([conf.inpath 'nat_mov_res_' char(monk) '.mat'])    
-    
+    load([conf.inpath 'nat_mov_res_' char(monk) '.mat'])
+
     disp(['calculate responses for ' char(monk) '..']);
-    
+
     conf.monk               = char(monk);
     conf.dat_folder         = [path char(monk) filesep];
     conf.c2take             = nat_mov_res.c2take;
-    
+
     % get all subessions in which a stimulation took place
     data = get_all_stimsess(conf, char(monk));
-    
+
     % filter subessions according to StimAmp
     filtered_data = stimulations_at(data, conf.stim_value);
-    
+
     resps = responses(filtered_data, conf);
-    
+
     % add information about session
     for i = 1:length(resps)
-        resps(i).c2take = conf.c2take; 
+        resps(i).c2take = conf.c2take;
         resps(i).monk   = char(monk);
     end
-    save([conf.inpath filesep 'evoked_data_' char(monk)], 'resps');
+    save([conf.inpath filesep 'allevoked_data_' char(monk)], 'resps');
 end
 
 
@@ -66,28 +66,26 @@ res = struct('hand', [],'id', {}, 'session', {}, 'subsession', {}, ...
 
 
 dir_list = dir([config.dat_folder 'data' filesep]);
-
+dir_list = sortdirs( dir_list ); % YP sorting the directory list before continuing
 for i = 1:length(dir_list)
-    
-    file = dir_list(i);
-    
-    % skip hidden and system folders
-    if( strcmp(file.name(1), '.')), continue; end;
-        
+
+    filename = dir_list{i};
+
+
     % load the file
-    load([config.dat_folder 'info_files' filesep file.name '_param.mat']);
-    
+    load([config.dat_folder 'info_files' filesep filename '_param.mat']);
+
     for j=1:length(SESSparam.SubSess)
-        
+
         subs = SESSparam.SubSess(j);
-                
+
         % which electrodes were used
         % in vega I want to use only stimulation from electrode 2 and 3, 1 is spinal
         used_electrodes = find([DDFparam.Electrode.InUse]);
         if strcmp(monk, 'vega') || strcmp(monk, 'vega_first')
             used_electrodes = used_electrodes(used_electrodes ~= 1);
         end
-        
+
         for used = used_electrodes
             if isfield(subs.Electrode(used).Stim, 'Flag') && subs.Electrode(used).Stim.Flag
                 res(rec).location.depth = subs.Electrode(used).Depth;
@@ -96,23 +94,23 @@ for i = 1:length(dir_list)
                 if isfield(DDFparam.Electrode(used), 'Quad') && isfield(DDFparam, 'Positioner')
                     res(rec).location.quad  = DDFparam.Electrode(used).Quad;
                     res(rec).location.posi  = DDFparam.Positioner;
-                    
+
                 end
                 res(rec).location.thr   = DDFparam.Electrode(used).Threshold;
                 res(rec).location.res   = DDFparam.Electrode(used).Active;
                 res(rec).id             = DDFparam.ID;
-                
+
                 res(rec).electrode      = used;
                 res(rec).amp            = subs.Electrode(used).Stim.Amp;
                 res(rec).hand           = SESSparam.hand;
-                res(rec).session        = file.name;
+                res(rec).session        = filename;
                 res(rec).subsession     = j;
                 res(rec).file           = SESSparam.SubSess(j).Files;
 
                 rec = rec +1;
             end
         end
-        
+
     end
 end
 
@@ -125,7 +123,16 @@ function filtered_data = stimulations_at(all_stimulations, stim_value)
 % conducted with a certain value
 
 % counter for result entries and struct declaration
+
+% YP: if stim_value is empty all no filtration is applied!
+
 k = 1;
+if isempty(stim_value),
+    filtered_data = all_stimulations;
+    disp('no filteration of stim amp was applied!!');
+    return
+end
+
 filtered_data = struct('hand', [],'id', {}, 'session', {}, 'subsession', {}, 'file', [], 'amp', [], 'electrode', [], 'location', struct);
 
 % variable initialization for first run of loop
@@ -159,7 +166,7 @@ for i = 1:length(all_stimulations)
          amp_dist    = abs(abs(session.amp) - stim_value);
       end
    end
-   
+
    %remember the actual file
    last_depth  = act_depth;
    last_file   = act_file;

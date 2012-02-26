@@ -1,14 +1,16 @@
-function odir = sortdirs( idir )
+function dlist = sortdirsyp( alldirs )
 
-Ndates  = NaN(length(idir),2);
-odir    = cell(length(idir));
-for i=1:length(idir),
-    curname     = char(idir(i).name);
-    Nday        = str2double( curname(2:3));
-    Nmonth      = str2double(curname(4:5));
-    Ndates(i,1) = Nmonth;
-    Ndates(i,2) = Nday;
-    odir(i)     = {curname};
+indx = 1;
+for i=1:length( alldirs  )
+    if (~alldirs(i).isdir || ( strcmp(alldirs(i).name(1), '.'))), continue; end; % taking only directories
+    curdir = char(alldirs(i).name);
+    dlist(indx) = {curdir};
+    tmp(indx,1) = str2num(curdir(6:7));
+    tmp(indx,2) = str2num(curdir(4:5));
+    tmp(indx,3) = str2num(curdir(2:3));
+    indx = indx+1;
+
 end
-[~,ilist]   =sortrows(Ndates);
-odir        = (odir(ilist));
+[tmp,i]=sortrows(tmp);
+dlist = dlist(i);
+
