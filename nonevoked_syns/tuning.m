@@ -73,6 +73,24 @@ for cur_monk = 1:length(names)
         saveas(f, [outpath  'syn_rose_' names{cur_monk} '_sup'  '.png']);
         close(f);
     end
+
+    % another plot of PD distribution
+    f = figure('Visible', 'off');
+    colors = ['r' 'g' 'b'];
+    pds = zeros(1, 16);
+    pds(nat_mov_res.c2take) = nat_mov_res.pds_all(1,:);
+    for t = 1:3
+        for k = find(channels.(names{cur_monk}).type == t & nat_mov_res.c2take);
+            subplot(4, 4, k)
+            h = rose(pds(1, k), 180);
+            x = get(h, 'XData');
+            y = get(h, 'YData');
+            p = patch(x, y, colors(t));
+            title(channels.(names{cur_monk}).name{k})
+        end
+    end
+    saveas(f, [outpath  'pd_dist_' names{cur_monk} '.png']);
+    close(f);
 end
 
 
