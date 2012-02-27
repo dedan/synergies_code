@@ -1,19 +1,20 @@
 
-path = '/Volumes/LAB/';
+data_path = '/Volumes/LAB/'
+path = '~/projects/yifat_paper/';
 monk = 'chalva';
 
-srcdir = [path monk filesep];
+srcdir = [data_path monk filesep];
 load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
 load([path 'results' filesep 'data' filesep 'nat_mov_res_' monk '.mat']);
-load(['..' filesep 'data' filesep 'scales_' monk]);
+load(['data' filesep 'scales_' monk]);
 
 cluster_idx = kmeans(normr(vertcat(resps.response)),4, 'replicates', 100);
 
 colors = {'r', 'b', 'k', 'g'};
 markers = {'^', 'v'};
 
-% 1: no 
-% 2: cluster 
+% 1: no
+% 2: cluster
 % 3: 0-response
 % 4: visible effect
 coloring        = 3;
@@ -24,7 +25,7 @@ add_noise       = true;
 % prepare the plot
 figure(3)
 clf
-curmap = imread(['..' filesep 'data' filesep monk '_cortex.bmp']);
+curmap = imread(['data' filesep monk '_cortex.bmp']);
 imagesc(curmap);
 colormap gray
 axis     equal
@@ -42,24 +43,26 @@ end
 
 
 for i=1:length(resps)
-    
+
     curdir   = char(resps(i).session);
     fname    = [curdir '_param.mat'];
     fullname = [srcdir 'info_files' filesep fname];
-    
+
     if ~exist(fullname,'file'),
         disp(['Cannot find file --> ' fname]);
     else
         load(fullname);
-        
+
         coord = get_cortical_data(DDFparam, SESSparam.SubSess(resps(i).subsession), monk);
-        
+
         if strcmp(monk, 'chalva')
-            
+
             % the 1.5 corresponde to the distance between the figure origin
             % to the actual in-chamber origin
             x = X0 - coord.x * D10/10;
             y = Y0 + coord.y * D10/10;
+            plot(X0,Y0,'go');
+
         elseif strcmp(monk, 'vega')
             % coordinate transformation of the data with respect to origin read from the
             % info file.
@@ -67,13 +70,13 @@ for i=1:length(resps)
                 [x,y]   = get_orig(coord.qd, PL, PM, AL, AM, PC, C);
                 x       = x - coord.x / 5 * Scale5;
                 y       = y - coord.y / 5 * Scale5;
-                
+
             elseif coord.posi == 1,     % means dual positioner
                 [x,y]   = get_orig('C', PL, PM, AL, AM, PC, C);
                 [dx,dy] = translate_Dual(coord.electrode -1, curdir, coord.x, coord.y);
                 x       = x + dx / 5 * Scale5;
-                y       = y - dy / 5 * Scale5;
-            else 
+                y       = y + dy / 5 * Scale5;
+            else
                 error('positioner variable not available');
             end
         end
@@ -82,13 +85,13 @@ for i=1:length(resps)
             x = x + randn(1)*4;
             y = y + randn(1)*4;
         end
-        
+
         h = plot(x, y, 'ko');
-        
+
         if response_field
             set(h,'MarkerSize', eps + resps(i).field *2);
         end
-        
+
         if coloring == 1
             set(h,'MarkerFaceColor',  'none');
         elseif coloring == 2
@@ -99,7 +102,7 @@ for i=1:length(resps)
             set(h,'MarkerEdgeColor',  colors{idx});
             set(h,'MarkerSize', 7);
         elseif coloring == 4
-            set(h,'MarkerEdgeColor',  quantify_effect(resps(i).location.res));    
+            set(h,'MarkerEdgeColor',  quantify_effect(resps(i).location.res));
         end
 
         if draw_direction
@@ -108,8 +111,8 @@ for i=1:length(resps)
             f = 1;
             plot([x, x + f *sum(x1)], [y, y + f * sum(y1)], 'k');
         end
-        
-        
+
+
     end;
 end
 hold off
