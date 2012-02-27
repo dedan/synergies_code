@@ -180,10 +180,15 @@ for i = 1:conf.n_monks
             tmp = all_pd(ids(j).id, :);
             [~, res.(conf.names{i}).cstd_all(j,k)] = circ_std(tmp(:, k));
             [~, res.(conf.names{i}).cstd_sig(j,k)] = circ_std(tmp(sigs(ids(j).id, k), k));
-            res.(conf.names{i}).pds_all(j,k)       = circ_mean(tmp(:, k));
-            res.(conf.names{i}).pds_sig(j,k)       = circ_mean(tmp(sigs(ids(j).id, k), k));
         end
     end
+    for j = 1:max_hands
+
+        tmp = all_pd(ids(j).id, :);
+        res.(conf.names{i}).pds_all(j,:)       = circ_mean(tmp);
+        res.(conf.names{i}).pds_sig(j,:)       = circ_mean(tmp(sigs(ids(j).id, :)));
+    end
+
     subplot(2, 2, 2);
     bar(c2take_idx, res.(conf.names{i}).cstd_all');
     title('cstds over all sessions');

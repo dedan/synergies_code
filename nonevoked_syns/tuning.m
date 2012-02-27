@@ -53,6 +53,8 @@ for cur_monk = 1:length(names)
 
     load([inpath 'all_data_' names{cur_monk}]);
     load([inpath 'nat_mov_res_' names{cur_monk}]);
+    c2take   = all(vertcat(sessions.channels));
+
 
     % roseplot
     f = figure('Visible', 'off');
@@ -60,7 +62,7 @@ for cur_monk = 1:length(names)
     pds      = nat_mov_res.pds_all(1,:);
 
     ch_types = channels.(names{cur_monk}).type(nat_mov_res.c2take);
-    plot_rose(f, syn, pds, ch_types);
+    plot_rose(f, syn, pds(c2take), ch_types);
     saveas(f, [outpath  'syn_rose_' names{cur_monk} '_pro'  '.png']);
     close(f);
 
@@ -69,7 +71,7 @@ for cur_monk = 1:length(names)
         syn      = nat_mov_res.synnmf_sup;
         pds      = nat_mov_res.pds_all(2,:);
 
-        plot_rose(f, syn, pds, ch_types);
+        plot_rose(f, syn, pds(c2take), ch_types);
         saveas(f, [outpath  'syn_rose_' names{cur_monk} '_sup'  '.png']);
         close(f);
     end
@@ -77,8 +79,7 @@ for cur_monk = 1:length(names)
     % another plot of PD distribution
     f = figure('Visible', 'off');
     colors = ['r' 'g' 'b'];
-    pds = zeros(1, 16);
-    pds(nat_mov_res.c2take) = nat_mov_res.pds_all(1,:);
+    pds = nat_mov_res.pds_all(1,:);
     for t = 1:3
         for k = find(channels.(names{cur_monk}).type == t & nat_mov_res.c2take);
             subplot(4, 4, k)
