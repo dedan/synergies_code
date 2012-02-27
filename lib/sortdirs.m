@@ -1,4 +1,4 @@
-function dlist = sortdirsyp( alldirs )
+function dlist = sortdirs( alldirs )
 
 indx = 1;
 for i=1:length( alldirs  )
