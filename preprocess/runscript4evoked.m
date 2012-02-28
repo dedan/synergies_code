@@ -7,8 +7,8 @@ function runscript4evoked(path, monks, conf)
 if nargin == 2
     disp('no config struct given, standard values used');
     disp('');
-    %    conf.stim_value     = 150;      % look only at stimulations around this value
-    conf.stim_value     = [];      % take all stimulation values.
+    conf.stim_value     = 150;      % look only at stimulations around this value
+                                    % set this to [] to use all stimulation values
     conf.window         = [-20 20]; % start and end of average window
     conf.int_window     = [6 20];   % integrate window only in this part (final response)
     conf.inflag         = false;
@@ -44,7 +44,11 @@ for monk = monks
         resps(i).c2take = conf.c2take;
         resps(i).monk   = char(monk);
     end
-    save([conf.inpath filesep 'allevoked_data_' char(monk)], 'resps');
+    add = '';
+    if isempty(conf.stim_value)
+        add = 'all';
+    end
+    save([conf.inpath filesep add 'evoked_data_' char(monk)], 'resps');
 end
 
 
