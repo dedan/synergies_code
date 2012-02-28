@@ -99,7 +99,7 @@ for dati = 1:length(filtered_data)
         for i = 1:size(wins.windows,1)
 
             % response computation as described by yuval
-            resp(j).response(i) = (mean(resp(j).windows(i,wins.post_r)) / mean(resp(j).windows(i,wins.pre_r))) * 100;
+            resp(j).response(i) = (mean(resp(j).windows(i,wins.post_r)) / mean(resp(j).windows(i,wins.pre_r)));
         end
 
         j = j+1;
