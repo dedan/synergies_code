@@ -3,14 +3,6 @@ data_path = '/Volumes/LAB/';
 path = '~/projects/yifat_paper/';
 monk = 'chalva';
 
-srcdir = [data_path monk filesep];
-load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
-load([path 'results' filesep 'data' filesep 'nat_mov_res_' monk '.mat']);
-load(['data' filesep 'scales_' monk]);
-
-dat = normc(vertcat(resps.response));
-cluster_idx = kmeans(dat,4, 'replicates', 100);
-
 colors = {'r', 'b', 'k', 'g'};
 markers = {'^', 'v'};
 
@@ -18,13 +10,37 @@ markers = {'^', 'v'};
 % 2: cluster
 % 3: 0-response
 % 4: visible effect
-coloring        = 3;
-draw_direction  = false;
-response_field  = false;
-add_noise       = true;
+coloring         = 2;
+draw_direction   = false;
+response_field   = false;
+add_noise        = true;
+set_non_sig_zero = true;
+
+
+srcdir = [data_path monk filesep];
+load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
+load([path 'results' filesep 'data' filesep 'nat_mov_res_' monk '.mat']);
+load(['data' filesep 'scales_' monk]);
+
+resps = resps([resps.field] > 0);
+dat = normc(vertcat(resps.response));
+
+% filter responses by significance
+if set_non_sig_zero
+    nonsig = zeros(length(resps), 16);
+    for i = 1:length(resps)
+        nonsig(i, resps(i).fields) = 1;
+    end
+    dat(~logical(nonsig(:, nat_mov_res.c2take))) = 0;
+    % remove "no response lines" (significant muscles were in not in c2take)
+    dat = dat(sum(nonsig(:, nat_mov_res.c2take), 2) ~= 0 ,:);
+end
+
+cluster_idx = kmeans(dat, 3, 'replicates', 100);
+
 
 % prepare the plot
-f = figure('visible', 'off')
+f = figure('visible', 'off');
 clf
 curmap = imread(['data' filesep monk '_cortex.bmp']);
 imagesc(curmap);
@@ -42,10 +58,10 @@ if strcmp('vega', monk)
     plot(C(1),C(2),'rx');
 end
 
+indi = find(sum(pro_filter(:, c2take), 2) ~= 0);
+for i=1:length(indi)
 
-for i=1:length(resps)
-
-    curdir   = char(resps(i).session);
+    curdir   = char(resps(indi(i)).session);
     fname    = [curdir '_param.mat'];
     fullname = [srcdir 'info_files' filesep fname];
 
@@ -54,7 +70,7 @@ for i=1:length(resps)
     else
         load(fullname);
 
-        coord = get_cortical_data(DDFparam, SESSparam.SubSess(resps(i).subsession), monk);
+        coord = get_cortical_data(DDFparam, SESSparam.SubSess(resps(indi(i)).subsession), monk);
 
         if strcmp(monk, 'chalva')
 
@@ -83,14 +99,14 @@ for i=1:length(resps)
         end
 
         if add_noise
-            x = x + randn(1)*4;
-            y = y + randn(1)*4;
+            x = x + randn(1)*6;
+            y = y + randn(1)*6;
         end
 
         h = plot(x, y, 'ko');
 
         if response_field
-            set(h,'MarkerSize', eps + resps(i).field *2);
+            set(h,'MarkerSize', eps + resps(indi(i)).field *2);
         end
 
         if coloring == 1
@@ -103,12 +119,12 @@ for i=1:length(resps)
             set(h,'MarkerEdgeColor',  colors{idx});
             set(h,'MarkerSize', 7);
         elseif coloring == 4
-            set(h,'MarkerEdgeColor',  quantify_effect(resps(i).location.res));
+            set(h,'MarkerEdgeColor',  quantify_effect(resps(indi(i)).location.res));
         end
 
         if draw_direction
             c2take = nat_mov_res.c2take;
-            [x1 y1] = pol2cart(nat_mov_res.pds(1,c2take), 1 *(resps(i).response - min(resps(i).response)));
+            [x1 y1] = pol2cart(nat_mov_res.pds(1,c2take), 1 *(resps(indi(i)).response - min(resps(indi(i)).response)));
             f = 1;
             plot([x, x + f *sum(x1)], [y, y + f * sum(y1)], 'k');
         end
@@ -127,5 +143,6 @@ if coloring == 4
 end
 
 saveas(f, [path 'results' filesep 'maps' filesep 'map_' monk '.png']);
+close(f);
 
 

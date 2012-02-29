@@ -25,17 +25,17 @@ end
 basis    = orth(basis);
 ortcmp   = null(basis');
 
-% create projections 
+% create projections
 p        = basis * basis';
 p2       = ortcmp * ortcmp';
 
 % compute the ratio for the data
 res.ratio_dist  = sum((p * dat).^2) ./ sum((p2 * dat).^2);
 res.dat_ratio   = sum(sum((p * dat).^2)) / sum(sum((p2 * dat).^2));
-    
+
 % bootstrapping loop
 for i = 1:n_iter
-        
+
     % random with same overall mean and variance
     dat_rand            = normrnd(mean(dat(:)), std(dat(:)), size(dat,1), size(dat,2));
     res.rand_ratios(i)  = sum(sum((p * dat_rand).^2)) / sum(sum((p2 * dat_rand).^2));
@@ -46,11 +46,11 @@ for i = 1:n_iter
         dat_rand(j,:) = normrnd(mean(dat(j,:)), std(dat(j,:)), 1, size(dat,2));
     end
     res.rand_chan_ratios(i) = sum(sum((p * dat_rand).^2)) / sum(sum((p2 * dat_rand).^2));
-    
+
     % shuffled data
-    dat_shuf                = reshape(dat(randperm(length(dat(:)))), size(dat) );    
+    dat_shuf                = reshape(dat(randperm(length(dat(:)))), size(dat) );
     res.shuf_ratios(i)      = sum(sum((p * dat_shuf).^2)) / sum(sum((p2 * dat_shuf).^2));
-    
+
     % shuffle only in channel
     dat_rows  = NaN(size(dat));
     for j = 1:size(dat,1)
