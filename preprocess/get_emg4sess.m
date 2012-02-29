@@ -40,9 +40,9 @@ Nh   = unique(hnd(trg > 0));                 % list of hand positions
 Nh   = Nh(Nh ~= 0);
 
 for k=1:length(Nh),
-    
+
     chdata(k).channels  = logical(data.channels);  %#ok<*AGROW>
-    chdata(k).id        = info.DDFparam.ID; 
+    chdata(k).id        = info.DDFparam.ID;
     chdata(k).pd        = data.pd(k,:);
     chdata(k).tuning_x  = data.tuning_x;
     chdata(k).tuning_y  = data.tuning_y(k,:);
@@ -50,26 +50,26 @@ for k=1:length(Nh),
     chdata(k).p2        = data.p2(k,:);
     chdata(k).trials    = data.trials;
 
-    
+
     % now computing the mean bckground level per channel
     for i=find(data.channels)
         emgpsth(i).hand(k).bck_amp = mean(data.channel(i).bck_amp);
     end
-    
+
     for j=1:length(Ntr),
         jindx = find(trg == Ntr(j) & hnd == Nh(k));
-        
+
         tmp_amp = NaN(length(find(data.channels)), length(jindx));
         tmp_bck = NaN(length(find(data.channels)), length(jindx));
-        
-        c_inds = find(data.channels); 
+
+        c_inds = find(data.channels);
         for i = 1:length(c_inds)
             if length(jindx) >= 1,
-                
+
                 % this is the relevant data for further investigation
                 tmp_amp(i,:) = data.channel(c_inds(i)).amp(jindx);
                 tmp_bck(i,:) = data.channel(c_inds(i)).bck_amp(jindx);
-                
+
                 if length(jindx)> 1,
                     emgpsth(c_inds(i)).hand(k).target(j,:) = mean(data.channel(c_inds(i)).signal(jindx,:));
                 else
@@ -77,7 +77,7 @@ for k=1:length(Nh),
                 end
             end
         end;
-        
+
         % give all data the same size (as if recorded from all channels)
         chdata(k).amp{j}     = zeros(length(chdata(k).channels), size(tmp_amp,2));
         chdata(k).bck_amp{j} = zeros(length(chdata(k).channels), size(tmp_bck,2));
@@ -111,6 +111,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% took stimulation place in this trial --> exclude it
 function stimflag = test4stim(subs)
 
 stimflag = 0;
@@ -125,6 +126,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% took stimulation or pertubation place in this trial --> exclude it
 function configflag = test4other(fileConfig, files)
 
 configflag = 0;
@@ -155,14 +157,14 @@ for i=1:length(files),
     end
 end
 edfiles = edfiles(~cellfun('isempty',edfiles));
-    
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function emgfiles = get_emg_files(matdir, curname, files )
 
 emgfiles = cell(1,length(files));
 for i=1:length(files)
-    ex = sprintf('%03d', files(i)); 
+    ex = sprintf('%03d', files(i));
     name2add = [matdir curname ex '_emg.mat'];
     if exist(name2add,'file'),
         emgfiles{i} = name2add;
