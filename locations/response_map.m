@@ -1,5 +1,5 @@
 
-data_path = '/Volumes/LAB/'
+data_path = '/Volumes/LAB/';
 path = '~/projects/yifat_paper/';
 monk = 'chalva';
 
@@ -8,7 +8,8 @@ load([path 'results' filesep 'data' filesep 'evoked_data_' monk '.mat']);
 load([path 'results' filesep 'data' filesep 'nat_mov_res_' monk '.mat']);
 load(['data' filesep 'scales_' monk]);
 
-cluster_idx = kmeans(normr(vertcat(resps.response)),4, 'replicates', 100);
+dat = normc(vertcat(resps.response));
+cluster_idx = kmeans(dat,4, 'replicates', 100);
 
 colors = {'r', 'b', 'k', 'g'};
 markers = {'^', 'v'};
@@ -23,7 +24,7 @@ response_field  = false;
 add_noise       = true;
 
 % prepare the plot
-figure(3)
+f = figure('visible', 'off')
 clf
 curmap = imread(['data' filesep monk '_cortex.bmp']);
 imagesc(curmap);
@@ -124,5 +125,7 @@ if coloring == 4
     disp('shoulder -> m');
     disp('face, body, none -> k');
 end
+
+saveas(f, [path 'results' filesep 'maps' filesep 'map_' monk '.png']);
 
 

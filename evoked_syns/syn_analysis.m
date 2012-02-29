@@ -16,7 +16,7 @@ conf.skip_window_computation  = 1;
 conf.do_resid_test            = 0;
 conf.inflag                   = true;     % write info messages
 conf.erflag                   = true;     % write error messages
-conf.image_format             = 'pdf';    % format of output images
+conf.image_format             = 'png';    % format of output images
 
 
 % emg channels
@@ -133,19 +133,18 @@ for m = 1:length(conf.monks)
     idx.pro = ([resps.hand] == 1);
     idx.sup = ([resps.hand] == 2);
 
+    % collect responses
+    res.(monk).pro.flat = vertcat(resps(idx.(monk) & idx.pro).response);
+    res.(monk).sup.flat = [];
+    if ~isempty(vertcat(resps(idx.(monk) & idx.sup).response))
+        res.(monk).sup.flat = normr(vertcat(resps(idx.(monk) & idx.sup).response));
+    end
+
+    % normalization
     if conf.norm
-        res.(monk).pro.flat = normr(vertcat(resps(idx.(monk) & idx.pro).response));
-        if ~isempty(vertcat(resps(idx.(monk) & idx.sup).response))
-            res.(monk).sup.flat = normr(vertcat(resps(idx.(monk) & idx.sup).response));
-        else
-            res.(monk).sup.flat = [];
-        end
-    else
-        res.(monk).pro.flat = vertcat(resps(idx.(monk) & idx.pro).response);
-        if ~isempty(vertcat(resps(idx.(monk) & idx.sup).response))
-            res.(monk).sup.flat = vertcat(resps(idx.(monk) & idx.sup).response);
-        else
-            res.(monk).sup.flat = [];
+        res.(monk).pro.flat = normr(res.(monk).pro.flat);
+        if ~isempty(res.(monk).sup.flat)
+            res.(monk).sup.flat = normr(res.(monk).sup.flat);
         end
     end
     res.(monk).all.flat = vertcat(res.(monk).pro.flat, res.(monk).sup.flat);
