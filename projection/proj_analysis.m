@@ -20,14 +20,16 @@ resps       = struct([]);
 for i = 1:length(conf.monks)
     monk = conf.monks{i};
 
+    add_mapinfo([conf.res_folder 'data' filesep], {monk})
+
     % load the nonevoked results
     tmp     = load([conf.res_folder 'data' filesep 'nat_mov_res_' monk '.mat']);
     nat_mov_res.(monk) = tmp.nat_mov_res;
 
     if isempty(resps)
-        load([conf.res_folder 'data' filesep 'evoked_data_' monk '.mat']);
+        load([conf.res_folder 'data' filesep 'evoked_data_map_' monk '.mat']);
     else
-        tmp     = load([conf.res_folder 'data' filesep 'evoked_data_' monk '.mat']);
+        tmp     = load([conf.res_folder 'data' filesep 'evoked_data_map_' monk '.mat']);
         resps   = [resps tmp.resps]; %#ok<AGROW>
     end
 end
@@ -39,16 +41,26 @@ load([conf.res_folder 'data' filesep 'evoked_res.mat']);
 
 % shows that the evoked responses tend to reside in the same subspace as
 % spanned by the synergies found during natural movement
+for i=1:length(resps),
+    m1flag(i) = 0;
+    if strcmp(resps(i).mapsite(1), 'm1') &  strcmp(resps(i).mapsite(2), 'm1'),
+        m1flag(i) = 1; % this is m1
+    end
+end
+projall = zeros(length(resps), 1);
+
 for m = conf.monks
 
     monk = char(m);
-    
+
     idx         = strcmp(monk, {resps.monk});
-    larger      = idx & [resps.field] > 0;
+    larger      = find(idx & [resps.field] > 0);
     responses   = vertcat(resps(larger).response);
 
     proj_res = project(responses, nat_mov_res.(monk).synall_pro, conf.n_boot, conf.noise);
-    h = plot_proj(proj_res);
+    projall(larger) = proj_res.ratio_dist;
+    h = plot_proj(proj_res, m1flag(larger));
     saveas(h, [conf.out 'projection' filesep 'projection_larger0_' monk '.' conf.image_format]);
     close(h);
 end
+
