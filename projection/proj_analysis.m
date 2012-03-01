@@ -26,9 +26,14 @@ for i = 1:length(conf.monks)
 
     if isempty(resps)
         load([conf.res_folder 'data' filesep 'evoked_data_' monk '.mat']);
+        all_r = load([conf.res_folder 'data' filesep 'all_evoked_data_' monk '.mat']);
+        all_resps = all_r.resps;
     else
         tmp     = load([conf.res_folder 'data' filesep 'evoked_data_' monk '.mat']);
         resps   = [resps tmp.resps]; %#ok<AGROW>
+        all_r   = load([conf.res_folder 'data' filesep 'all_evoked_data_' monk '.mat']);
+        all_resps = [all_resps all_r.resps];
+
     end
 end
 
@@ -49,8 +54,11 @@ for m = conf.monks
     idx         = strcmp(monk, {resps.monk});
     larger      = idx & [resps.field] > 0;
     responses   = vertcat(resps(larger).response);
+    all_idx         = strcmp(monk, {all_resps.monk});
+    all_larger      = all_idx & [all_resps.field] > 0;
+    all_responses   = vertcat(all_resps(all_larger).response);
 
-    proj_res = project(responses, nat_mov_res.(monk).synall_pro, conf.n_boot, conf.noise);
+    proj_res = project(responses, all_responses, nat_mov_res.(monk).synall_pro, conf.n_boot, conf.noise);
 
     h = plot_proj(proj_res);
 

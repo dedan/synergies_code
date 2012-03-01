@@ -1,4 +1,4 @@
-function res = project(dat, basis, n_iter, noise_value)             % takes already column vectors
+function res = project(dat, all_dat, basis, n_iter, noise_value)             % takes already column vectors
 
 % original data is compared to different shuffeling, test data and random
 % data.
@@ -15,6 +15,7 @@ function res = project(dat, basis, n_iter, noise_value)             % takes alre
 % are added on the test data
 
 dat = dat';
+all_dat = all_dat';
 basis = basis';
 
 if size(basis,1) ~= size(dat,1)
@@ -37,13 +38,13 @@ res.dat_ratio   = sum(sum((p * dat).^2)) / sum(sum((p2 * dat).^2));
 for i = 1:n_iter
 
     % random with same overall mean and variance
-    dat_rand            = normrnd(mean(dat(:)), std(dat(:)), size(dat,1), size(dat,2));
+    dat_rand            = normrnd(mean(all_dat(:)), std(all_dat(:)), size(dat,1), size(dat,2));
     res.rand_ratios(i)  = sum(sum((p * dat_rand).^2)) / sum(sum((p2 * dat_rand).^2));
 
     % random with same distribution for every channel
     dat_rand = NaN(size(dat));
     for j = 1:size(dat,1)
-        dat_rand(j,:) = normrnd(mean(dat(j,:)), std(dat(j,:)), 1, size(dat,2));
+        dat_rand(j,:) = normrnd(mean(all_dat(j,:)), std(all_dat(j,:)), 1, size(dat,2));
     end
     res.rand_chan_ratios(i) = sum(sum((p * dat_rand).^2)) / sum(sum((p2 * dat_rand).^2));
 
