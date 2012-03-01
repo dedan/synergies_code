@@ -22,11 +22,11 @@ end
 
 
 for i = 1:length(resps)
-    
-    % plot response 
+
+    % plot response
     h = figure('Visible','off');
     tmp = resps(i).windows;
-    
+
     if type == 1
         plot(resps(i).x, tmp');
         hold on
@@ -39,12 +39,12 @@ for i = 1:length(resps)
             plot(resps(i).x, tmp(j,:));
         end
     end
-    
+
     % indicate whether it is a session that was stored in several files
     if resps(i).connected
         title('connected');
     end
-    
+
     saveas(h, [folder_path filesep monk(1) sprintf('%03d', i) '.' format]);
     close(h);
 end

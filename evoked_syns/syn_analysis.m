@@ -165,7 +165,7 @@ clear flags monk h1 h2 amps m n xout
 
 %% look at clusters in the responses (imagesc and pca scatter)
 colors = {'r', 'g', 'b', 'y'};
-colors = {colors{1:conf.n_cluster}}
+colors = {colors{1:conf.n_cluster}};
 for i = 1:length(conf.monks)
 
     monk = conf.monks{i};
@@ -174,7 +174,9 @@ for i = 1:length(conf.monks)
     dat     = res.(monk).flat;
 
     subplot(3, 2, 1)
+    warning off stats:kmeans:EmptyCluster
     [cluster_idx c]         = kmeans(dat, conf.n_cluster, 'replicates', 100);
+    warning on stats:kmeans:EmptyCluster
     res.(monk).all.center   = c;
     sizes = histc(cluster_idx, 1:conf.n_cluster);
     [ss, sort_center] = sort(sizes, 'descend');
@@ -223,7 +225,9 @@ for i = 1:length(conf.monks)
     subplot(3, 2, 5:6);
     resid = NaN(1,10);
     for j = 1:10
+        warning off stats:kmeans:EmptyCluster
         [~, ~, sumd]  = kmeans(dat, j, 'replicates', 100);
+        warning on stats:kmeans:EmptyCluster
         resid(j)      = sum(sumd);
     end
     plot(resid)
