@@ -46,7 +46,7 @@ for monk = monks
     end
     add = '';
     if isempty(conf.stim_value)
-        add = 'all';
+        add = 'all_';
     end
     save([conf.inpath filesep add 'evoked_data_' char(monk)], 'resps');
 end

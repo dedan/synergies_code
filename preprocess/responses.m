@@ -35,8 +35,7 @@ for dati = 1:length(filtered_data)
                         filesep 'MAT' filesep files{i}];
 
         stim_check = whos('-file',[file '_bhv'],'AMstim_on', 'StimTime');
-        if(stim_check.size(1) > 4) && exist([file '_emg.mat'], 'file')
-
+        if (max(stim_check.size) > 4) && exist([file '_emg.mat'], 'file')
 
             s_times = load([file '_bhv.mat'], stim_check.name);
             s_times = s_times.(stim_check.name);
@@ -53,7 +52,7 @@ for dati = 1:length(filtered_data)
             end
 
             s_times = s_times +(size(emg_data,2) / (f_orig*1000));
-            StimTime_agg = [StimTime_agg; s_times]; %#ok<AGROW>
+            StimTime_agg = [StimTime_agg; s_times(:)]; %#ok<AGROW>
             emg_data = [emg_data tmp]; %#ok<AGROW>
 
 

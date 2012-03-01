@@ -92,7 +92,7 @@ for m = 1:length(conf.monks)
 
 
     % sort out the sessions which contain artefacts
-    load([conf.inpath 'data' filesep conf.handsorted 'sort_' monk]);
+    load(['data' filesep conf.handsorted 'sort_' monk]);
 
     % wow, what a line. I do this weird indexing to make it the same length
     % as flags
