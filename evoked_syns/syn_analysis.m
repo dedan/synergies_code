@@ -201,13 +201,23 @@ for i = 1:length(conf.monks)
         ylabel('2nd PC');
     end
 
+    % cluster imagesc plot
     subplot(3, 2, 4);
     for j = 1:conf.n_cluster
         tmp(j).c = dat(cluster_idx == j, :);
     end
-    imagesc(vertcat(tmp(sort_center).c));
+    agg = [];
+    for j = sort_center'
+        agg = [agg; tmp(j).c; ones(1, size(dat, 2))];
+    end
+    for j = 1:length(ss)
+        yticks(j) = sum(ss(1:j-1)) + ss(j)/2;
+    end
+    imagesc(agg);
+    set(gca,'YTick', yticks);
+    set(gca,'YTickLabel', {colors{sort_center}});
+    set(gca,'XTickLabel', {});
     title([monk ' clustered']);
-    axis off;
 
     % kmeans resid test
     subplot(3, 2, 5:6);
