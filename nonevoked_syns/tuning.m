@@ -3,13 +3,13 @@
 inpath  = '~/projects/yifat_paper/results/data/';
 outpath = '~/projects/yifat_paper/results/tuning/';
 names   = {'vega', 'darma', 'chalva'};
-dimensions = 3
+dimensions = 3;
 
 selection.chalva = 2:15;
 selection.vega   = 60:80;
 selection.darma  = 1:10;
 
-ex = 1
+ex = 1;
 tuning_x = sort([90 45 0 -45 -90 -135 180 135]*pi/180);
 tuning_x = [tuning_x tuning_x(1)];
 

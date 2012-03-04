@@ -16,7 +16,6 @@
 %% configurations
 
 clear;
-clc;
 conf = struct;
 conf.opt                = statset('MaxIter',5);
 conf.outpath            = '~/Documents/uni/yifat_lab/results/natural_mov/';
@@ -76,6 +75,9 @@ for i = 1:conf.n_monks
     idx.(conf.names{i})    = strcmp(conf.names{i}, {sessions.monk});
 
     disp([conf.names{i} ': ' num2str(length(find(idx.(conf.names{i})))) ' sessions' ]);
+    subplot(4, conf.n_monks, i);
+    title(conf.names{i})
+    axis off
 
     % distribution of used channels
     subplot(4, conf.n_monks, conf.n_monks +i);

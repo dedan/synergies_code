@@ -8,9 +8,6 @@
 
 function compute_synergies(data_path, outpath, monks)
 
-addpath('../lib'); %#ok<MCAP>
-addpath('../data_validation/');
-
 % general settings
 config = struct;
 config.Niter_exploration= 50;
@@ -20,7 +17,7 @@ config.opt              = statset('MaxIter',50);
 config.max_channels     = 16;
 config.modi             = {'_pro','_sup'};
 config.dim              = 3;
-config.n_baseline       = 5;
+config.n_baseline       = 0;
 
 if config.n_best > config.Niter_exploration
     disp('n_best has to be smaller than Niter_exploration');
