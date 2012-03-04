@@ -25,12 +25,12 @@ conf.channels            = [11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44];
 % response
 conf.stim_value          = 150;           % look only at stimulations around this value
 
-% matrix factorization
-conf.dim                 = 3;             % reduce to this number of synergies
-conf.Niter_res_test      = 2;            % number of iterations for the residual test
-conf.Niter_exploration   = 3;            % number of iterations for nmf exploration
-conf.n_best              = 2;            % take only n_best explorations
-conf.opt                 = statset('MaxIter', 50);     % number of early explorations
+% % matrix factorization
+% conf.dim                 = 3;             % reduce to this number of synergies
+% conf.Niter_res_test      = 2;            % number of iterations for the residual test
+% conf.Niter_exploration   = 3;            % number of iterations for nmf exploration
+% conf.n_best              = 2;            % take only n_best explorations
+% conf.opt                 = statset('MaxIter', 50);     % number of early explorations
 
 % clustering
 conf.n_cluster = 3;
@@ -107,6 +107,7 @@ for m = 1:length(conf.monks)
     subplot(length(conf.monks), 1, m)
     [n, xout] = hist([resps(idx.(monk)).field], 0:length(conf.channels));
     bar(xout, n ./ sum(n) * 100);
+    ylabel('in percent')
     title(monk)
 
     % sort out the sessions with fieldsize 0
@@ -326,7 +327,7 @@ for i = 1:conf.n_monks
     load('data/channels.mat')
     ch_types = channels.(conf.monks{i}).type(nat_mov_res.c2take);
 
-    plot_rose(h, center, pds, ch_types);
+    plot_rose(h, center, pds(nat_mov_res.c2take), ch_types);
     saveas(h, [conf.cur_res_fold  'center_rose_' conf.monks{i} '.' conf.image_format]);
     close(h);
 end
