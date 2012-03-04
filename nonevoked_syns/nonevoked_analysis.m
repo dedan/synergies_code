@@ -172,8 +172,45 @@ for i = 1:conf.n_monks
     for j = 1:max_hands
         agg(:,j) = sum(all_p1(ids(j).id, c2take_idx) < 0.05)' ./ n2take * 100;
     end
-    bar(c2take_idx,  agg);
+
+    extensors    = {'ECR-E'  'EDC-E'  'ECU-E'  'ED23-E' 'ED45-E'};
+    flexors      = {'FCR-F'  'PL-F'   'FCU-F'  'FDS-F'  'FDP-F'};
+    others       = {'APL-E'  'TRIC-P' 'PT-F'   'BIC-P'  'BR-B'};
+    all_channels = [extensors others flexors];
+    idcs = {1:5, 6:10, 11:15};
+    colors = 'rgb';
+    monkey_channels = {channels.(conf.names{i}).name{res.(conf.names{i}).c2take}};
+
+    ded = 1;
+    cum = [];
+    for chan_num = 1:length(all_channels)
+
+        idx_bla = strmatch(all_channels{chan_num}, monkey_channels);
+        for j = 1:length(idx_bla)
+            cum(ded) = idx_bla(j);
+            ded = ded + 1;
+        end
+    end
+
+    x_bla = zeros(conf.max_channels, max_hands);
+    x_bla(c2take_idx, :) = agg(cum', :);
+    bar(x_bla);
     title('pd significance in percent of sessions');
+
+    g = gca;
+    set(g,'XTickLabel',[]);
+    set(g, 'XTick', 1:length(all_channels));
+    b=get(g,'XTick');
+    c=get(g,'YTick');
+    for j = 1:length(colors)
+        tmp_b = b(idcs{j});
+        tmp_c = repmat(c(1)-.1*(c(2)-c(1)), length(tmp_b),1);
+        text(tmp_b, tmp_c, char(all_channels{idcs{j}}), ...
+            'HorizontalAlignment', 'right', ...
+            'rotation', 45, ...
+            'color', colors(j));
+    end
+
 
     for j = 1:max_hands
 
@@ -192,14 +229,48 @@ for i = 1:conf.n_monks
     end
 
     subplot(2, 2, 2);
-    bar(c2take_idx, res.(conf.names{i}).cstd_all');
+    x_bla = zeros(conf.max_channels, max_hands);
+    agg = res.(conf.names{i}).cstd_all';
+    x_bla(c2take_idx, :) = agg(cum', :);
+    bar(x_bla);
     title('cstds over all sessions');
     ylim([0 2]);
+    g = gca;
+    set(g,'XTickLabel',[]);
+    set(g, 'XTick', 1:length(all_channels));
+    b=get(g,'XTick');
+    c=get(g,'YTick');
+    for j = 1:length(colors)
+        tmp_b = b(idcs{j});
+        tmp_c = repmat(c(1)-.1*(c(2)-c(1)), length(tmp_b),1);
+        text(tmp_b, tmp_c, char(all_channels{idcs{j}}), ...
+            'HorizontalAlignment', 'right', ...
+            'rotation', 45, ...
+            'color', colors(j));
+    end
+
 
     subplot(2, 2, 4);
-    bar(c2take_idx, res.(conf.names{i}).cstd_sig');
+    x_bla = zeros(conf.max_channels, max_hands);
+    agg = res.(conf.names{i}).cstd_sig';
+    x_bla(c2take_idx, :) = agg(cum', :);
+    bar(x_bla);
     title('cstds over significant sessions');
     ylim([0 2]);
+    g = gca;
+    set(g,'XTickLabel',[]);
+    set(g, 'XTick', 1:length(all_channels));
+    b=get(g,'XTick');
+    c=get(g,'YTick');
+    for j = 1:length(colors)
+        tmp_b = b(idcs{j});
+        tmp_c = repmat(c(1)-.1*(c(2)-c(1)), length(tmp_b),1);
+        text(tmp_b, tmp_c, char(all_channels{idcs{j}}), ...
+            'HorizontalAlignment', 'right', ...
+            'rotation', 45, ...
+            'color', colors(j));
+    end
+
     saveas(h, [conf.outpath  'pd_consist_bars_' conf.names{i} '.' conf.image_format]);
     close(h);
 
@@ -561,7 +632,19 @@ for i= 1:conf.n_monks
         for j = 1:size(pro_syns,1)
             subplot(conf.dim, 1, j)
             bar( [pro_syns(j,:)' sup_syns(j,:)']);
-            axis off
+            g = gca;
+            set(g,'XTickLabel',[]);
+
+
+            set(g, 'XTick', 1:sum(res.(conf.names{i}).c2take));
+            b=get(g,'XTick');
+            c=get(g,'YTick');
+            c = repmat(c(1)-.1*(c(2)-c(1)), length(b),1);
+            c_names = char(channels.(conf.names{i}).name{res.(conf.names{i}).c2take});
+            text(b, c, c_names, ...
+                'HorizontalAlignment', 'right', ...
+                'rotation', 45);
+
             title(['#' int2str(j) ' sc: ' num2str(scores(j))]);
         end
         saveas(h, [conf.outpath  'post_consist_' conf.names{i} '.' conf.image_format]);
